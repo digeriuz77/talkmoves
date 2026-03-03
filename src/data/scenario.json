@@ -1,0 +1,81 @@
+{
+  "hotspots": [
+    { "id": "studentA", "name": "Student A", "x": 15, "y": 40, "width": 15, "height": 30 },
+    { "id": "studentB", "name": "Student B", "x": 45, "y": 38, "width": 15, "height": 30 },
+    { "id": "studentC", "name": "Student C", "x": 75, "y": 41, "width": 15, "height": 30 }
+  ],
+  "dialogueTree": {
+    "start_node": {
+      "text": "The class is looking at a crushed soda can. Student A says: 'I think the air just pushed it.' How do you respond?",
+      "choices": [
+        { "text": "[REVOICING] 'So, you're saying the atmospheric pressure outside was stronger than the air inside?'", "scoreDelta": 10, "nextNode": "turn_2", "tip": "Great! Revoicing clarifies the student's thought for the whole class.", "moveType": "Revoicing" },
+        { "text": "[EVALUATION] 'Correct. It's called atmospheric pressure. Does everyone get that?'", "scoreDelta": -10, "nextNode": "turn_2", "tip": "The 'Evaluation' move ends the inquiry.", "moveType": "Evaluation" },
+        { "text": "[SAY MORE] 'That's an interesting start, Student A. Can you expand on what you mean by \"pushed\"?'", "scoreDelta": 10, "nextNode": "turn_2", "tip": "Nice! 'Say More' encourages the student to deepen their own critical thinking.", "moveType": "Say More" },
+        { "text": "[LEADING] 'It was the pressure, right? Like we talked about yesterday?'", "scoreDelta": -10, "nextNode": "turn_2", "tip": "Leading questions do the thinking for them.", "moveType": "Leading Question" }
+      ]
+    },
+    "turn_2": {
+      "text": "Student B chimes in: 'But wait, if air is pushing it, why doesn't air push us and crush us too?'",
+      "choices": [
+        { "text": "[ADD ON] 'Who can build on Student B's question?'", "scoreDelta": 10, "nextNode": "turn_3", "tip": "Excellent! Adding on builds a collaborative environment.", "moveType": "Adding On" },
+        { "text": "[EVALUATION] 'Because we have pressure inside us pushing out. Next question.'", "scoreDelta": -15, "nextNode": "turn_3", "tip": "Answering it yourself stops the students from thinking.", "moveType": "Evaluation" },
+        { "text": "[REASONING] 'Student A, how does Student B's point affect your initial idea?'", "scoreDelta": 15, "nextNode": "turn_3", "tip": "Perfect! Asking for reasoning pushes for deeper understanding.", "moveType": "Reasoning" },
+        { "text": "[COLD CALL] 'Student C, what's the answer?'", "scoreDelta": -10, "nextNode": "turn_3", "tip": "Cold calling without giving time to think can increase anxiety.", "moveType": "Cold Call" }
+      ]
+    },
+    "turn_3": {
+      "text": "Student C looks unsure. 'Maybe we are just stronger than the can?'",
+      "choices": [
+        { "text": "[WAIT TIME] (Wait in silence for 5 seconds to let others process)", "scoreDelta": 10, "nextNode": "turn_4", "tip": "Silence is a tool! Give 3–5 seconds for processing.", "moveType": "Wait Time" },
+        { "text": "[PSEUDO-INQUIRY] 'Are we really stronger, or is it something else?'", "scoreDelta": -10, "nextNode": "turn_4", "tip": "Pseudo-inquiry hints too heavily at the answer.", "moveType": "Pseudo-inquiry" },
+        { "text": "[REVOICING] 'So you're wondering if the material of the can versus human bodies makes the difference?'", "scoreDelta": 10, "nextNode": "turn_4", "tip": "Revoicing helps validate their contribution while clarifying it.", "moveType": "Revoicing" },
+        { "text": "[EVALUATION] 'No, that's not it. Think about the air inside us.'", "scoreDelta": -15, "nextNode": "turn_4", "tip": "Directly shutting down an idea lowers engagement.", "moveType": "Evaluation" }
+      ]
+    },
+    "turn_4": {
+      "text": "Student A suddenly raises a hand. 'Oh! We breathe air in! So there is air inside us pushing back out!'",
+      "choices": [
+        { "text": "[REASONING] 'Why would air inside us pushing out prevent us from being crushed?'", "scoreDelta": 15, "nextNode": "turn_5", "tip": "Asking for the 'why' solidifies the concept.", "moveType": "Reasoning" },
+        { "text": "[EVALUATION] 'Exactly! Good job, Student A.'", "scoreDelta": -10, "nextNode": "turn_5", "tip": "Praise is nice, but it signals the thinking is done. Keep pushing!", "moveType": "Evaluation" },
+        { "text": "[ADD ON] 'Student B, does Student A's idea help answer your earlier question?'", "scoreDelta": 10, "nextNode": "turn_5", "tip": "Connecting student ideas is a master-level move.", "moveType": "Adding On" },
+        { "text": "[LEADING] 'So the pressures are equal, right?'", "scoreDelta": -10, "nextNode": "turn_5", "tip": "You gave them the punchline! Let them say it.", "moveType": "Leading Question" }
+      ]
+    },
+    "turn_5": {
+      "text": "Student B nods slowly. 'Yeah... if the push from the inside matches the push from the outside, they cancel out.'",
+      "choices": [
+        { "text": "[SAY MORE] 'Cancel out? Can you say more about what that looks like?'", "scoreDelta": 10, "nextNode": "turn_6", "tip": "Asking them to elaborate ensures they aren't just using buzzwords.", "moveType": "Say More" },
+        { "text": "[REVOICING] 'So the internal and external pressures are in equilibrium?'", "scoreDelta": 10, "nextNode": "turn_6", "tip": "Good, introducing scientific vocabulary (equilibrium) by revoicing.", "moveType": "Revoicing" },
+        { "text": "[EVALUATION] 'Yep, they cancel out. Moving on.'", "scoreDelta": -15, "nextNode": "turn_6", "tip": "Rushing to move on kills the momentum.", "moveType": "Evaluation" },
+        { "text": "[COLD CALL] 'Student C, repeat what Student B just said.'", "scoreDelta": -10, "nextNode": "turn_6", "tip": "Asking for mere repetition isn't as engaging as asking for their thoughts on it.", "moveType": "Cold Call" }
+      ]
+    },
+    "turn_6": {
+      "text": "Student C speaks up. 'But the can was empty. There was no air inside to push back out.'",
+      "choices": [
+        { "text": "[REASONING] 'Is a seemingly empty can truly empty? What do you all think?'", "scoreDelta": 15, "nextNode": "turn_7", "tip": "Great pivot to address a misconception.", "moveType": "Reasoning" },
+        { "text": "[EVALUATION] 'Actually, it was full of air until we heated it and sealed it.'", "scoreDelta": -15, "nextNode": "turn_7", "tip": "You explained the experiment instead of letting them figure it out.", "moveType": "Evaluation" },
+        { "text": "[ADD ON] 'Who can respond to Student C's observation?'", "scoreDelta": 10, "nextNode": "turn_7", "tip": "Tossing the question back to the class builds student autonomy.", "moveType": "Adding On" },
+        { "text": "[LEADING] 'Wasn't there water vapor inside that condensed?'", "scoreDelta": -15, "nextNode": "turn_7", "tip": "Too leading! You're doing the heavy lifting.", "moveType": "Leading Question" }
+      ]
+    },
+    "turn_7": {
+      "text": "Student A says, 'Oh! We put a little water in it and boiled it. The steam pushed the air out!'",
+      "choices": [
+        { "text": "[WAIT TIME] (Pause to let the class absorb this realization)", "scoreDelta": 10, "nextNode": "turn_8", "tip": "Giving them time to process a big realization is crucial.", "moveType": "Wait Time" },
+        { "text": "[REVOICING] 'So the steam replaced the air, and then what happened when we cooled it?'", "scoreDelta": 10, "nextNode": "turn_8", "tip": "Revoicing and prompting the next logical step.", "moveType": "Revoicing" },
+        { "text": "[EVALUATION] 'Right, and then the steam condensed, creating a vacuum.'", "scoreDelta": -15, "nextNode": "turn_8", "tip": "You stole their thunder by finishing the explanation!", "moveType": "Evaluation" },
+        { "text": "[PSEUDO-INQUIRY] 'And then it condensed, didn't it?'", "scoreDelta": -10, "nextNode": "turn_8", "tip": "A fill-in-the-blank question doesn't require deep thought.", "moveType": "Pseudo-inquiry" }
+      ]
+    },
+    "turn_8": {
+      "text": "Student B concludes: 'When it cooled, the steam turned back to water. It took up less space, so the pressure inside dropped, and the outside air crushed it!'",
+      "choices": [
+        { "text": "[ADD ON] 'Does everyone agree with this summary? Thumbs up or down.'", "scoreDelta": 15, "nextNode": "end_game", "tip": "A great way to check for consensus and finalize the learning.", "moveType": "Adding On" },
+        { "text": "[REASONING] 'Why does steam turning back to water cause the pressure to drop?'", "scoreDelta": 15, "nextNode": "end_game", "tip": "Pushing for that final layer of molecular understanding.", "moveType": "Reasoning" },
+        { "text": "[EVALUATION] 'Perfect. That's the end of the lesson.'", "scoreDelta": -10, "nextNode": "end_game", "tip": "A bit abrupt, but they got there.", "moveType": "Evaluation" },
+        { "text": "[LEADING] 'So the outside pressure was greater, right?'", "scoreDelta": -10, "nextNode": "end_game", "tip": "Ending on a leading question diminishes their hard work.", "moveType": "Leading Question" }
+      ]
+    }
+  }
+}

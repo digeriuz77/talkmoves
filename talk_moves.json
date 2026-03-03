@@ -1,0 +1,905 @@
+{
+  "metadata": {
+    "title": "Talk Moves: A Comprehensive Reference for Teacher Learning Applications",
+    "description": "A structured catalogue of dialogic talk moves for building academically productive classroom discussion. Drawn from research by Edwards-Groves, Chapin, O'Connor, Alexander, Michaels, and others.",
+    "sources": [
+      "Edwards-Groves, C. (2014). PETAA Paper 195: Talk Moves – A repertoire of practices for productive classroom dialogue.",
+      "Way, J. & Bobis, J. (2017). The literacy of mathematics. PETAA Paper 208.",
+      "Michaels, S. & O'Connor, C. (2012). Talk Science Primer. TERC.",
+      "Michaels, S., O'Connor, C. & Resnick, L. (2013). Accountable Talk Sourcebook. University of Pittsburgh.",
+      "Lim Yi Xuan Debi (2018). A Dialogic Teaching Approach: Talk Moves to Deepen Students' Understanding. HSSE Online 7(1).",
+      "Alexander, R. (2020). A Dialogic Teaching Companion. Routledge."
+    ],
+    "version": "1.0",
+    "intended_use": "Teacher professional learning application – reference, modelling and reflection"
+  },
+
+  "framework_overview": {
+    "what_is_dialogic_talk": "Dialogic talk is classroom talk where participants position themselves in relation to others, recognise diverse voices and perspectives, pose open questions, critique and build on each other's ideas, and reason together. It moves beyond the traditional Initiation-Response-Evaluation (IRE/IRF) pattern, where the teacher controls who speaks, what counts as relevant, and whether a response is correct.",
+    "why_it_matters": [
+      "Talk can reveal understandings and misunderstandings.",
+      "Talk that pushes students to put thoughts into words helps them clarify their thinking.",
+      "Talk can build confidence.",
+      "Substantive classroom discussions lift intellectual dialogue.",
+      "Talk supports robust learning by boosting memory.",
+      "Talk promotes deeper reasoning and critical literacies.",
+      "Talk scaffolds language development.",
+      "Talk nourishes the development of social skills.",
+      "Talk is the moment where curriculum meets the student."
+    ],
+    "the_ire_problem": "In typical IRF sequences, teachers talk two-thirds of the time and student turns consist of short, one-word replies. Students try to guess what is in the teacher's head rather than genuinely reasoning. Changing the third turn – the teacher's response after a student speaks – is the key lever for building more dialogic, participatory classrooms.",
+    "accountable_talk_levels": {
+      "accountable_to_knowledge": "Students are responsible for properly understanding and using facts and information, explaining how they arrived at answers, and pointing out relationships among statements.",
+      "accountable_to_rigorous_reasoning": "Students build arguments by linking claims and evidence logically, incorporate multiple sources, and defend their reasoning against different points of view.",
+      "accountable_to_the_community": "Students recognise that everyone has the right to contribute, listen carefully, paraphrase others, acknowledge others' ideas, and respectfully disagree."
+    }
+  },
+
+  "teacher_talk_moves": [
+
+    {
+      "id": "TM-T01",
+      "name": "Wait Time",
+      "also_known_as": ["Think Time", "Allowing Wait Time for Thinking and Formulating", "Pause"],
+      "category": "teacher",
+      "purpose": "Gives students sufficient time to organise their thinking, craft a response they are comfortable making public, and formulate more elaborate, reasoned contributions. Research shows that wait time results in longer and more thoughtful student responses.",
+      "when_to_use": [
+        "Immediately after posing a question – before asking for responses",
+        "After a student has contributed – before moving to the next speaker",
+        "When the question is complex or requires synthesis",
+        "When quieter students need time to gather courage to contribute"
+      ],
+      "how_it_works": "There are two productive forms of wait time: (1) pausing after asking a question before accepting hands or responses, and (2) pausing after a student contributes before offering teacher feedback or nominating the next speaker. The second pause is especially powerful as it invites other students to respond spontaneously.",
+      "teacher_examples": [
+        "Take some time to think before you answer.",
+        "I'm going to give you a moment to think about this before I ask anyone to respond.",
+        "No hands up yet – just think quietly for thirty seconds.",
+        "Who thinks they can explain what's happening here? No hands up. (3-second pause while teacher scans the class.) Now talk with your partner.",
+        "Before we answer, I want you to think about this – try to think back and remember. (2-second pause.) Right, over to you.",
+        "Let's all think about this for a moment. (3-second pause.) Okay, now turn to talk to your elbow partner.",
+        "I'll wait. Take your time.",
+        "Be prepared to share your thinking with a partner."
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 1 maths – presenting data",
+          "exchange": "Teacher: Okay, so what's a good way for us to present our survey information, everyone? We have used a few different ways before. Now before we answer I want you to think about this, try to think back and remember. (2-second pause.) Right, over to you. Hannah: A graph chart, uh, colour in the squares to match the amount.",
+          "note": "The pause produced a specific, elaborated response rather than a single-word answer."
+        },
+        {
+          "context": "General whole-class discussion",
+          "exchange": "Teacher: Who thinks they can explain what's happening here? No hands up. (3-second pause – teacher makes eye contact across the room.) Now talk with your partner. Find out what each of you thinks. (After pair talk.) Paul – would you like to tell us what the two of you thought?",
+          "note": "Combining wait time with pair talk ensures all students are ready, not just the fastest thinkers."
+        }
+      ],
+      "what_to_avoid": "Accepting the first hand that goes up immediately, filling silences yourself, and asking questions in rapid succession before students have time to think.",
+      "research_note": "Research indicates the average gap between a student response and the teacher's next move is less than one second. Extending this pause even briefly leads to longer, more elaborated student contributions."
+    },
+
+    {
+      "id": "TM-T02",
+      "name": "Turn and Talk",
+      "also_known_as": ["Pair Share", "Vacating the Floor", "Think-Pair-Share", "Elbow Partner Talk"],
+      "category": "teacher",
+      "purpose": "The teacher 'vacates the floor' so that every student gets a turn to talk before a whole-class response is required. Students rehearse and clarify their ideas in a low-stakes pair context, building confidence before going public. It ensures all students are actively engaged, not just those confident enough to raise a hand.",
+      "when_to_use": [
+        "Before whole-class discussion on a complex question",
+        "When you want all students to participate, not just the most confident",
+        "To give students time to synthesise, clarify or rehearse ideas",
+        "To bring reluctant speakers into the conversation"
+      ],
+      "teacher_examples": [
+        "Turn and talk to the person next to you.",
+        "Share your thinking about this with your elbow partner.",
+        "How is your thinking similar or different from your partner's?",
+        "What strategy did you use? Share it with your partner.",
+        "Be prepared to share your discussion with the group – I may ask you to share what your partner said as well as your own thinking.",
+        "Turn to talk to your elbow partner and come up with three or four key things you know about this topic.",
+        "Okay, now turn to talk to your elbow partner and share what you have been thinking. (After pair talk.) Who can explain what they discussed?",
+        "So let's do some thinking together before we make a list. Turn to your partner first."
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 writing – expressive language",
+          "exchange": "Teacher: Right, today we are going to be learning a bit more about how writers make their writing more expressive. Turn to talk to your elbow partner and come up with three or four key things that you know that writers do to make their writing interesting. (Students turn to face another student, knees facing towards each other; 2 minutes.) Okay turn back this way. Aiden, what points did you both discuss? Aiden: Use interesting verbs so you can really imagine it better.",
+          "note": "Pair talk produced a specific, reasoned example rather than a vague answer."
+        },
+        {
+          "context": "After a complex question",
+          "exchange": "Teacher: No hands up. (Pause.) Now talk with your partner. Find out what each of you thinks about why the water level rose. (After partner talk.) Paul, would you like to tell us what the two of you thought?",
+          "note": "Cold calling after pair talk is less threatening because the student can share 'we thought…' rather than risking a solo answer."
+        }
+      ],
+      "what_to_avoid": "Letting the pair talk go on so long that momentum is lost; accepting only one pair's answer without sampling others.",
+      "research_note": "By handing talk time to students to share thinking in pairs as a 'rehearsal', each student gets a turn to talk before the teacher nominates who takes the floor. This opens the communicative space for academically productive talk."
+    },
+
+    {
+      "id": "TM-T03",
+      "name": "Revoicing",
+      "also_known_as": ["Restate and Check", "Interpretive Revoicing"],
+      "category": "teacher",
+      "purpose": "The teacher repeats part or all of a student's contribution – sometimes reformulating or clarifying it – then asks the student to verify whether the interpretation is correct. It helps clarify meaning, highlights important ideas, reveals misconceptions, and assists students in linking everyday language with more precise academic language.",
+      "when_to_use": [
+        "When a student's contribution is unclear or difficult for others to hear",
+        "When you want to amplify an important idea for the whole class",
+        "When a student uses informal language and you want to model more precise vocabulary",
+        "When you are not sure you understood what a student said",
+        "When a misconception needs to be surfaced gently"
+      ],
+      "teacher_examples": [
+        "So you're saying… Do I have that correct?",
+        "Are you saying that…?",
+        "I think I could also explain your thinking by saying… Do I have that right?",
+        "I infer ____, is that right?",
+        "Let me see if I heard you right. You said that… Is that correct?",
+        "So what I'm hearing is… Did I capture that?",
+        "Mm-m, let me see if I heard you right. Between you, you said that… Right? Did we miss anything?",
+        "I think you're suggesting that… would you say that's a fair summary?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 1 survey data",
+          "exchange": "Jennifer: Well, Charlie said – found more children in our class catch the bus to school than walk. Trent: And his graph had even less kids ride their bikes and go in cars? Teacher: Mm-m, let me see if I heard you right. Between you, you said that the most number of children in our class catch the bus to school, more than those who walk, ride bikes or come by car. And the least number ride their bikes. Right Charlie? Is that what you found? Did we miss anything?",
+          "note": "The teacher revoiced and verified, modelling how to synthesise multiple students' contributions."
+        },
+        {
+          "context": "Year 4 environmental science",
+          "exchange": "Teacher: So Ryan, you're suggesting logging the rainforest ruins the habitat or the natural environment that is necessary to sustain the existence of particular species. You gave the example of Orangutans in Indonesia – that was a good piece of evidence that supported your point.",
+          "note": "Revoicing here restates Ryan's idea with more precise academic language while crediting his contribution."
+        },
+        {
+          "context": "General classroom",
+          "exchange": "Student: It's like the hot air goes up and then... Teacher: Are you saying that warm air rises and displaces the cooler air above it? Is that what you mean? Student: Yeah, exactly.",
+          "note": "Revoicing helps the student hear their own idea in cleaner, more academic language."
+        }
+      ],
+      "what_to_avoid": "Revoicing that changes the student's meaning; revoicing too frequently so it becomes a filter rather than a scaffold.",
+      "research_note": "Revoicing is particularly valuable for EAL learners and quieter students whose ideas might otherwise be lost in the noise of whole-class discussion."
+    },
+
+    {
+      "id": "TM-T04",
+      "name": "Sustaining the Thinking",
+      "also_known_as": ["Say More", "Invite More", "Press for Elaboration", "Add On"],
+      "category": "teacher",
+      "purpose": "Invites a student to extend, elaborate and deepen their own thinking by 'saying more', giving evidence, or stating reasons. Rather than moving immediately to another student, the teacher stays with the same student to give them sustained time to build and communicate their ideas. This positions the student as a thinker, theoriser and holder of knowledge – not merely correct or incorrect.",
+      "when_to_use": [
+        "When a student gives a brief or incomplete response that contains an interesting idea",
+        "When you want to model that extended thinking is expected, not just the right answer",
+        "When a student appears to have more to say but hasn't been given permission",
+        "When you want to expose the reasoning behind a claim"
+      ],
+      "teacher_examples": [
+        "Can you say more about that?",
+        "Can you tell me more about that?",
+        "Can you go a bit further with that idea?",
+        "What do you mean by that?",
+        "Can you give an example?",
+        "Say some more about that – what else do you know about this?",
+        "What else do you think?",
+        "Can you explain that further?",
+        "Dig deeper – what led you to that?",
+        "That's an interesting idea. Can you say more? (3-second pause.)",
+        "Ryan, you raised an interesting point. Can you say more about that?",
+        "I'd like you to go further – what else can you tell us?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 environmental science – sustainable rainforest",
+          "exchange": "Teacher: Ryan, you raised an interesting point there about what makes a sustainable rainforest. Can you say more about that? Ryan: So like, um it is important for the wildlife that there is not too much logging so that the forests stay healthy for the future; that's what sustainable sort of means. Teacher: Why Ryan? Can you go a bit further with that idea about what sustainable means for us? Ryan: Well it is about helping the earth stay healthy. People can all help; it's the small little things that add up in the end, like protecting the trees in the rainforest environment so that the animals that live there don't go extinct.",
+          "note": "Three rounds of 'say more' produced a rich, evidence-linked explanation from a student who began with a fairly brief statement."
+        },
+        {
+          "context": "Water experiment",
+          "exchange": "Teacher: Does anyone have any idea why the water level rose? What might have caused it? Lynne: I think it was the weight of the ice. Teacher: That's an interesting idea. Can you say more? (3-second pause.) Lynne: Because it's heavier than the water and it pushed the water up?",
+          "note": "The student used 'I think' – signalling she was reasoning, not recalling. Staying with her exposed her thinking for the class."
+        }
+      ],
+      "what_to_avoid": "Moving away from the student too quickly after their first response; rephrase invitations so they don't feel interrogative.",
+      "research_note": "Sustaining the line of questioning aims to develop both reasoning and evidentiary talk. Students are enabled to build on half-formed ideas as the teacher presses them to substantiate their points."
+    },
+
+    {
+      "id": "TM-T05",
+      "name": "Extending and Deepening Thinking",
+      "also_known_as": ["Opening the Floor", "Add On", "Who Has Something to Add?"],
+      "category": "teacher",
+      "purpose": "After one student has contributed, the teacher opens the floor to other students, inviting them to build on, add to, extend or clarify the previous contribution. This creates a cumulative chain of ideas where each student's response builds on those that came before, rather than each student simply giving their own isolated answer.",
+      "when_to_use": [
+        "After a student has shared a substantive idea",
+        "When you want to build a collective understanding rather than collect individual answers",
+        "To press students to provide evidence, counter-examples or depth",
+        "To bring more voices into the conversation"
+      ],
+      "teacher_examples": [
+        "Does anyone have something else to add?",
+        "Who can add to that?",
+        "Can anyone else have another point?",
+        "Does anyone have something to add to what ____ said?",
+        "What else do you think?",
+        "Who can build on that idea?",
+        "Can anyone take that further?",
+        "Okay, ____ provided some very technical information to support his idea. Does anyone have something else to add to that?",
+        "Can you say some more about that please? What else do you…?",
+        "I agree with ____ – can anyone add an additional reason?",
+        "Is there any more evidence we could use here?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 environmental science – biodiversity",
+          "exchange": "Teacher: Okay, Ryan provided some very technical information to support his idea. Does anyone have something else to add to that? Yes Joelle. Joelle: Well I also think, the plants – it's not for just the animals there, for shelter, their habitat you know. You need to think green, my dad says that. The plants... Jeremy: Flora. Joelle: Flora, yes that's right, needs to stay healthy to supply oxygen from trees and food as well as shelter. Teacher: Oh right, your dad works for LandCare doesn't he? He is a good source of information. So you also mentioned some other important things there – shelter, oxygen. Can anyone else have another point? Who can add?",
+          "note": "Adding on created a chain: Ryan → Joelle → Jeremy → class, with each contribution building the shared understanding."
+        },
+        {
+          "context": "General class discussion",
+          "exchange": "Teacher: I agree with what Sam said because it shows the pattern clearly. Can anyone else add another reason why this might be? Student B: I'd also add that the data from last week supports it too. Teacher: Good – anyone else?",
+          "note": "Keeps the dialogic chain moving rather than reverting to teacher evaluation after each student."
+        }
+      ],
+      "student_sentence_starters": [
+        "I agree with ____ because...",
+        "I disagree with ____ because...",
+        "I'd like to add...",
+        "I'd like to say more about what ____ said about...",
+        "My idea is similar to/related to ____'s idea that...",
+        "Building on what ____ said...",
+        "To add to that point..."
+      ],
+      "research_note": "This move leads students to provide evidentiary talk that builds a stronger foundation for developing and securing knowledge and deepening reasoning."
+    },
+
+    {
+      "id": "TM-T06",
+      "name": "Challenging Thinking",
+      "also_known_as": ["Agree or Disagree", "Press for Counter-Example", "Counterexample"],
+      "category": "teacher",
+      "purpose": "Invites students to respectfully question, challenge, agree with or disagree with the ideas of others. Develops skills in building arguments, debating, recognising bias, and persuading others. Moves students beyond information exchange into genuine intellectual engagement with each other's ideas.",
+      "when_to_use": [
+        "When you want to deepen discussion beyond surface level",
+        "When a student's statement is debatable or could be challenged",
+        "When you want to introduce an alternative perspective",
+        "When students are not engaging with each other's reasoning"
+      ],
+      "teacher_examples": [
+        "Do you agree or disagree with ____'s idea? Why?",
+        "Does anyone disagree with ____'s points? Anyone with a different point of view?",
+        "Can you convince ____ that...?",
+        "Who agrees or disagrees, and why?",
+        "Does anyone have a different view?",
+        "Can someone give a counter-example?",
+        "Can you give an example that does not support that?",
+        "Does anyone want to respond to that idea?",
+        "What would someone who disagreed with you say?",
+        "Is that always true? Can anyone think of a case where it might not be?",
+        "Anyone with a different perspective on this?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 – homework debate",
+          "exchange": "Teacher: Now does anyone disagree with Kip's points that we should not have to do homework? Anyone with a different point of view? Amy, what was your point? Amy: Well, I don't agree – disagree. I was going to say that it helps us practise what we do at school. Teacher: Say more about that, Amy. Amy: It's just that you can get better at your maths and reading, if you have extra work to do at home it gets easier. Teacher: There's another opinion, that's a different view, interesting. Anyone else – other opinions?",
+          "note": "The teacher deliberately sought a counter-view, and then stayed neutral rather than judging Amy's position."
+        },
+        {
+          "context": "History discussion – 13-year-olds",
+          "exchange": "Neil: Just as Ayesha was saying, I don't reckon he was a good king because, look at all the terrible things he did to his enemies. Teacher: Thanks Neil. Anyone else? Wendy: I don't agree! A good king has to be a strong king and he was only protecting all of his citizens... Teacher: Hmmm. Ayesha: Yes, but he was cruel: look at how he got people to confess by torturing them. How can you call him good when he does that? Teacher: Interesting. Anyone else?",
+          "note": "The teacher's neutral minimal responses allowed students to challenge each other directly and build an argument."
+        }
+      ],
+      "student_sentence_starters": [
+        "I disagree with ____ because...",
+        "I'm not sure I agree with what ____ said because...",
+        "Couldn't it also be that...?",
+        "I see why ____ might say that, but...",
+        "I can see that ____; however, I disagree with...",
+        "While I think ____ had a point that ____, I disagree with the part...",
+        "What about...? Doesn't that change things?"
+      ],
+      "research_note": "Challenging thinking develops students' capacity to uncover and challenge prejudices and inequalities, recognise bias, and identify how some ideas are privileged over others."
+    },
+
+    {
+      "id": "TM-T07",
+      "name": "Repeating and Demonstrating Active Listening",
+      "also_known_as": ["Pass On", "Repeat and Rephrase", "Active Listening", "In Their Own Words"],
+      "category": "teacher",
+      "purpose": "The teacher asks a student to repeat or rephrase what another student said – verbatim or in their own words. This demonstrates that contributions from students are worth hearing and engaging with, builds a culture of active listening, and creates a formative assessment touchstone where both teacher and students can check understanding.",
+      "when_to_use": [
+        "After a significant or complex student contribution",
+        "When you want to check that students were actually listening to each other",
+        "To slow the lesson pace and give emphasis to an important idea",
+        "When a student's idea deserves wider attention"
+      ],
+      "teacher_examples": [
+        "Can you repeat or rephrase what ____ said about...?",
+        "I think we should go back to what ____ said about... It was important. Can you repeat what ____ said please?",
+        "How could you summarise that discussion?",
+        "Who can put what ____ just said into their own words?",
+        "Can someone tell us what they heard ____ saying?",
+        "Did everyone hear that? Can someone repeat it?",
+        "Who thinks they understood what James is saying? Can someone put what he just said in their own words?",
+        "What did ____ find? Can someone repeat back what he said in their own words?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 1 – survey data",
+          "exchange": "Teacher: Right, what did Charlie find in his survey? Can someone repeat back what he said in their own words? Over to you Jennifer. Jennifer: Well, Charlie said, found more children in our class catch the bus to school than walk. Trent: And his graph had even less kids ride their bikes and go in cars? Teacher: Mm-m let me see if I heard you right. Between you, you said that the most number of children in our class catch the bus to school... Right Charlie? Is that what you found? Did we miss anything?",
+          "note": "The teacher asked Jennifer to summarise, then revoiced the collective summary to check accuracy."
+        },
+        {
+          "context": "General class",
+          "exchange": "Teacher: That was a really interesting point James made. Who thinks they understood what he was saying? Can someone put it in their own words? Student: I think James was saying that the speed of the current matters more than the depth of the river when it comes to erosion.",
+          "note": "Asking a second student to rephrase signals that student ideas have status equal to teacher ideas."
+        }
+      ],
+      "student_sentence_starters": [
+        "In other words, you think...",
+        "What I heard you say is...",
+        "So you're saying that...",
+        "To summarise what ____ said..."
+      ],
+      "research_note": "This move slows the pace when concepts are complex or deserve extra attention, and adds emphasis to important ideas. It also sets the expectation that students should be listening to each other – not just waiting to give their own answer."
+    },
+
+    {
+      "id": "TM-T08",
+      "name": "Press for Reasoning and Evidence",
+      "also_known_as": ["Press for Reasoning", "What's Your Evidence?", "Justify Your Thinking"],
+      "category": "teacher",
+      "purpose": "Encourages students to justify, elaborate and provide evidence for their claims. Exposes the thinking behind an answer so that the class can engage with the reasoning, not just the conclusion. Directly supports accountable talk – students must be accountable to accurate knowledge and rigorous reasoning.",
+      "when_to_use": [
+        "After any claim is made that could be supported with evidence",
+        "When a student gives a confident-sounding but unsupported assertion",
+        "When discussing complex issues, texts, or data",
+        "To build a culture of evidence-based talk"
+      ],
+      "teacher_examples": [
+        "What evidence did you use?",
+        "Why do you think that?",
+        "Can you explain your reasoning?",
+        "What is your evidence?",
+        "Is there anything in the text that made you think that?",
+        "Where did you get that idea? Do you have some evidence to back up that idea?",
+        "Can you explain that further?",
+        "How did you arrive at that conclusion?",
+        "What led you to that conclusion?",
+        "How do you know?",
+        "Can you back that up?",
+        "What makes you confident about that?",
+        "Why Ryan? Can you go a bit further with that idea?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 – sustainable rainforest",
+          "exchange": "Ryan: Well it is about helping the earth stay healthy. People can all help; it's the small little things that add up in the end, like protecting the trees in the rainforest environment so that the animals that live there don't go extinct. Teacher: Protecting the environment, good point. Where did you get that idea? Do you have some evidence to back up that idea?",
+          "note": "The teacher accepted Ryan's idea but immediately pressed for the reasoning behind it."
+        },
+        {
+          "context": "Reading discussion",
+          "exchange": "Student: I think the author is trying to show that power corrupts people. Teacher: Interesting. What is your evidence? Is there anything in the text that made you think that? Student: Yes, in Chapter 3 the character starts making decisions that hurt others just to stay in control.",
+          "note": "Pressing for text evidence connects the talk to the reading and develops critical literacy."
+        },
+        {
+          "context": "Science investigation",
+          "exchange": "Student: I think the heavier object will fall faster. Teacher: Why do you think that? What evidence do you have? Student: Because it has more mass so gravity pulls it harder? Teacher: Can you say more – does your data support that?",
+          "note": "Pressing for reasoning here surfaces a common misconception for the class to examine."
+        }
+      ],
+      "student_sentence_starters": [
+        "I think ____ because...",
+        "My evidence is...",
+        "In the text it says...",
+        "Based on ____ I infer that...",
+        "The data shows that..."
+      ]
+    },
+
+    {
+      "id": "TM-T09",
+      "name": "Asking Open Guiding Questions",
+      "also_known_as": ["Open Questions", "Guiding Questions", "Inquiry Questions"],
+      "category": "teacher",
+      "purpose": "More open, exploratory questions guide students into higher degrees of intellectual focus, inviting them to investigate, consider possibilities, and respond flexibly and creatively. Good questions yield good responses. Open questions – unlike closed or leading questions – do not have a predetermined right answer, so students cannot simply guess what is in the teacher's head.",
+      "when_to_use": [
+        "To open a discussion on a complex, multi-faceted topic",
+        "When you want students to reason rather than recall",
+        "At the start of an inquiry unit or to sustain an inquiry",
+        "When the topic allows for multiple valid perspectives"
+      ],
+      "teacher_examples": [
+        "Can you convince ____ that...?",
+        "Is Antarctica in danger of devastation? What are the issues?",
+        "What are the biggest challenges facing...?",
+        "What makes you think that this is the best solution?",
+        "How does this connect to what we were thinking about before?",
+        "If we changed one variable, what do you think might happen and why?",
+        "What might someone who disagreed with you say?",
+        "How might this look from a different perspective?",
+        "What would we need to know to be more sure about this?",
+        "Why might different people see this differently?",
+        "What would change if...?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 5 – Antarctica inquiry",
+          "exchange": "Teacher: Okay, by wandering around listening to what you were discussing in your groups, we've got a couple of things to consider as we were thinking about our big question. Toby: What is the biggest issue facing the future of Antarctica? Teacher: Right Toby, thanks for reminding us of that – is Antarctica in danger of devastation? What are the issues? Are they going to destroy Antarctica?",
+          "note": "The question is open enough to generate multiple legitimate answers grounded in evidence."
+        },
+        {
+          "context": "History",
+          "exchange": "Teacher: We've looked at several different accounts of what happened. Why might the different historians have reached such different conclusions? Student A: Maybe they were using different sources. Student B: Or they had different political views that affected what they thought was important.",
+          "note": "An open question produced a genuinely dialogic exchange where both answers are valid and complementary."
+        }
+      ],
+      "research_note": "Douglas Barnes noted that knowledge is too often presented as if it is beyond challenge and beyond the examination of alternatives. Open questions create space for genuine inquiry."
+    },
+
+    {
+      "id": "TM-T10",
+      "name": "Giving Learning-Focused Responses",
+      "also_known_as": ["Non-Evaluative Feedback", "Hear Back", "Building the Dialogue"],
+      "category": "teacher",
+      "purpose": "Rather than judging a student's answer as right or wrong, the teacher reflects the response back in a way that deepens thinking about the topic, builds dialogue, and treats confusions or misconceptions as opportunities to learn more. Responses are focused on the thinking process, not the accuracy of the answer.",
+      "when_to_use": [
+        "When a student gives a partially correct or incomplete answer",
+        "When a misconception needs gentle handling",
+        "When you want to redirect without shutting down the student",
+        "To build a classroom culture where wrong answers are safe"
+      ],
+      "teacher_examples": [
+        "So you're thinking that... Can anyone build on that?",
+        "That's one way of looking at it. What might someone else add?",
+        "Interesting – what would change if we considered...?",
+        "I can see why you might think that. What's the evidence for and against that idea?",
+        "You've raised something really important there – let's think about it together.",
+        "That's a partial picture – who can add another piece to it?",
+        "Hmm, interesting. (Stays neutral, invites others.)",
+        "Thanks ____. Anyone else?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 4 – rainforest conservation",
+          "exchange": "Teacher: So Ryan, you're suggesting logging the rainforest ruins the habitat or the natural environment that is necessary to sustain the existence of particular species. You gave the example of Orangutans in Indonesia; that was a good piece of evidence that supported your point. Absolutely.",
+          "note": "The teacher gives a learning-focused response – acknowledging the contribution and naming the specific quality of evidence, without a simple 'well done.'"
+        },
+        {
+          "context": "History debate",
+          "exchange": "Teacher: Thanks Neil. Anyone else? (Stays neutral.) Wendy: I don't agree! Teacher: Hmmm. (Neutral, non-committal.) Ayesha: Yes, but he was cruel...",
+          "note": "Neutral responses allow the discussion to continue organically between students without teacher approval re-directing the talk."
+        }
+      ],
+      "research_note": "Overuse of praise punctuates discussion and quickly reverts it to the IRF pattern. Students can become approval-seekers rather than genuine thinkers. Neutral but warm non-committal responses keep the dialogic flow going."
+    },
+
+    {
+      "id": "TM-T11",
+      "name": "Stay Neutral",
+      "also_known_as": ["Neutral Response", "Non-Judgemental Stance", "Withholding Evaluation"],
+      "category": "teacher",
+      "purpose": "The teacher deliberately avoids offering praise or negative judgement after a student contribution, sending the signal that students can take the lead in moving the discussion forward. This prevents the discussion from reverting to an IRF pattern where students work for teacher approval rather than genuine reasoning.",
+      "when_to_use": [
+        "During a lively discussion where students are genuinely engaging with each other",
+        "When you want students to respond to each other rather than to the teacher",
+        "When exploring open questions with multiple valid answers",
+        "When you want students to build arguments without your 'steer'"
+      ],
+      "teacher_examples": [
+        "Thanks. Anyone else?",
+        "Hmmm.",
+        "Interesting. Anyone else?",
+        "Okay. (Pause.) What do others think?",
+        "Right. Who wants to respond to that?",
+        "So we've got two different ideas here. What do people think?",
+        "I'm hearing some different ideas here. Is there a way we can pull them together?",
+        "(Nods. Waits.)"
+      ],
+      "classroom_examples": [
+        {
+          "context": "History debate – 13-year-olds",
+          "exchange": "Neil: I don't reckon he was a good king because of all the terrible things he did to his enemies. Teacher: Thanks Neil. Anyone else? Wendy: I don't agree! A good king has to be a strong king... Teacher: Hmmm. Ayesha: Yes, but he was cruel... Teacher: Interesting. Anyone else? Wendy: I'm not saying he was nice, but he did it for the good of his country. That's his job isn't it?",
+          "note": "Minimal teacher responses produced sustained student-to-student dialogue without the teacher redirecting."
+        }
+      ],
+      "what_to_avoid": "Staying neutral all the time – students still need to know when their reasoning is sound. Use learning-focused responses to give specific feedback on the quality of thinking at appropriate moments.",
+      "research_note": "Robin Alexander writes that overuse of praise can lead to students becoming 'approval junkies' who say what they think the teacher wants to hear rather than exploring their own thinking."
+    },
+
+    {
+      "id": "TM-T12",
+      "name": "Include Yourself",
+      "also_known_as": ["Teacher as Co-Inquirer", "Modelling Dialogic Stance", "Semi-Participant"],
+      "category": "teacher",
+      "purpose": "A shift in the teacher's stance so that they position themselves as a semi-participant in the shared inquiry – thinking alongside students rather than above them. This shifts dialogue from something that happens to students towards a collective enterprise where teacher and students co-construct knowledge.",
+      "when_to_use": [
+        "When you want to model genuine intellectual curiosity",
+        "When the topic is genuinely open or uncertain",
+        "When students are stuck and need a thinking partner not an answer",
+        "To signal that the teacher doesn't always know the answer in advance"
+      ],
+      "teacher_examples": [
+        "How can we draw some conclusions from this?",
+        "I think you are saying...",
+        "I'm wondering if there's another way of saying the same thing...",
+        "Am I right in thinking that you mean...?",
+        "I'm hearing some different ideas here. Is there a way we can pull them together?",
+        "I find this really interesting – I hadn't thought of it that way.",
+        "I'm not sure about this either – let's think it through together.",
+        "What do we think is happening here?",
+        "Let's figure this out together.",
+        "That's made me think about..."
+      ],
+      "classroom_examples": [
+        {
+          "context": "General class – complex concept",
+          "exchange": "Teacher: I'm hearing some really different ideas here. Is there a way we can pull them together? I'm wondering if they're actually describing different parts of the same thing... Student A: Oh, like they're both true but for different situations? Teacher: Maybe. What do others think?",
+          "note": "The teacher's 'I'm wondering' models tentative thinking and opens space for exploration."
+        },
+        {
+          "context": "Geography class – student as teacher",
+          "exchange": "Teacher (acting as student): Mr. Tim, where does the long wave radiation come from? Tim: The... actually the short wave radiation is converted to long wave radiation from the ground.",
+          "note": "By taking the student role, the teacher models the kind of genuine questioning that she wants students to practise."
+        }
+      ],
+      "research_note": "Placing ourselves within the dialogue rather than outside it alters power and status relations, encouraging a more exploratory feel to the direction of the thinking. The teacher remains ultimately in charge but plays with the nature of their role within the lesson."
+    },
+
+    {
+      "id": "TM-T13",
+      "name": "Revise Your Thinking",
+      "also_known_as": ["Reflect and Review", "Update Your Thinking", "Revising Learning"],
+      "category": "teacher",
+      "purpose": "Signals to students that it is not only acceptable but intellectually healthy to change their thinking when new information or perspectives emerge. Creates a safe space for students to publicly revise a previous position. Provides structured opportunity to reflect on and review learning.",
+      "when_to_use": [
+        "After new information has been introduced",
+        "At the end of a discussion or unit",
+        "When students have heard compelling counter-arguments",
+        "To normalise intellectual growth and changing one's mind"
+      ],
+      "teacher_examples": [
+        "Has anyone revised their thinking? Why?",
+        "Would anyone change their strategy or thinking now? Why?",
+        "How has your thinking or understanding changed? What was your 'ah-ha' moment?",
+        "Is there anyone who thought one thing at the start and now thinks something different?",
+        "What has shifted for you after hearing everyone's ideas?",
+        "Has anything we've discussed made you reconsider your original answer?",
+        "Now that we've heard this new evidence, does anyone want to revise what they said earlier?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "After a class discussion on a controversial issue",
+          "exchange": "Teacher: We started this lesson thinking about whether the new road should be built. Has anyone revised their thinking after hearing all the perspectives? Student A: I used to think it was just obviously good for the economy, but now I can see why the people who live near it might feel differently.",
+          "note": "The student publicly revised their thinking – a significant intellectual and social move."
+        },
+        {
+          "context": "Science experiment results",
+          "exchange": "Teacher: Now that you've seen the results, would anyone change the prediction they made at the start? Why? Student B: Yes – I predicted the heavier one would fall faster but they hit the ground at the same time so I was wrong. I think I was confusing weight with speed.",
+          "note": "Inviting revision surfaced the student's original misconception and gave them language to correct it."
+        }
+      ],
+      "research_note": "This move orients talk towards learning-centred assessment that informs both learner and teacher of student progress, directs the instructional path, and reflects the teaching programme."
+    },
+
+    {
+      "id": "TM-T14",
+      "name": "Reflecting and Reviewing Learning",
+      "also_known_as": ["Recapping", "Summarising", "Feed Forward", "Think Back"],
+      "category": "teacher",
+      "purpose": "The teacher (or a student) synthesises and summarises the key ideas that have emerged during the discussion, drawing together the threads and making the learning visible. It can be used at any instructional point – before, during or after – as a more informal assessment experience.",
+      "when_to_use": [
+        "At the end of a discussion to consolidate key ideas",
+        "Part-way through to check shared understanding",
+        "To transition from discussion to a new task",
+        "As a formative assessment tool"
+      ],
+      "teacher_examples": [
+        "To wrap this up today, we need to think back over all the key points and the different opinions we heard.",
+        "So, who can pull all the opinions and reasons together that we discovered?",
+        "Who can summarise our discussion?",
+        "Let me recap what we've come to together...",
+        "So we've said three main things today: first ____, then ____, and finally ____. Is that a fair summary?",
+        "What were the key ideas from this discussion?",
+        "So let me see – who can tell me what we know now that we didn't know at the start?",
+        "How could you summarise that discussion in one sentence?"
+      ],
+      "classroom_examples": [
+        {
+          "context": "Year 3 – petition writing preparation",
+          "exchange": "Teacher: To wrap this up today, we need to think back over all the key points, the different opinions we heard in the discussion and try to get them down in some way so we use them tomorrow as we develop up our petitions. So for a moment or two, in your learning groups, add on to your 'think sheets'. [Teacher vacates the floor for 2–3 minutes.] So, let me see – who can pull all opinions and reasons together that we discovered about the influence of pollution on the landscape? Who can summarise our discussion?",
+          "note": "The teacher combines reflecting on learning with vacating the floor and recapping – a powerful triple move."
+        },
+        {
+          "context": "After a complex science discussion",
+          "exchange": "Teacher: So, let me recap what we've established together. We've agreed that the rate of evaporation depends on temperature and surface area – and Joelle added humidity as a factor. Did I miss anything? Student: And wind speed. Teacher: Yes – and wind speed. Does everyone agree that's what we found?",
+          "note": "The teacher recaps but explicitly invites correction, maintaining a dialogic stance even during summary."
+        }
+      ]
+    }
+  ],
+
+  "student_talk_moves": {
+    "description": "These are sentence starters and moves that students use to contribute to productive classroom discussion. Teachers should introduce these progressively, beginning with just one or two categories for younger students. Making these available on classroom charts or laminated cards supports student independence.",
+
+    "categories": [
+
+      {
+        "id": "STM-01",
+        "name": "Expressing an Opinion",
+        "purpose": "Students articulate their own perspective, using tentative language that signals they are reasoning rather than just reporting.",
+        "sentence_starters": [
+          "I think/believe ____.",
+          "In my opinion ____.",
+          "It seems to me that ____.",
+          "From my point of view ____.",
+          "I reckon ____ because ____.",
+          "My view is that ____.",
+          "I'd argue that ____.",
+          "As I see it ____."
+        ],
+        "examples": [
+          "I think the water level rose because the ice displaced it.",
+          "In my opinion, the author is trying to make us feel sympathy for the character.",
+          "It seems to me that sustainable development is mainly about long-term planning."
+        ]
+      },
+
+      {
+        "id": "STM-02",
+        "name": "Agreeing",
+        "purpose": "Students build on others' ideas while acknowledging the person who contributed them. This builds a communal sense of enquiry.",
+        "sentence_starters": [
+          "I agree with what ____ is saying because ____.",
+          "I like what ____ said because ____.",
+          "My idea is similar to/related to ____'s idea that ____.",
+          "I agree with ____, but on the other hand ____.",
+          "Building on what ____ said, I also think ____.",
+          "____ made a good point that ____.",
+          "That connects to what ____ said – I think ____.",
+          "Yes, and I'd add that ____."
+        ],
+        "examples": [
+          "I agree with what Ryan is saying because we need the trees to survive in order for the animals to have a habitat.",
+          "My idea is similar to Joelle's – I also think the oxygen supply is critical.",
+          "I agree with Sam, but on the other hand I think there are more factors we haven't considered."
+        ]
+      },
+
+      {
+        "id": "STM-03",
+        "name": "Disagreeing Respectfully",
+        "purpose": "Students respectfully challenge each other's ideas, providing alternative perspectives and evidence. This is the heart of genuine dialogue.",
+        "sentence_starters": [
+          "I disagree with ____ because ____.",
+          "I'm not sure I agree with what ____ said because ____.",
+          "I can see that ____; however, I disagree with ____.",
+          "Couldn't it also be that ____?",
+          "I see why ____ might say that, but ____.",
+          "While I think ____ had a point that ____, I disagree with the part ____.",
+          "That might be true in some cases, but ____.",
+          "I think there's another way to look at this ____."
+        ],
+        "examples": [
+          "I disagree with Kip because I think homework helps us practise what we learn at school.",
+          "I can see that he was strong; however, I disagree with calling him a good king because of how he treated his enemies.",
+          "While I think Ayesha had a point that the forests need protection, I disagree with the idea that logging should be banned completely."
+        ]
+      },
+
+      {
+        "id": "STM-04",
+        "name": "Seeking Clarification",
+        "purpose": "Students ask for clarification or elaboration, demonstrating active listening and accountability to understanding.",
+        "sentence_starters": [
+          "Could you please repeat that for me?",
+          "Could you explain a bit more?",
+          "What did you mean when you said ____?",
+          "I'm not sure I understood you when you said ____. Could you say more about that?",
+          "What led you to that conclusion?",
+          "What is your evidence?",
+          "How do you know that?",
+          "How does that relate to ____?"
+        ],
+        "examples": [
+          "Could you explain a bit more about what you meant by sustainable?",
+          "What is your evidence for saying the temperature will drop?",
+          "How do you know when the clouds get too heavy?"
+        ]
+      },
+
+      {
+        "id": "STM-05",
+        "name": "Paraphrasing What Someone Said",
+        "purpose": "Students demonstrate active listening by restating another student's contribution in their own words.",
+        "sentence_starters": [
+          "In other words, you think ____.",
+          "What I heard you say is ____.",
+          "So you're saying that ____.",
+          "To summarise what ____ said ____.",
+          "If I understand correctly, you mean ____.",
+          "____ is saying that ____."
+        ],
+        "examples": [
+          "In other words, you think the water cycle is driven by heat energy.",
+          "What I heard you say is that both sides of the argument have merit.",
+          "So you're saying that sustainable development is about meeting needs without destroying the environment for future generations."
+        ]
+      },
+
+      {
+        "id": "STM-06",
+        "name": "Adding On and Extending",
+        "purpose": "Students build the collective understanding by adding new points, evidence or detail to what has already been said.",
+        "sentence_starters": [
+          "I'd like to say more about what ____ said about ____.",
+          "I'd like to add ____.",
+          "I want to know more about ____.",
+          "Another reason is ____.",
+          "There's also ____.",
+          "To build on that, I think ____.",
+          "That's true, and another example would be ____.",
+          "I'd also add that ____."
+        ],
+        "examples": [
+          "I'd like to add that the plants also need to stay healthy to supply oxygen as well as shelter.",
+          "There's also the issue of water scarcity, which affects the whole system.",
+          "To build on what Ryan said, I think community involvement is another key part of sustainability."
+        ]
+      },
+
+      {
+        "id": "STM-07",
+        "name": "Making a Connection",
+        "purpose": "Students connect new ideas to prior knowledge, personal experience or other ideas in the discussion – building cumulative dialogue.",
+        "sentence_starters": [
+          "What ____ said reminded me of ____.",
+          "This makes me think _____.",
+          "This reminds me of ____.",
+          "This is like ____ but different because ____.",
+          "That connects to ____.",
+          "I've seen that before when ____.",
+          "In a similar situation ____."
+        ],
+        "examples": [
+          "What Ryan said about sustainable forests reminded me of what we learned about biodiversity last term.",
+          "This makes me think about how the same thing happens with urban planning.",
+          "This is like the water cycle we studied, but different because it's about how humans affect it."
+        ]
+      },
+
+      {
+        "id": "STM-08",
+        "name": "Expressing Confusion",
+        "purpose": "Students signal when they are confused or need more information – a critical move for honest, productive dialogue. Normalises uncertainty as part of learning.",
+        "sentence_starters": [
+          "I don't understand ____.",
+          "I am confused about ____.",
+          "That is confusing because ____.",
+          "I'm not sure I follow – can you explain ____?",
+          "Wait, I thought ____ – can you help me understand?",
+          "That doesn't quite make sense to me yet because ____."
+        ],
+        "examples": [
+          "I'm confused about why the heavier object didn't fall faster.",
+          "I don't understand how the clouds can absorb heat at night but not reflect it.",
+          "That's confusing because earlier we said the opposite – can you say more?"
+        ]
+      },
+
+      {
+        "id": "STM-09",
+        "name": "Making a Prediction or Hypothesis",
+        "purpose": "Students think ahead or speculatively, practising higher-order reasoning and developing the habit of making thinking explicit.",
+        "sentence_starters": [
+          "I think that ____ will happen because ____.",
+          "I wonder if ____.",
+          "Based on ____ I infer that ____.",
+          "My prediction is ____ because ____.",
+          "If ____ then I'd expect ____.",
+          "I hypothesise that ____."
+        ],
+        "examples": [
+          "I think that if we increase the temperature, the rate of evaporation will double because heat provides the energy for water molecules to escape.",
+          "Based on the graph, I infer that the population will continue to grow for at least another decade.",
+          "I wonder if the results would be different if we changed the surface area of the container."
+        ]
+      }
+    ]
+  },
+
+  "talk_move_combinations": {
+    "description": "Talk moves work most powerfully in combination. The following sequences show how multiple moves chain together in real teaching moments.",
+    "sequences": [
+      {
+        "name": "Think–Pair–Share with Cold Call",
+        "moves_used": ["Wait Time", "Turn and Talk", "Sustaining the Thinking"],
+        "sequence": "1. Pose an open question. 2. No hands up – wait. 3. Ask students to turn and talk. 4. Cold call a student (ideally one who was animated in the pair talk). 5. Invite them to say more. 6. Open to the class to add on.",
+        "example": "Teacher: Let's all think about what makes a good historical source. No hands up yet. (Wait.) Now talk with your partner. (2 minutes.) Okay – Sam, what did you and your partner think? Sam: We thought it has to be from the time – like a diary or a letter. Teacher: Say more about that – why does being 'from the time' matter? Sam: Because the person actually saw what happened, they didn't hear it secondhand. Teacher: Interesting. Does anyone want to add to that or challenge it?"
+      },
+      {
+        "name": "Sustain then Open",
+        "moves_used": ["Sustaining the Thinking", "Extending and Deepening Thinking", "Press for Reasoning"],
+        "sequence": "1. Stay with one student and press for elaboration and evidence. 2. Then open the floor to other students to add on, extend or challenge. 3. Invite a counter-example if appropriate.",
+        "example": "Teacher: Ryan, you raised an interesting point. Can you say more? Ryan: (elaborates.) Teacher: Why? Can you go further? Ryan: (adds evidence.) Teacher: Good. Now – does anyone have something else to add to what Ryan has said? Who can extend that idea or give us a counter-example?"
+      },
+      {
+        "name": "Challenge then Reflect",
+        "moves_used": ["Challenging Thinking", "Stay Neutral", "Revise Your Thinking"],
+        "sequence": "1. Ask for someone to challenge or disagree with an idea. 2. Stay neutral as students debate. 3. At the end, invite students to reflect on whether they have revised their thinking.",
+        "example": "Teacher: Does anyone disagree with the idea that the king was a good leader? (Students debate.) Teacher: (Stays neutral: 'Hmmm.', 'Anyone else?') At the end: Has anyone revised their thinking after hearing these different views? What was your 'ah-ha' moment?"
+      },
+      {
+        "name": "Revoice, Verify and Open",
+        "moves_used": ["Revoicing", "Extending and Deepening Thinking", "Asking Open Guiding Questions"],
+        "sequence": "1. Revoice a student's contribution and check it is correct. 2. Open the floor for others to add on or question. 3. Follow up with an open guiding question to push deeper.",
+        "example": "Teacher: So you're saying that deforestation affects the water cycle because trees absorb rainfall and release it gradually – is that right? Student: Yes. Teacher: Does anyone want to add to that? Now – what would need to change for deforestation to have less impact? Let's think about that."
+      }
+    ]
+  },
+
+  "classroom_culture_conditions": {
+    "description": "Talk moves only work well when certain classroom conditions are in place. These are not 'moves' but essential cultural foundations.",
+    "conditions": [
+      {
+        "name": "Everyone Speaks at Some Point",
+        "description": "Ensure every student is listening to what others say, can hear what others say, and speaks at some point during the lesson.",
+        "strategies": [
+          "Use pair talk before whole-class discussion so every student has had a chance to formulate an idea.",
+          "Use cold calling – especially after pair talk – so that nomination is less threatening.",
+          "Monitor participation actively and invite contributions from quieter students."
+        ]
+      },
+      {
+        "name": "Students' Ideas Have Status",
+        "description": "Students must see that their contributions are treated as resources for learning, not simply as correct or incorrect answers to be judged.",
+        "strategies": [
+          "Revoice student contributions with precision and care.",
+          "Ask other students to repeat or rephrase what their classmates said.",
+          "Avoid overusing praise that creates approval-seeking."
+        ]
+      },
+      {
+        "name": "Wrong Answers are Opportunities",
+        "description": "Misconceptions and partial understandings are treated as important opportunities to learn more rather than embarrassments to be corrected quickly.",
+        "strategies": [
+          "Give learning-focused rather than evaluative responses.",
+          "Use revoicing to gently surface and examine a misconception.",
+          "Normalise revision of thinking – model it yourself."
+        ]
+      },
+      {
+        "name": "A Talking Object (Optional)",
+        "description": "For structured discussions, a talking object (a ball or other item passed between students) ensures only the holder speaks while others listen actively.",
+        "strategies": [
+          "Introduce the talking object and its rules explicitly.",
+          "Ensure students pass the object themselves rather than the teacher controlling it.",
+          "Reflect with students on what active listening looks and sounds like."
+        ]
+      }
+    ]
+  },
+
+  "quick_reference_table": [
+    { "id": "TM-T01", "name": "Wait Time", "teacher_cue": "Take some time to think. No hands yet." },
+    { "id": "TM-T02", "name": "Turn and Talk", "teacher_cue": "Turn and talk to your elbow partner about..." },
+    { "id": "TM-T03", "name": "Revoicing", "teacher_cue": "So you're saying... Do I have that right?" },
+    { "id": "TM-T04", "name": "Sustaining the Thinking", "teacher_cue": "Can you say more about that?" },
+    { "id": "TM-T05", "name": "Extending and Deepening", "teacher_cue": "Does anyone have something to add?" },
+    { "id": "TM-T06", "name": "Challenging Thinking", "teacher_cue": "Does anyone disagree, and why?" },
+    { "id": "TM-T07", "name": "Repeating / Active Listening", "teacher_cue": "Can someone put that in their own words?" },
+    { "id": "TM-T08", "name": "Press for Reasoning", "teacher_cue": "What's your evidence? Why do you think that?" },
+    { "id": "TM-T09", "name": "Open Guiding Questions", "teacher_cue": "What would change if...? Why might people see this differently?" },
+    { "id": "TM-T10", "name": "Learning-Focused Responses", "teacher_cue": "That's one way of looking at it. What might someone add?" },
+    { "id": "TM-T11", "name": "Stay Neutral", "teacher_cue": "Hmmm. Anyone else?" },
+    { "id": "TM-T12", "name": "Include Yourself", "teacher_cue": "I'm wondering if... Let's figure this out together." },
+    { "id": "TM-T13", "name": "Revise Your Thinking", "teacher_cue": "Has anyone revised their thinking? What was your 'ah-ha'?" },
+    { "id": "TM-T14", "name": "Reflecting and Reviewing", "teacher_cue": "Who can summarise what we've discovered?" },
+    { "id": "STM-01", "name": "Expressing Opinion", "student_cue": "I think/believe... In my opinion..." },
+    { "id": "STM-02", "name": "Agreeing", "student_cue": "I agree with ____ because..." },
+    { "id": "STM-03", "name": "Disagreeing", "student_cue": "I disagree with ____ because..." },
+    { "id": "STM-04", "name": "Seeking Clarification", "student_cue": "Could you explain a bit more? What is your evidence?" },
+    { "id": "STM-05", "name": "Paraphrasing", "student_cue": "In other words you think... What I heard you say is..." },
+    { "id": "STM-06", "name": "Adding On", "student_cue": "I'd like to add... Building on that..." },
+    { "id": "STM-07", "name": "Making a Connection", "student_cue": "This reminds me of... This makes me think..." },
+    { "id": "STM-08", "name": "Expressing Confusion", "student_cue": "I'm confused about... I don't understand..." },
+    { "id": "STM-09", "name": "Making a Prediction", "student_cue": "I think ____ will happen because... I wonder if..." }
+  ]
+}
