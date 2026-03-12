@@ -3,102 +3,103 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
+import { DEFAULT_ASSETS } from './components/AssetLoader';
 import { Sparkles, Layers, ArrowRight, BookOpen } from 'lucide-react';
+import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
+import {
+  getLevelStatus,
+  updateLevelProgress,
+  type LevelProgressMap,
+} from './lib/level-progress';
 
-type GameMode = 'select' | 'stage1' | 'stage2';
+const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
-  const [gameMode, setGameMode] = useState<GameMode>('select');
+  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
+  const selectedGame = gameCatalog.find((game) => game.id === selectedGameId) ?? null;
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
+    if (!stored) {
+      return;
+    }
+
+    try {
+      setLevelProgress(JSON.parse(stored) as LevelProgressMap);
+    } catch {
+      setLevelProgress({});
+    }
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(LEVEL_PROGRESS_STORAGE_KEY, JSON.stringify(levelProgress));
+  }, [levelProgress]);
+
+  const handleLevelComplete = (result: { levelId: string; score: number; completed: boolean }) => {
+    setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
+  };
 
   return (
     <div className="min-h-screen bg-neutral-900 text-white font-sans flex items-center justify-center p-4">
-      {gameMode === 'select' ? (
-        <ModeSelect onSelect={setGameMode} />
-      ) : gameMode === 'stage1' ? (
-        <Game />
+      {!selectedGame ? (
+        <ModeSelect onSelect={setSelectedGameId} levelProgress={levelProgress} />
+      ) : selectedGame.engine === 'choice' ? (
+        <Game
+          assets={DEFAULT_ASSETS}
+          scenario={selectedGame.scenario}
+          onExit={() => setSelectedGameId(null)}
+          onComplete={handleLevelComplete}
+        />
       ) : (
-        <TalkMovesGame />
+        <TalkMovesGame
+          assets={DEFAULT_ASSETS}
+          scenario={selectedGame.scenario}
+          onExit={() => setSelectedGameId(null)}
+          onComplete={handleLevelComplete}
+        />
       )}
     </div>
   );
 }
 
-function ModeSelect({ onSelect }: { onSelect: (mode: GameMode) => void }) {
+function ModeSelect({
+  onSelect,
+  levelProgress,
+}: {
+  onSelect: (gameId: string) => void;
+  levelProgress: LevelProgressMap;
+}) {
   return (
     <motion.div 
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-4xl w-full"
+      className="max-w-6xl w-full"
     >
       <div className="text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-serif font-bold mb-4 bg-gradient-to-r from-amber-200 to-emerald-200 bg-clip-text text-transparent">
           Dialogic Classroom
         </h1>
         <p className="text-lg text-white/60">
-          Master the art of productive classroom dialogue
+          Practice realistic Primary classroom routines where pupils may think in Malay, answer in partial English, and still need help turning half-formed ideas into stronger talk.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Stage 1: Original Game */}
-        <motion.button
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 }}
-          onClick={() => onSelect('stage1')}
-          className="group relative bg-neutral-800/50 border border-white/10 rounded-3xl p-8 text-left hover:border-amber-500/50 transition-all"
-        >
-          <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-amber-500/20 flex items-center justify-center">
-            <Layers className="w-5 h-5 text-amber-400" />
-          </div>
-          
-          <div className="text-sm font-bold uppercase tracking-wider text-amber-400 mb-2">Stage 1</div>
-          <h2 className="text-2xl font-serif font-bold mb-3">Crushed Can Inquiry</h2>
-          <p className="text-white/60 mb-6">
-            Navigate an 8-turn dialogue about atmospheric pressure. 
-            Learn to choose the right talk moves to keep students engaged.
-          </p>
-          
-          <div className="flex items-center gap-2 text-amber-400 font-bold">
-            Start Stage 1 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/10">
-            <div className="text-xs text-white/40">8 turns • Single choice per turn</div>
-          </div>
-        </motion.button>
-
-        {/* Stage 2: Talk Moves Game */}
-        <motion.button
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          onClick={() => onSelect('stage2')}
-          className="group relative bg-neutral-800/50 border border-white/10 rounded-3xl p-8 text-left hover:border-emerald-500/50 transition-all"
-        >
-          <div className="absolute top-4 right-4 w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-            <Sparkles className="w-5 h-5 text-emerald-400" />
-          </div>
-          
-          <div className="text-sm font-bold uppercase tracking-wider text-emerald-400 mb-2">Stage 2</div>
-          <h2 className="text-2xl font-serif font-bold mb-3">Why Does Ice Melt?</h2>
-          <p className="text-white/60 mb-6">
-            Build response chains using the complete Talk Moves framework. 
-            Chain moves together for combo bonuses and deeper inquiry!
-          </p>
-          
-          <div className="flex items-center gap-2 text-emerald-400 font-bold">
-            Start Stage 2 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </div>
-
-          <div className="mt-6 pt-4 border-t border-white/10">
-            <div className="text-xs text-white/40">8 turns • Chain responses • 14 Talk Moves</div>
-          </div>
-        </motion.button>
+      <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {gameCatalog.map((game, index) => (
+          <Fragment key={game.id}>
+            <GameCard
+              game={game}
+              index={index}
+              onSelect={onSelect}
+              progress={getLevelStatus(levelProgress, game.id)}
+            />
+          </Fragment>
+        ))}
       </div>
 
       {/* Info Section */}
@@ -111,15 +112,83 @@ function ModeSelect({ onSelect }: { onSelect: (mode: GameMode) => void }) {
         <div className="flex items-start gap-4">
           <BookOpen className="w-6 h-6 text-blue-400 flex-shrink-0 mt-1" />
           <div>
-            <h3 className="font-bold text-white mb-2">About the Talk Moves Framework</h3>
+            <h3 className="font-bold text-white mb-2">About This Training Build</h3>
             <p className="text-sm text-white/60">
               Based on research by Edwards-Groves, Chapin, O'Connor, and Alexander. 
-              These 14 teacher moves help build academically productive classroom discussions 
-              that move beyond the traditional IRE pattern.
+              These levels are designed to help teachers rehearse dialogic routines that keep English available for reasoning, even when lesson time is tight and the temptation is to take the one fast correct answer.
             </p>
           </div>
         </div>
       </motion.div>
     </motion.div>
+  );
+}
+
+function GameCard({
+  game,
+  index,
+  onSelect,
+  progress,
+}: {
+  game: GameCatalogEntry;
+  index: number;
+  onSelect: (gameId: string) => void;
+  progress: ReturnType<typeof getLevelStatus>;
+}) {
+  const isTalkMoves = game.engine === 'talk-moves';
+  const Icon = isTalkMoves ? Sparkles : Layers;
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.04 }}
+      onClick={() => onSelect(game.id)}
+      className="group relative rounded-3xl border border-white/10 bg-neutral-800/50 p-7 text-left transition-all hover:border-white/25"
+    >
+      <div className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/5">
+        <Icon className="h-5 w-5 text-white/70" />
+      </div>
+
+      <div className="mb-2 flex items-center justify-between gap-3">
+        <div className="text-xs font-bold uppercase tracking-[0.18em] text-white/45">
+          {game.subtitle}
+        </div>
+        <div
+          className={`rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] ${
+            progress.completed
+              ? 'bg-emerald-400/15 text-emerald-200'
+              : progress.attempts > 0
+                ? 'bg-amber-300/15 text-amber-100'
+                : 'bg-white/10 text-white/50'
+          }`}
+        >
+          {progress.statusLabel}
+        </div>
+      </div>
+      <h2 className="mb-3 pr-10 text-2xl font-serif font-bold">{game.title}</h2>
+      <p className="mb-5 text-sm leading-relaxed text-white/60">{game.description}</p>
+
+      <div className="mb-5 flex flex-wrap gap-2">
+        {game.focusAreas.slice(0, 3).map((area) => (
+          <span key={area} className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.14em] text-white/45">
+            {area}
+          </span>
+        ))}
+      </div>
+
+      <div className="flex items-center gap-2 font-bold text-white/80">
+        Start level <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </div>
+
+      <div className="mt-6 border-t border-white/10 pt-4 text-xs text-white/40 space-y-1">
+        <div>
+          {isTalkMoves ? 'Chain responses • Talk-move combos' : 'Scenario choices • Visible classroom consequences'}
+        </div>
+        <div className="font-mono">
+          Best score: {progress.bestScore}% • Attempts: {progress.attempts}
+        </div>
+      </div>
+    </motion.button>
   );
 }

@@ -1,17 +1,33 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import { ArrowLeft } from 'lucide-react';
 import { AssetUrls } from './AssetLoader';
 import DialogueBox from './DialogueBox';
 import FeedbackBubble from './FeedbackBubble';
-import EndScreen from './EndScreen';
+import EndScreen, { type TalkMovesGameResult } from './EndScreen';
 import {
-  talkMovesData,
   talkMovesMap,
-  iceMeltScenario,
+  talkMoveScenarios,
   calculateChainScore,
+  calculateChainMetrics,
   generateProfile,
+  type TalkMoveScenarioDefinition,
   type PedagogicalProfile,
 } from '../data/talk_moves';
+import {
+  applyMetricDelta,
+  calculateCompositeScore,
+  createMetrics,
+  isPassingScore,
+  summarizeLabels,
+  type Metrics,
+} from '../lib/game-progress';
+import { resolveScenarioNode } from '../lib/scenario-variants';
+import {
+  buildDynamicAdvice,
+  getResponseTypeMeta,
+  type StudentResponseType,
+} from '../lib/teacher-coaching';
 
 type GameState = 'building' | 'executing' | 'win' | 'loss';
 
@@ -25,17 +41,48 @@ export type MoveHistoryItem = {
   score: number;
 };
 
-export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
-  const [currentNodeId, setCurrentNodeId] = useState<string>('observation');
-  const [engagementScore, setEngagementScore] = useState<number>(50);
+type TalkMovesGameProps = {
+  assets?: AssetUrls;
+  scenario: TalkMoveScenarioDefinition;
+  onExit: () => void;
+  onComplete: (result: { levelId: string; score: number; completed: boolean }) => void;
+};
+
+const METRIC_LABELS: Array<keyof Metrics> = ['participation', 'reasoning', 'ownership'];
+
+export default function TalkMovesGame({ assets, scenario, onExit, onComplete }: TalkMovesGameProps) {
+  const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
+  const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [responseChain, setResponseChain] = useState<ChainItem[]>([]);
   const [moveHistory, setMoveHistory] = useState<MoveHistoryItem[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState>('building');
   const [showHint, setShowHint] = useState<boolean>(false);
+  const [playthroughSeed, setPlaythroughSeed] = useState<number>(0);
+  const [responseTypesSeen, setResponseTypesSeen] = useState<StudentResponseType[]>([]);
 
-  const currentNode = iceMeltScenario[currentNodeId];
+  const currentNode = useMemo(() => {
+    const node = scenario.nodes[currentNodeId];
+    const resolved = resolveScenarioNode(
+      {
+        text: node.studentText,
+        alternateTexts: node.alternateStudentTexts,
+        pressureCue: node.pressureCue,
+        alternatePressureCues: node.alternatePressureCues,
+      },
+      currentNodeId,
+      playthroughSeed,
+    );
+
+    return {
+      ...node,
+      studentText: resolved.text,
+      pressureCue: resolved.pressureCue,
+    };
+  }, [currentNodeId, playthroughSeed, scenario.nodes]);
   const availableMoves = currentNode?.availableMoves.map(id => talkMovesMap[id]).filter(Boolean) || [];
+  const engagementScore = calculateCompositeScore(metrics);
+  const responseMeta = currentNode?.responseType ? getResponseTypeMeta(currentNode.responseType) : null;
 
   // Calculate if we're ready to execute (has terminal move in chain)
   const canExecute = responseChain.some(
@@ -90,8 +137,10 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
     }
 
     // Update score
-    const newScore = Math.max(0, Math.min(100, engagementScore + Math.floor(turnScore / 10)));
-    setEngagementScore(newScore);
+    const chainMetrics = calculateChainMetrics(chainMoveIds);
+    const nextMetrics = applyMetricDelta(metrics, chainMetrics);
+    const newScore = calculateCompositeScore(nextMetrics);
+    setMetrics(nextMetrics);
 
     // Record history
     chainMoveIds.forEach(moveId => {
@@ -100,6 +149,9 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
         score: Math.floor(talkMovesMap[moveId]?.scoreValue || 0 / 10) 
       }]);
     });
+    if (currentNode?.responseType) {
+      setResponseTypesSeen((previous) => [...previous, currentNode.responseType as StudentResponseType]);
+    }
 
     // Show feedback
     if (comboText) {
@@ -112,7 +164,7 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
     setResponseChain([]);
 
     // Move to next node
-    const nodeKeys = Object.keys(iceMeltScenario);
+    const nodeKeys = Object.keys(scenario.nodes);
     const currentIndex = nodeKeys.indexOf(currentNodeId);
     const nextNode = nodeKeys[currentIndex + 1];
 
@@ -125,23 +177,27 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
     } else {
       // End of scenario
       setTimeout(() => {
-        if (newScore >= 60) {
-          setGameState('win');
-        } else {
-          setGameState('loss');
-        }
+        const completed = isPassingScore(nextMetrics, scenario.passThreshold);
+        setGameState(completed ? 'win' : 'loss');
+        onComplete({
+          levelId: scenario.id,
+          score: newScore,
+          completed,
+        });
       }, 1500);
     }
   };
 
   const handleRestart = () => {
-    setCurrentNodeId('observation');
-    setEngagementScore(50);
+    setCurrentNodeId(scenario.startNodeId);
+    setMetrics(createMetrics(scenario.startingMetrics));
     setResponseChain([]);
     setMoveHistory([]);
     setFeedback(null);
     setGameState('building');
     setShowHint(false);
+    setPlaythroughSeed((previous) => previous + 1);
+    setResponseTypesSeen([]);
   };
 
   // Keyboard shortcuts
@@ -160,6 +216,24 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
 
   // Generate profile for end screen
   const profile: PedagogicalProfile = generateProfile(moveHistory.map(m => m.moveId));
+  const result: TalkMovesGameResult = useMemo(
+    () => ({
+      variant: 'talk-moves',
+      title: scenario.title,
+      outcome: gameState === 'win' ? 'win' : 'loss',
+      finalScore: engagementScore,
+      metrics,
+      reflectionPrompt: scenario.reflectionPrompt,
+      historyCounts: summarizeLabels(
+        moveHistory
+          .map((entry) => talkMovesMap[entry.moveId]?.name)
+          .filter((name): name is string => Boolean(name)),
+      ),
+      advice: [...buildDynamicAdvice(metrics, responseTypesSeen), ...profile.advice],
+      profile,
+    }),
+    [engagementScore, gameState, metrics, moveHistory, profile, responseTypesSeen, scenario.reflectionPrompt, scenario.title],
+  );
 
   // Current chain score preview
   const chainScorePreview = responseChain.length > 0
@@ -167,28 +241,61 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
     : 0;
 
   return (
-    <div className="w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-white/10 flex flex-col">
+    <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-white/10 flex flex-col">
       {gameState === 'building' || gameState === 'executing' ? (
         <>
           {/* Header */}
           <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
-            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-              <div className="text-xs font-bold uppercase tracking-wider text-white/80 mb-1">Engagement</div>
-              <div className="w-32 h-2 bg-white/20 rounded-full overflow-hidden">
-                <motion.div 
-                  className={`h-full ${engagementScore > 70 ? 'bg-emerald-400' : engagementScore < 30 ? 'bg-red-500' : 'bg-amber-400'}`}
-                  initial={{ width: '50%' }}
-                  animate={{ width: `${engagementScore}%` }}
-                  transition={{ type: 'spring', bounce: 0.4 }}
-                />
+            <div className="flex gap-3">
+              <button
+                onClick={onExit}
+                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-sm text-white/80 transition-colors hover:border-white/30 hover:text-white"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Levels
+              </button>
+
+              <div className="rounded-2xl border border-white/10 bg-black/60 px-4 py-3 backdrop-blur-md">
+                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                  {scenario.subtitle}
+                </div>
+                <div className="mt-1 text-lg font-semibold text-white">{scenario.title}</div>
+                <div className="mt-1 text-xs text-white/55">{scenario.description}</div>
               </div>
             </div>
             
-            {/* Turn indicator */}
-            <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-full border border-white/20">
-              <div className="text-xs font-bold uppercase tracking-wider text-white/60">Turn</div>
-              <div className="text-sm font-mono text-white">
-                {Object.keys(iceMeltScenario).indexOf(currentNodeId) + 1} / {Object.keys(iceMeltScenario).length}
+            <div className="flex gap-3">
+              <div className="rounded-2xl border border-white/10 bg-black/60 px-4 py-3 backdrop-blur-md min-w-[320px]">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
+                    Classroom Outcomes
+                  </div>
+                  <div className="text-sm font-mono text-white/70">{engagementScore}%</div>
+                </div>
+                <div className="space-y-2">
+                  {METRIC_LABELS.map((metricKey) => (
+                    <div key={metricKey}>
+                      <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-white/45">
+                        <span>{metricKey}</span>
+                        <span className="font-mono text-white/60">{metrics[metricKey]}</span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-white/10">
+                        <motion.div
+                          animate={{ width: `${metrics[metricKey]}%` }}
+                          className="h-full bg-white/70"
+                          transition={{ duration: 0.2, ease: 'easeOut' }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+                <div className="text-xs font-bold uppercase tracking-wider text-white/60">Turn</div>
+                <div className="text-sm font-mono text-white">
+                  {Object.keys(scenario.nodes).indexOf(currentNodeId) + 1} / {Object.keys(scenario.nodes).length}
+                </div>
               </div>
             </div>
           </div>
@@ -212,6 +319,22 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
               <p className="text-xl md:text-2xl font-serif text-white/90 leading-relaxed mb-4">
                 {currentNode?.studentText}
               </p>
+
+              {currentNode?.pressureCue && (
+                <div className="mb-4 inline-flex max-w-3xl rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-medium text-amber-100">
+                  {currentNode.pressureCue}
+                </div>
+              )}
+
+              {responseMeta && (
+                <div className="mb-4 max-w-3xl rounded-2xl border border-sky-300/20 bg-sky-300/10 px-4 py-3 text-left">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100/75">
+                    Student Response Type
+                  </div>
+                  <div className="mt-1 text-sm font-semibold text-sky-50">{responseMeta.label}</div>
+                  <div className="mt-1 text-sm text-sky-100/75">{responseMeta.coaching}</div>
+                </div>
+              )}
 
               {/* Hint button */}
               <button
@@ -364,10 +487,9 @@ export default function TalkMovesGame({ assets }: { assets?: AssetUrls }) {
         </>
       ) : (
         <EndScreen 
-          state={gameState} 
-          history={moveHistory} 
+          result={result}
           onRestart={handleRestart}
-          profile={profile}
+          onExit={onExit}
         />
       )}
     </div>

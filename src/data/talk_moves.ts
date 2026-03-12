@@ -1,14 +1,12 @@
 /**
- * Talk Moves Data for "Why Does Ice Melt" Scenario
- * 
- * This file processes the talk_moves.json framework and adds:
- * - Terminal vs Non-terminal classification
- * - Custom utterances for the ice melt scenario
- * - Combo bonuses for effective move sequences
- * - Scoring values for each move
+ * Talk Moves Data for chain-building classroom scenarios.
+ *
+ * The app keeps the talk-move repertoire separate from the scenario content
+ * so new levels can reuse the same move palette with different prompts.
  */
 
-import type { Move } from '../components/Game';
+import { clampScore, type MetricDelta, type Metrics } from '../lib/game-progress';
+import type { StudentResponseType } from '../lib/teacher-coaching';
 
 // ============================================
 // CLASSIFICATION: Terminal vs Non-Terminal
@@ -32,13 +30,33 @@ export interface TalkMove {
   chainLabel: string; // Short text shown in chain
   effectiveAfter: string[]; // Move IDs that this is effective after (for combos)
   comboMultiplier: number; // Bonus when used after effectiveAfter moves
+  metricImpact: MetricDelta;
 }
 
 export interface TalkMoveNode {
   studentText: string;
+  alternateStudentTexts?: string[];
   studentName: string;
   availableMoves: string[]; // Move IDs available at this node
   hint?: string;
+  pressureCue?: string;
+  alternatePressureCues?: string[];
+  responseType?: StudentResponseType;
+}
+
+export interface TalkMoveScenarioDefinition {
+  id: string;
+  title: string;
+  subtitle: string;
+  description: string;
+  recommendedOrder: number;
+  focusAreas: string[];
+  reflectionPrompt: string;
+  recommendedMoves: string[];
+  startingMetrics: Metrics;
+  passThreshold: number;
+  startNodeId: string;
+  nodes: Record<string, TalkMoveNode>;
 }
 
 // ============================================
@@ -61,6 +79,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Wait in silence...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 6, reasoning: 4, ownership: 6 },
   },
   {
     id: 'TM-T02',
@@ -76,6 +95,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Turn and Talk...',
     effectiveAfter: ['TM-T01'],
     comboMultiplier: 1.15,
+    metricImpact: { participation: 8, reasoning: 4, ownership: 6 },
   },
   {
     id: 'TM-T03',
@@ -91,6 +111,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Revoice student idea...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 4, reasoning: 6, ownership: 4 },
   },
   {
     id: 'TM-T11',
@@ -106,6 +127,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Stay neutral...',
     effectiveAfter: ['TM-T06', 'TM-T05'],
     comboMultiplier: 1.2,
+    metricImpact: { participation: 4, reasoning: 2, ownership: 5 },
   },
   {
     id: 'TM-T12',
@@ -121,6 +143,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Think alongside...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 3, reasoning: 4, ownership: 7 },
   },
   {
     id: 'TM-T07',
@@ -136,6 +159,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Have student repeat...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 5, reasoning: 4, ownership: 4 },
   },
   // ---- TERMINAL MOVES ----
   {
@@ -152,6 +176,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Say More...',
     effectiveAfter: ['TM-T01', 'TM-T03'],
     comboMultiplier: 1.25,
+    metricImpact: { participation: 3, reasoning: 8, ownership: 6 },
   },
   {
     id: 'TM-T05',
@@ -167,6 +192,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Add On...',
     effectiveAfter: ['TM-T04', 'TM-T02'],
     comboMultiplier: 1.2,
+    metricImpact: { participation: 7, reasoning: 5, ownership: 5 },
   },
   {
     id: 'TM-T06',
@@ -182,6 +208,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Challenge thinking...',
     effectiveAfter: ['TM-T04', 'TM-T03'],
     comboMultiplier: 1.15,
+    metricImpact: { participation: 4, reasoning: 8, ownership: 4 },
   },
   {
     id: 'TM-T08',
@@ -197,6 +224,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Press for Evidence...',
     effectiveAfter: ['TM-T01', 'TM-T04'],
     comboMultiplier: 1.3,
+    metricImpact: { participation: 2, reasoning: 9, ownership: 4 },
   },
   {
     id: 'TM-T09',
@@ -212,6 +240,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Ask Open Question...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 5, reasoning: 7, ownership: 6 },
   },
   {
     id: 'TM-T10',
@@ -227,6 +256,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Learning Response...',
     effectiveAfter: ['TM-T11'],
     comboMultiplier: 1.15,
+    metricImpact: { participation: 4, reasoning: 5, ownership: 6 },
   },
   {
     id: 'TM-T13',
@@ -242,6 +272,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Invite Revision...',
     effectiveAfter: ['TM-T06', 'TM-T05'],
     comboMultiplier: 1.2,
+    metricImpact: { participation: 5, reasoning: 6, ownership: 7 },
   },
   {
     id: 'TM-T14',
@@ -257,6 +288,7 @@ export const talkMovesData: TalkMove[] = [
     chainLabel: 'Reflect & Review...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
+    metricImpact: { participation: 3, reasoning: 5, ownership: 5 },
   },
 ];
 
@@ -266,72 +298,178 @@ export const talkMovesMap = Object.fromEntries(
 );
 
 // ============================================
-// SCENARIO: Why Does Ice Melt - Dialogue Tree
+// SCENARIOS
 // ============================================
 
-export const iceMeltScenario: Record<string, TalkMoveNode> = {
+const iceMeltScenarioNodes: Record<string, TalkMoveNode> = {
   // Turn 1: Initial Observation
   observation: {
-    studentText: "Look! The ice cube I put on the table is getting smaller! It's turning into water!",
+    studentText: "Teacher, look. The ice getting smaller... turning to water.",
+    alternateStudentTexts: [
+      "Teacher, the ice become smaller and smaller... now got water.",
+    ],
     studentName: "Maya",
-    hint: "This is an observation. How do we respond productively?",
+    hint: "This is a real observation in partial English. How do we keep the idea moving without correcting it into silence?",
+    pressureCue: 'Pressure cue: the observation is useful, but the language is unfinished and easy to over-correct.',
+    responseType: 'emergent-language',
     availableMoves: ['TM-T01', 'TM-T02', 'TM-T03', 'TM-T04', 'TM-T11'],
   },
   
   // Turn 2: What IS it?
   what_is_it: {
-    studentText: "But wait, is it still water? It's kind of... both? Like it's solid but also becoming liquid?",
+    studentText: "But teacher... still water or not? Like both? Solid, but becoming liquid?",
     studentName: "Alex",
-    hint: "Student is grappling with states of matter.",
+    hint: "The pupil is grappling with states of matter, but the language is still emerging.",
+    responseType: 'partial-idea',
     availableMoves: ['TM-T03', 'TM-T04', 'TM-T05', 'TM-T09', 'TM-T12'],
   },
   
   // Turn 3: Where did it GO?
   where_go: {
-    studentText: "Where does the water GO? It doesn't just disappear, right?",
+    studentText: "Where the water go? It not just disappear, right?",
     studentName: "Jordan",
-    hint: "Great question about conservation of matter.",
+    hint: "A strong science question can arrive in rough English. Stay with the thinking.",
+    responseType: 'prediction',
     availableMoves: ['TM-T04', 'TM-T06', 'TM-T08', 'TM-T09', 'TM-T11'],
   },
   
   // Turn 4: Why at room temp?
   why_room_temp: {
-    studentText: "Why does it melt faster here in the classroom than in the freezer? What's different?",
+    studentText: "Why here melt faster than freezer? What different?",
     studentName: "Sam",
-    hint: "Temperature is the key variable here.",
+    hint: "The key variable is there, but the pupil still needs help elaborating it.",
     availableMoves: ['TM-T01', 'TM-T04', 'TM-T08', 'TM-T09', 'TM-T12'],
   },
   
   // Turn 5: Hot vs Cold
   hot_vs_cold: {
-    studentText: "I think if we put the ice in HOT water it would melt EVEN FASTER! Because... heat?",
+    studentText: "I think if put in hot water, melt more fast... because heat?",
+    alternateStudentTexts: [
+      "If put in hot water, maybe the ice melt faster... maybe because very hot.",
+    ],
     studentName: "Maya",
-    hint: "Student is forming a hypothesis about variables.",
+    hint: "This is the sort of half-formed hypothesis teachers are often tempted to replace with the correct answer.",
+    pressureCue: 'Pressure cue: a nearly-there answer makes it tempting to jump straight to the correct explanation.',
+    responseType: 'partial-idea',
     availableMoves: ['TM-T04', 'TM-T05', 'TM-T06', 'TM-T08', 'TM-T11'],
   },
   
   // Turn 6: Salt experiment
   salt_ice: {
-    studentText: "My dad put salt on ice to make it melt slower! But I don't really get why salt would do that...",
+    studentText: "My dad put salt on ice. Ice change different... but I don't know why.",
     studentName: "Alex",
-    hint: "Freezing point depression - a rich concept!",
+    hint: "A rich concept is hiding inside weak vocabulary. Keep the thinking alive.",
     availableMoves: ['TM-T04', 'TM-T05', 'TM-T08', 'TM-T09', 'TM-T12'],
   },
   
   // Turn 7: The science explanation
   explanation: {
-    studentText: "So the warm air has more ENERGY and the water molecules move faster and escape! That's why it melts!",
+    studentText: "So the warm air got more energy, then the water things move faster... that why it melts?",
     studentName: "Jordan",
-    hint: "Student is synthesizing the explanation!",
+    hint: "This is a partial synthesis, not a finished explanation. Treat it as something to develop.",
     availableMoves: ['TM-T05', 'TM-T07', 'TM-T08', 'TM-T14', 'TM-T11'],
   },
   
   // Turn 8: Wrap up
   conclusion: {
-    studentText: "Can we do another experiment? Maybe with evaporation? I want to see what else changes states!",
+    studentText: "Can we do another one? Maybe evaporation? I want see what else can change state.",
     studentName: "Sam",
-    hint: "Application and transfer to new questions!",
+    hint: "Curiosity and transfer matter, even when the English is still developing.",
     availableMoves: ['TM-T05', 'TM-T09', 'TM-T13', 'TM-T14', 'TM-T10'],
+  },
+};
+
+const shareOutSamplingNodes: Record<string, TalkMoveNode> = {
+  pair_rehearsal: {
+    studentText:
+      'My partner think the seed grow faster at sunny window, but we not sure how say the why.',
+    alternateStudentTexts: [
+      'We know the sunny window one grow faster, but we do not know how explain the reason yet.',
+    ],
+    studentName: 'Leila',
+    hint: 'The pair has an idea, but they need a safe, structured public share-out in manageable English.',
+    pressureCue: 'Pressure cue: the pair has the thinking, but not yet the polished English.',
+    responseType: 'partner-report',
+    availableMoves: ['TM-T01', 'TM-T03', 'TM-T04', 'TM-T05', 'TM-T10'],
+  },
+  report_partner: {
+    studentText:
+      'We thought the light help make food, but my partner say maybe also the warm place.',
+    studentName: 'Omar',
+    hint: 'Invite students to report a partner idea before centering their own.',
+    responseType: 'partner-report',
+    availableMoves: ['TM-T02', 'TM-T05', 'TM-T07', 'TM-T08', 'TM-T11'],
+  },
+  compare_ideas: {
+    studentText:
+      'Our pair got different idea. We think the plant near window maybe get more water too because the soil look dry.',
+    studentName: 'Sara',
+    hint: 'Multiple pair ideas are now on the table. The goal is comparison, not teacher selection.',
+    responseType: 'partial-idea',
+    availableMoves: ['TM-T03', 'TM-T05', 'TM-T06', 'TM-T08', 'TM-T09'],
+  },
+  include_quieter_voice: {
+    studentText:
+      'I not want say first, but my partner notice the leaves on the darker shelf were smaller too.',
+    alternateStudentTexts: [
+      'I was shy to say, but my partner saw the darker shelf leaves were smaller also.',
+    ],
+    studentName: 'Nadia',
+    hint: 'The routine should reward careful listening and create space for quieter voices.',
+    pressureCue: 'Pressure cue: a quieter pupil is entering the talk, but only if the room stays safe enough.',
+    responseType: 'partner-report',
+    availableMoves: ['TM-T01', 'TM-T03', 'TM-T04', 'TM-T10', 'TM-T12'],
+  },
+  synthesize: {
+    studentText:
+      'So maybe not only one thing. Light, warm, and water all change what the plants do.',
+    studentName: 'Tariq',
+    hint: 'Students are ready to synthesise and refine the claim together.',
+    responseType: 'partial-idea',
+    availableMoves: ['TM-T05', 'TM-T06', 'TM-T08', 'TM-T13', 'TM-T14'],
+  },
+};
+
+export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
+  iceMelt: {
+    id: 'ice-melt',
+    title: 'Why Does Ice Melt?',
+    subtitle: 'Chain Builder Prototype',
+    description:
+      'Build sequences of talk moves that deepen scientific reasoning across an 8-turn inquiry.',
+    recommendedOrder: 2,
+    focusAreas: ['sequencing', 'reasoning', 'scientific inquiry'],
+    reflectionPrompt:
+      'Which move combinations helped students reason together instead of waiting for you to finish the explanation?',
+    recommendedMoves: ['Wait Time', 'Turn and Talk', 'Say More', 'Press for Reasoning'],
+    startingMetrics: {
+      participation: 50,
+      reasoning: 50,
+      ownership: 50,
+    },
+    passThreshold: 60,
+    startNodeId: 'observation',
+    nodes: iceMeltScenarioNodes,
+  },
+  shareOutSampling: {
+    id: 'share-out-sampling',
+    title: 'Share-Out Sampling',
+    subtitle: 'Priority Level 8',
+    description:
+      'Use the talk-moves palette to turn pair rehearsal into accountable, student-to-student whole-class discussion.',
+    recommendedOrder: 8,
+    focusAreas: ['share-out', 'partner reporting', 'uptake'],
+    reflectionPrompt:
+      'Did your public discussion sample pair thinking in a way that broadened participation and kept ideas moving between students?',
+    recommendedMoves: ['Turn and Talk', 'Repeating', 'Add On', 'Press for Reasoning'],
+    startingMetrics: {
+      participation: 48,
+      reasoning: 50,
+      ownership: 48,
+    },
+    passThreshold: 62,
+    startNodeId: 'pair_rehearsal',
+    nodes: shareOutSamplingNodes,
   },
 };
 
@@ -369,6 +507,28 @@ export function calculateChainScore(chain: string[]): number {
   }
   
   return totalScore;
+}
+
+export function calculateChainMetrics(chain: string[]): Metrics {
+  return chain.reduce<Metrics>(
+    (metrics, moveId) => {
+      const move = talkMovesMap[moveId];
+      if (!move) {
+        return metrics;
+      }
+
+      return {
+        participation: clampScore(metrics.participation + (move.metricImpact.participation ?? 0)),
+        reasoning: clampScore(metrics.reasoning + (move.metricImpact.reasoning ?? 0)),
+        ownership: clampScore(metrics.ownership + (move.metricImpact.ownership ?? 0)),
+      };
+    },
+    {
+      participation: 0,
+      reasoning: 0,
+      ownership: 0,
+    },
+  );
 }
 
 // ============================================
@@ -438,7 +598,7 @@ export function generateProfile(chain: string[]): PedagogicalProfile {
   if (terminal > nonTerminal * 2) {
     advice.push('Consider adding Turn and Talk before pressing for answers.');
   }
-  if (movesById['TM-T08'] || 0 < 2) {
+  if ((movesById['TM-T08'] ?? 0) < 2) {
     advice.push('Press for Reasoning helps students justify their thinking with evidence.');
   }
   
@@ -452,3 +612,5 @@ export function generateProfile(chain: string[]): PedagogicalProfile {
     advice,
   };
 }
+
+export const iceMeltScenario = talkMoveScenarios.iceMelt.nodes;
