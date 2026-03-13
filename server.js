@@ -41,7 +41,6 @@ app.post('/api/save-image', express.json({ limit: '50mb' }), (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
-    res.status(500).json({ error: e.message });
   }
 });
 
