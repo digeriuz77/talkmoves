@@ -7,6 +7,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
+import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
 import { Sparkles, Layers, ArrowRight, BookOpen } from 'lucide-react';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
@@ -19,16 +20,14 @@ import {
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
+  const [pastLanding, setPastLanding] = useState(false);
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
   const selectedGame = gameCatalog.find((game) => game.id === selectedGameId) ?? null;
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
-    if (!stored) {
-      return;
-    }
-
+    if (!stored) return;
     try {
       setLevelProgress(JSON.parse(stored) as LevelProgressMap);
     } catch {
@@ -44,8 +43,16 @@ export default function App() {
     setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
   };
 
+  if (!pastLanding) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-neutral-900 p-4 font-sans text-white">
+        <Landing onEnter={() => setPastLanding(true)} />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-neutral-900 text-white font-sans flex items-center justify-center p-4">
+    <div className="flex min-h-screen items-center justify-center bg-neutral-900 p-4 font-sans text-white">
       {!selectedGame ? (
         <ModeSelect onSelect={setSelectedGameId} levelProgress={levelProgress} />
       ) : selectedGame.engine === 'choice' ? (

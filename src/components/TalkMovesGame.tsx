@@ -249,9 +249,9 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             engagementScore={engagementScore}
             metrics={metrics}
             rightSlot={
-              <div className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-1 text-center">
-                <div className="text-[9px] font-bold uppercase tracking-wider text-white/45">Turn</div>
-                <div className="font-mono text-xs text-white">
+              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
+                <div className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Turn</div>
+                <div className="font-mono text-xs tabular-nums text-white">
                   {turnIndex}/{turnTotal}
                 </div>
               </div>
@@ -279,7 +279,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               key={currentNode?.studentText}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="shrink-0 rounded-xl border border-white/10 bg-black/60 p-3 sm:p-4"
+              className="shrink-0 rounded-lg border border-white/10 bg-black/60 p-4"
             >
               <div className="mb-2">
                 <span className="inline-block rounded-full bg-blue-600/90 px-2.5 py-0.5 text-[11px] font-bold text-white">
@@ -326,7 +326,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             </motion.div>
 
             {responseChain.length > 0 ? (
-              <div className="shrink-0 rounded-xl border border-white/10 bg-black/75 p-3">
+              <div className="shrink-0 rounded-lg border border-white/10 bg-black/75 p-4">
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                   <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/50">
                     Your chain
@@ -379,7 +379,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               </div>
             ) : null}
 
-            <div className="shrink-0 rounded-t-xl border border-white/10 border-b-0 bg-neutral-950/90 px-2 pb-3 pt-2">
+            <div className="shrink-0 rounded-t-lg border border-white/10 border-b-0 bg-neutral-950/90 px-4 pb-4 pt-3">
               <h3 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-white/40">
                 Talk moves — tap to add
               </h3>
