@@ -1,13 +1,11 @@
 import { useMemo, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowLeft } from 'lucide-react';
 import { AssetUrls } from './AssetLoader';
-import DialogueBox from './DialogueBox';
-import FeedbackBubble from './FeedbackBubble';
+import CoachingStrip from './CoachingStrip';
 import EndScreen, { type TalkMovesGameResult } from './EndScreen';
+import GameSessionHeader from './GameSessionHeader';
 import {
   talkMovesMap,
-  talkMoveScenarios,
   calculateChainScore,
   calculateChainMetrics,
   generateProfile,
@@ -48,9 +46,7 @@ type TalkMovesGameProps = {
   onComplete: (result: { levelId: string; score: number; completed: boolean }) => void;
 };
 
-const METRIC_LABELS: Array<keyof Metrics> = ['participation', 'reasoning', 'ownership'];
-
-export default function TalkMovesGame({ assets, scenario, onExit, onComplete }: TalkMovesGameProps) {
+export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMovesGameProps) {
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
   const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [responseChain, setResponseChain] = useState<ChainItem[]>([]);
@@ -108,9 +104,7 @@ export default function TalkMovesGame({ assets, scenario, onExit, onComplete }: 
     // Add to chain
     setResponseChain([...responseChain, { moveId, label: move.chainLabel }]);
     
-    // Show pedagogical tip on first use
     setFeedback(move.researchTip);
-    setTimeout(() => setFeedback(null), 4000);
   };
 
   const removeFromChain = (index: number) => {
@@ -240,257 +234,188 @@ export default function TalkMovesGame({ assets, scenario, onExit, onComplete }: 
     ? calculateChainScore(responseChain.map(c => c.moveId))
     : 0;
 
+  const turnIndex = Object.keys(scenario.nodes).indexOf(currentNodeId) + 1;
+  const turnTotal = Object.keys(scenario.nodes).length;
+
   return (
-    <div className="w-full max-w-6xl aspect-video bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-white/10 flex flex-col">
+    <div className="relative flex aspect-video w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
       {gameState === 'building' || gameState === 'executing' ? (
         <>
-          {/* Header */}
-          <div className="absolute top-4 left-4 right-4 flex justify-between items-start z-20">
-            <div className="flex gap-3">
-              <button
-                onClick={onExit}
-                className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/60 px-4 py-2 text-sm text-white/80 transition-colors hover:border-white/30 hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                Levels
-              </button>
-
-              <div className="rounded-2xl border border-white/10 bg-black/60 px-4 py-3 backdrop-blur-md">
-                <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                  {scenario.subtitle}
-                </div>
-                <div className="mt-1 text-lg font-semibold text-white">{scenario.title}</div>
-                <div className="mt-1 text-xs text-white/55">{scenario.description}</div>
-              </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <div className="rounded-2xl border border-white/10 bg-black/60 px-4 py-3 backdrop-blur-md min-w-[320px]">
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="text-xs font-semibold uppercase tracking-[0.18em] text-white/45">
-                    Classroom Outcomes
-                  </div>
-                  <div className="text-sm font-mono text-white/70">{engagementScore}%</div>
-                </div>
-                <div className="space-y-2">
-                  {METRIC_LABELS.map((metricKey) => (
-                    <div key={metricKey}>
-                      <div className="mb-1 flex items-center justify-between text-[11px] uppercase tracking-[0.14em] text-white/45">
-                        <span>{metricKey}</span>
-                        <span className="font-mono text-white/60">{metrics[metricKey]}</span>
-                      </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-white/10">
-                        <motion.div
-                          animate={{ width: `${metrics[metricKey]}%` }}
-                          className="h-full bg-white/70"
-                          transition={{ duration: 0.2, ease: 'easeOut' }}
-                        />
-                      </div>
-                    </div>
-                  ))}
+          <GameSessionHeader
+            onExit={onExit}
+            subtitle={scenario.subtitle}
+            title={scenario.title}
+            description={scenario.description}
+            engagementScore={engagementScore}
+            metrics={metrics}
+            rightSlot={
+              <div className="rounded-xl border border-white/10 bg-white/5 px-2.5 py-1 text-center">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-white/45">Turn</div>
+                <div className="font-mono text-xs text-white">
+                  {turnIndex}/{turnTotal}
                 </div>
               </div>
+            }
+          />
 
-              <div className="bg-black/60 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
-                <div className="text-xs font-bold uppercase tracking-wider text-white/60">Turn</div>
-                <div className="text-sm font-mono text-white">
-                  {Object.keys(scenario.nodes).indexOf(currentNodeId) + 1} / {Object.keys(scenario.nodes).length}
+          <div
+            className="pointer-events-none absolute inset-x-0 top-11 bottom-0 bg-gradient-to-b from-slate-950/40 to-transparent"
+            aria-hidden
+          />
+
+          <div className="absolute bottom-0 left-0 right-0 z-30 flex max-h-[58%] min-h-0 flex-col justify-end gap-2 overflow-y-auto border-t border-white/10 bg-gradient-to-t from-black via-black/98 to-black/85 px-3 pb-3 pt-2 sm:px-4">
+            <AnimatePresence mode="wait">
+              {feedback ? (
+                <div key={feedback.slice(0, 64)} className="shrink-0">
+                  <CoachingStrip
+                    message={feedback}
+                    onDismiss={() => setFeedback(null)}
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
+              ) : null}
+            </AnimatePresence>
 
-          {/* Student Dialogue Box */}
-          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent pt-16 pb-6 px-8 z-10">
-            <motion.div 
+            <motion.div
               key={currentNode?.studentText}
-              initial={{ opacity: 0, y: 10 }}
+              initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="max-w-4xl mx-auto"
+              className="shrink-0 rounded-xl border border-white/10 bg-black/60 p-3 sm:p-4"
             >
-              {/* Student name badge */}
-              <div className="flex items-center gap-3 mb-3">
-                <span className="px-3 py-1 bg-blue-600/80 rounded-full text-xs font-bold text-white">
+              <div className="mb-2">
+                <span className="inline-block rounded-full bg-blue-600/90 px-2.5 py-0.5 text-[11px] font-bold text-white">
                   {currentNode?.studentName}
                 </span>
-                <span className="text-white/40 text-sm">says:</span>
               </div>
-              
-              <p className="text-xl md:text-2xl font-serif text-white/90 leading-relaxed mb-4">
+              <p className="mb-3 font-serif text-base leading-relaxed text-white/90 sm:text-lg">
                 {currentNode?.studentText}
               </p>
-
-              {currentNode?.pressureCue && (
-                <div className="mb-4 inline-flex max-w-3xl rounded-full border border-amber-300/20 bg-amber-300/10 px-4 py-2 text-xs font-medium text-amber-100">
-                  {currentNode.pressureCue}
-                </div>
-              )}
-
-              {responseMeta && (
-                <div className="mb-4 max-w-3xl rounded-2xl border border-sky-300/20 bg-sky-300/10 px-4 py-3 text-left">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-sky-100/75">
-                    Student Response Type
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
+                {currentNode?.pressureCue ? (
+                  <div className="min-w-0 flex-1 rounded-lg border border-amber-400/15 bg-amber-500/10 px-3 py-2 text-xs leading-snug text-amber-100/90">
+                    <span className="font-semibold text-amber-200">Pressure · </span>
+                    {currentNode.pressureCue}
                   </div>
-                  <div className="mt-1 text-sm font-semibold text-sky-50">{responseMeta.label}</div>
-                  <div className="mt-1 text-sm text-sky-100/75">{responseMeta.coaching}</div>
-                </div>
-              )}
-
-              {/* Hint button */}
-              <button
-                onClick={() => setShowHint(!showHint)}
-                className="text-xs text-white/40 hover:text-white/60 underline mb-4"
-              >
-                {showHint ? 'Hide hint' : 'Show pedagogical hint'}
-              </button>
-              
-              {showHint && currentNode?.hint && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="bg-blue-900/30 border border-blue-500/30 rounded-lg px-4 py-2 mb-4"
-                >
-                  <span className="text-blue-300 text-sm">{currentNode.hint}</span>
-                </motion.div>
-              )}
-            </motion.div>
-          </div>
-
-          {/* Response Chain Display */}
-          <AnimatePresence>
-            {responseChain.length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="absolute bottom-48 left-8 right-8 z-30"
-              >
-                <div className="bg-black/80 backdrop-blur-xl border border-white/10 rounded-2xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-white/60">
-                      Response Chain
-                    </h3>
-                    <div className="flex items-center gap-3">
-                      <span className="text-xs text-white/40">
-                        ~{chainScorePreview} points
+                ) : null}
+                {responseMeta ? (
+                  <details className="min-w-0 flex-1 rounded-lg border border-sky-400/15 bg-sky-500/10 sm:max-w-[14rem]">
+                    <summary className="cursor-pointer list-none px-3 py-2 [&::-webkit-details-marker]:hidden">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-200/75">
+                        Response type
                       </span>
-                      {canExecute && (
-                        <button
-                          onClick={executeChain}
-                          className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-full text-sm font-bold text-white transition-colors"
-                        >
-                          Execute →
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {/* Chain items */}
-                  <div className="flex flex-wrap gap-2">
-                    {responseChain.map((item, index) => {
-                      const move = talkMovesMap[item.moveId];
-                      const isTerminal = move?.category === 'terminal';
-                      return (
-                        <motion.div
-                          key={`${item.moveId}-${index}`}
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${
-                            isTerminal 
-                              ? 'bg-amber-600/30 border border-amber-500/50' 
-                              : 'bg-white/10 border border-white/20'
-                          }`}
-                        >
-                          <span className="text-sm text-white/90">{item.label}</span>
-                          <button
-                            onClick={() => removeFromChain(index)}
-                            className="text-white/40 hover:text-white/80"
-                          >
-                            ×
-                          </button>
-                        </motion.div>
-                      );
-                    })}
-                    
-                    {/* Arrow indicator */}
-                    {canExecute && (
-                      <span className="text-emerald-400 text-lg animate-pulse ml-2">
-                        →
-                      </span>
-                    )}
-                  </div>
-
-                  {!canExecute && (
-                    <p className="text-xs text-white/40 mt-3">
-                      Add a terminal move (highlighted) to complete your response
+                      <span className="mt-0.5 block text-sm font-semibold text-sky-50">{responseMeta.label}</span>
+                      <span className="text-[11px] text-sky-200/50 group-open:hidden">Open for tip</span>
+                    </summary>
+                    <p className="border-t border-sky-400/10 px-3 py-2 text-xs leading-relaxed text-sky-100/80">
+                      {responseMeta.coaching}
                     </p>
-                  )}
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  </details>
+                ) : null}
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHint(!showHint)}
+                className="mt-2 text-[11px] text-white/45 underline hover:text-white/70"
+              >
+                {showHint ? 'Hide hint' : 'Pedagogical hint'}
+              </button>
+              {showHint && currentNode?.hint ? (
+                <p className="mt-2 rounded-lg border border-blue-500/25 bg-blue-950/50 px-3 py-2 text-xs text-blue-200/90">
+                  {currentNode.hint}
+                </p>
+              ) : null}
+            </motion.div>
 
-          {/* Talk Moves Palette */}
-          <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/95 to-transparent pt-32 pb-4 px-8 z-40">
-            <div className="max-w-4xl mx-auto">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-white/40 mb-3">
-                Talk Moves Palette
+            {responseChain.length > 0 ? (
+              <div className="shrink-0 rounded-xl border border-white/10 bg-black/75 p-3">
+                <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/50">
+                    Your chain
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[11px] text-white/45">~{chainScorePreview} pts</span>
+                    {canExecute ? (
+                      <button
+                        type="button"
+                        onClick={executeChain}
+                        className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white transition-colors hover:bg-emerald-500"
+                      >
+                        Execute →
+                      </button>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {responseChain.map((item, index) => {
+                    const move = talkMovesMap[item.moveId];
+                    const isTerminal = move?.category === 'terminal';
+                    return (
+                      <span
+                        key={`${item.moveId}-${index}`}
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${
+                          isTerminal
+                            ? 'border-amber-500/45 bg-amber-600/25 text-amber-100'
+                            : 'border-white/15 bg-white/10 text-white/85'
+                        }`}
+                      >
+                        {item.label}
+                        <button
+                          type="button"
+                          onClick={() => removeFromChain(index)}
+                          className="text-white/45 hover:text-white"
+                          aria-label="Remove"
+                        >
+                          ×
+                        </button>
+                      </span>
+                    );
+                  })}
+                  {canExecute ? <span className="self-center text-emerald-400">→</span> : null}
+                </div>
+                {!canExecute ? (
+                  <p className="mt-2 text-[11px] text-white/40">
+                    Add a terminal move (amber) to run the chain.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+
+            <div className="shrink-0 rounded-t-xl border border-white/10 border-b-0 bg-neutral-950/90 px-2 pb-3 pt-2">
+              <h3 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-white/40">
+                Talk moves — tap to add
               </h3>
-              
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              <div className="grid max-h-[7.5rem] grid-cols-2 gap-1.5 overflow-y-auto sm:grid-cols-4 lg:grid-cols-7">
                 {availableMoves.map((move) => {
-                  const isInChain = responseChain.some(c => c.moveId === move.id);
+                  const isInChain = responseChain.some((c) => c.moveId === move.id);
                   const isTerminal = move.category === 'terminal';
-                  
                   return (
                     <motion.button
                       key={move.id}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                      type="button"
+                      whileTap={{ scale: 0.97 }}
                       onClick={() => addToChain(move.id)}
                       disabled={isInChain}
-                      className={`relative px-3 py-2 rounded-xl border text-left transition-all ${
+                      title={`${move.name}: ${move.purpose}`}
+                      className={`rounded-lg border px-2 py-1.5 text-left text-[11px] transition-colors ${
                         isInChain
-                          ? 'opacity-30 cursor-not-allowed'
+                          ? 'cursor-not-allowed border-white/5 bg-white/[0.03] text-white/25'
                           : isTerminal
-                            ? 'bg-amber-900/30 border-amber-500/50 hover:border-amber-400'
-                            : 'bg-white/5 border-white/10 hover:border-white/40'
+                            ? 'border-amber-500/40 bg-amber-900/20 text-amber-100 hover:border-amber-400/60'
+                            : 'border-white/10 bg-white/5 text-white/85 hover:border-white/30'
                       }`}
                     >
-                      <div className="text-xs font-bold text-white/80 mb-0.5 truncate">
-                        {move.shortName}
-                      </div>
-                      <div className="text-[10px] text-white/50 truncate">
-                        {isTerminal ? 'Terminal' : 'Chain'}
-                      </div>
-                      
-                      {/* Tooltip */}
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 bg-gray-900 border border-white/20 rounded-xl p-3 opacity-0 invisible hover:opacity-100 hover:visible transition-opacity z-50 shadow-xl">
-                        <div className="text-sm font-bold text-white mb-1">{move.name}</div>
-                        <div className="text-xs text-white/70 mb-2">{move.purpose}</div>
-                        <div className="text-[10px] text-blue-300 italic">{move.researchTip}</div>
-                        <div className="mt-2 pt-2 border-t border-white/10">
-                          <div className="text-[10px] text-white/50">Try after: {move.effectiveAfter.length > 0 ? move.effectiveAfter.map(id => talkMovesMap[id]?.shortName).join(', ') : 'Any'}</div>
-                        </div>
-                      </div>
+                      <span className="block truncate font-bold">{move.shortName}</span>
+                      <span className="block truncate text-[9px] text-white/45">
+                        {isTerminal ? 'End chain' : 'Add'}
+                      </span>
                     </motion.button>
                   );
                 })}
               </div>
             </div>
           </div>
-
-          {/* Feedback */}
-          <AnimatePresence>
-            {feedback && <FeedbackBubble message={feedback} onClose={() => setFeedback(null)} />}
-          </AnimatePresence>
         </>
       ) : (
-        <EndScreen 
-          result={result}
-          onRestart={handleRestart}
-          onExit={onExit}
-        />
+        <EndScreen result={result} onRestart={handleRestart} onExit={onExit} />
       )}
     </div>
   );

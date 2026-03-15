@@ -30,6 +30,12 @@ export default function Classroom({
   const useBeastImage = assets?.classroom_beasts?.trim();
   const useTransformerImage = assets?.classroom_transformers?.trim();
 
+  const shortLabel = (name: string, id: string) => {
+    const m = name.match(/Student\s+([A-Za-z0-9])/i);
+    if (m) return m[1]!.toUpperCase();
+    return (name.slice(0, 1) || id.slice(-1)).toUpperCase();
+  };
+
   return (
     <div className="relative flex-1 w-full h-full overflow-hidden">
       {/* Base classroom layer - image when provided, else CSS gradient */}
@@ -160,20 +166,18 @@ export default function Classroom({
         >
           {/* Student indicator */}
           <div
-            className={`w-full h-full rounded-full flex items-center justify-center text-2xl border ${
+            title={`${hotspot.name}${spokenStudentIds.includes(hotspot.id) ? ' · has spoken' : ''}`}
+            className={`flex h-full w-full items-center justify-center rounded-full border-2 text-sm font-bold tabular-nums ${
               spokenStudentIds.includes(hotspot.id)
-                ? 'border-emerald-200 bg-emerald-400'
+                ? 'border-emerald-300 bg-emerald-500 text-emerald-950 ring-2 ring-emerald-300/50'
                 : engagementScore > 70
-                  ? 'border-emerald-200/40 bg-emerald-400'
+                  ? 'border-emerald-200/50 bg-emerald-400/90 text-emerald-950'
                   : engagementScore < 30
-                    ? 'border-gray-200/20 bg-gray-400'
-                    : 'border-blue-200/30 bg-blue-400'
+                    ? 'border-gray-300/40 bg-gray-500 text-gray-100'
+                    : 'border-blue-200/40 bg-blue-500 text-white'
             }`}
           >
-            <span className="text-2xl">👤</span>
-          </div>
-          <div className="absolute -bottom-6 whitespace-nowrap text-xs font-mono bg-black/80 px-2 py-1 rounded text-white/80 border border-white/10 backdrop-blur-sm">
-            {hotspot.name}
+            {shortLabel(hotspot.name, hotspot.id)}
           </div>
         </div>
       ))}
