@@ -1,1 +1,90 @@
 @import "tailwindcss";
+
+/* Custom responsive utilities */
+@layer base {
+  :root {
+    --font-size-base: 1rem;
+    --font-size-lg: 1.125rem;
+    --font-size-xl: 1.25rem;
+    --font-size-2xl: 1.5rem;
+    --font-size-3xl: 1.875rem;
+    --font-size-4xl: 2.25rem;
+  }
+  
+  /* Responsive text scaling */
+  .text-responsive {
+    @apply text-base;
+  }
+  
+  @media (min-width: 640px) {
+    .text-responsive {
+      @apply text-lg;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .text-responsive {
+      @apply text-xl;
+    }
+  }
+  
+  /* Minimum touch target size */
+  .touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
+  
+  /* Responsive spacing */
+  .space-y-responsive {
+    @apply space-y-3;
+  }
+  
+  @media (min-width: 640px) {
+    .space-y-responsive {
+      @apply space-y-4;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .space-y-responsive {
+      @apply space-y-6;
+    }
+  }
+}
+
+/* Improve button touch targets */
+button:not(.btn-sm):not(.btn-lg) {
+  @apply min-h-[48px] min-w-[48px];
+}
+
+/* Ensure readable text sizes */
+.text-xs {
+  @apply text-[0.75rem]; /* 12px */
+}
+
+.text-sm {
+  @apply text-[0.875rem]; /* 14px */
+}
+
+.text-base {
+  @apply text-[1rem]; /* 16px */
+}
+
+.text-lg {
+  @apply text-[1.125rem]; /* 18px */
+}
+
+.text-xl {
+  @apply text-[1.25rem]; /* 20px */
+}
+
+.text-2xl {
+  @apply text-[1.5rem]; /* 24px */
+}
+
+.text-3xl {
+  @apply text-[1.875rem]; /* 30px */
+}
+
+.text-4xl {
+  @apply text-[2.25rem]; /* 36px */
+}

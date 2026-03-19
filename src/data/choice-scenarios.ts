@@ -1225,6 +1225,444 @@ const curiosityHooks: ChoiceScenarioDefinition = {
   },
 };
 
+const countingBlocks: ChoiceScenarioDefinition = {
+  id: 'counting-blocks',
+  title: 'Counting Blocks',
+  subtitle: 'Priority Level 0',
+  description:
+    'Practice extending single-word responses into mathematical explanations with Primary pupils exploring basic counting.',
+  recommendedOrder: 0,
+  focusAreas: ['counting', 'mathematical reasoning', 'language development'],
+  reflectionPrompt:
+    'How did you help pupils move beyond just stating a number to explaining their mathematical thinking?',
+  recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
+  startNodeId: 'start_node',
+  passThreshold: 65,
+  startingMetrics: {
+    participation: 50,
+    reasoning: 50,
+    ownership: 50,
+  },
+  hotspots: baseHotspots,
+  dialogueTree: {
+    start_node: {
+      text: "You show a pile of blocks and ask, 'How many blocks are there?' Student A says, 'Three.' How do you respond?",
+      alternateTexts: [
+        "You hold up 5 blocks and ask the class to count them. Student A says, 'Five.'",
+        "You arrange 7 blocks in a line and ask, 'How many do we have?' Student A says, 'Seven.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil gave a single-word answer, missing the opportunity to explain their counting strategy.',
+      responseType: 'emergent-language',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about how they counted)",
+          nextNode: 'turn_2',
+          moveType: 'Wait Time',
+          tip: 'Strong move. Waiting gives the pupil time to formulate a more complete explanation.',
+          metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
+        },
+        {
+          text: "[SAY MORE] 'That's an interesting answer, Student A. Can you tell me how you knew it was three?'",
+          nextNode: 'turn_2',
+          moveType: 'Say More',
+          tip: 'Excellent! Asking for explanation pushes the pupil to articulate their thinking process.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you looked at the blocks and decided there were three of them?'",
+          nextNode: 'turn_2',
+          moveType: 'Revoicing',
+          tip: 'Good! Revoicing confirms you heard correctly while inviting elaboration.',
+          metricsDelta: { participation: 12, reasoning: 8, ownership: 8 },
+        },
+        {
+          text: "[EVALUATION] 'Correct! Three blocks. Who can show me another way to make three?'",
+          nextNode: 'turn_2',
+          moveType: 'Evaluation',
+          tip: 'Accepting the answer stops the thinking process. Try asking for explanation instead.',
+          metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
+        }
+      ]
+    },
+    turn_2: {
+      text: "Student A says, 'I counted them: one, two, three.' How do you build on this explanation?",
+      alternateTexts: [
+        "Student A says, 'I saw two and one more make three.'",
+        "Student A says, 'I pointed to each one as I counted.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil has explained their strategy but kept it very brief.',
+      responseType: 'partial-idea',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can show us a different way to count these blocks?'",
+          nextNode: 'turn_3',
+          moveType: 'Add On',
+          tip: 'Perfect! Inviting different approaches builds mathematical flexibility.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 8 },
+        },
+        {
+          text: "[SAY MORE] 'Can you tell me more about how you kept track while counting?'",
+          nextNode: 'turn_3',
+          moveType: 'Say More',
+          tip: 'Great! Pushing for details helps pupils refine their counting strategies.',
+          metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you used one-to-one touching to make sure you counted each block once?'",
+          nextNode: 'turn_3',
+          moveType: 'Revoicing',
+          tip: 'Good! Using mathematical vocabulary helps pupils connect actions to concepts.',
+          metricsDelta: { participation: 10, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'That\'s right. Let\'s try a harder number.'",
+          nextNode: 'turn_3',
+          moveType: 'Evaluation',
+          tip: 'Moving on too quickly misses the chance to deepen understanding of the current concept.',
+          metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
+        }
+      ]
+    },
+    turn_3: {
+      text: "Student B says, 'I can make three with two and one.' How do you connect this to the original counting?",
+      alternateTexts: [
+        "Student B says, 'Three is the same as two plus one.'",
+        "Student B says, 'If I take away one, I have two left.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil is making connections between different representations of the same number.',
+      responseType: 'partial-idea',
+      speakerId: 'studentB',
+      speakerName: 'Student B',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can show us how two and one makes three with the blocks?'",
+          nextNode: 'end_game',
+          moveType: 'Add On',
+          tip: 'Excellent! Having pupils demonstrate connections strengthens understanding for everyone.',
+          metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REASONING] 'How does knowing two and one make three help us with other numbers?'",
+          nextNode: 'end_game',
+          moveType: 'Reasoning',
+          tip: 'Great! Asking for broader implications helps pupils see patterns in mathematics.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
+        },
+        {
+          text: "[REVOICING] 'So you\'re saying that three can be broken into a two and a one?'",
+          nextNode: 'end_game',
+          moveType: 'Revoicing',
+          tip: 'Good! Revoicing with mathematical language helps solidify the concept.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'Exactly! Three is two plus one. Good job.'",
+          nextNode: 'end_game',
+          moveType: 'Evaluation',
+          tip: 'While positive, this misses the opportunity to have pupils explain their reasoning.',
+          metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
+        }
+      ]
+    }
+  }
+};
+
+const shapesSorting: ChoiceScenarioDefinition = {
+  id: 'shapes-sorting',
+  title: 'Sorting Shapes',
+  subtitle: 'Priority Level 1',
+  description:
+    'Practice developing mathematical language as Primary pupils describe and sort basic shapes.',
+  recommendedOrder: 1,
+  focusAreas: ['shape recognition', 'mathematical language', 'classification'],
+  reflectionPrompt:
+    'How did you help pupils move beyond naming shapes to describing their properties?',
+  recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
+  startNodeId: 'start_node',
+  passThreshold: 65,
+  startingMetrics: {
+    participation: 50,
+    reasoning: 50,
+    ownership: 50,
+  },
+  hotspots: baseHotspots,
+  dialogueTree: {
+    start_node: {
+      text: "You show a triangle and ask, 'What shape is this?' Student A says, 'Triangle.' How do you respond?",
+      alternateTexts: [
+        "You hold up a square and ask the class to name it. Student A says, 'Square.'",
+        "You show a circle and ask, 'What do we call this shape?' Student A says, 'Circle.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil gave the correct shape name but didn\'t describe its properties.',
+      responseType: 'emergent-language',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about what makes this shape special)",
+          nextNode: 'turn_2',
+          moveType: 'Wait Time',
+          tip: 'Strong move. Waiting gives the pupil time to observe and describe shape properties.',
+          metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
+        },
+        {
+          text: "[SAY MORE] 'That\'s right! What makes this shape a triangle? What do you notice about it?'",
+          nextNode: 'turn_2',
+          moveType: 'Say More',
+          tip: 'Excellent! Asking about properties pushes pupils to look beyond the name.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you\'re saying this is a triangle because it has three sides and three corners?'",
+          nextNode: 'turn_2',
+          moveType: 'Revoicing',
+          tip: 'Good! Connecting the name to properties helps build deeper understanding.',
+          metricsDelta: { participation: 12, reasoning: 12, ownership: 8 },
+        },
+        {
+          text: "[EVALUATION] 'Correct! It\'s a triangle. Let\'s look at another shape.'",
+          nextNode: 'turn_2',
+          moveType: 'Evaluation',
+          tip: 'Accepting the answer stops the thinking process. Try asking about properties instead.',
+          metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
+        }
+      ]
+    },
+    turn_2: {
+      text: "Student A says, 'It has three points and three lines.' How do you build on this description?",
+      alternateTexts: [
+        "Student A says, 'It has three sides and three corners.'",
+        "Student A says, 'It\'s pointy and has straight edges.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil has described properties but used informal language.',
+      responseType: 'partial-idea',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can use our math words to describe what Student A noticed?'",
+          nextNode: 'turn_3',
+          moveType: 'Add On',
+          tip: 'Perfect! Connecting informal observations to mathematical vocabulary builds precision.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[SAY MORE] 'Can you tell me more about these \"points\" and \"lines\" you see?'",
+          nextNode: 'turn_3',
+          moveType: 'Say More',
+          tip: 'Great! Pushing for clarification helps pupils refine their observations.',
+          metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you noticed that a triangle has three straight sides and three corners where the sides meet?'",
+          nextNode: 'turn_3',
+          moveType: 'Revoicing',
+          tip: 'Good! Using precise mathematical language helps pupils communicate clearly.',
+          metricsDelta: { participation: 10, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'That\'s right! Those are the sides and corners. Let\'s try another shape.'",
+          nextNode: 'turn_3',
+          moveType: 'Evaluation',
+          tip: 'Moving on too quickly misses the chance to solidify the mathematical language.',
+          metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
+        }
+      ]
+    },
+    turn_3: {
+      text: "Student B says, 'This square has four sides that are the same length.' How do you connect different shapes?",
+      alternateTexts: [
+        "Student B says, 'A rectangle has two long sides and two short sides.'",
+        "Student B says, 'A circle is round all the way around.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil is noticing differences between shapes, a key classification skill.',
+      responseType: 'partial-idea',
+      speakerId: 'studentB',
+      speakerName: 'Student B',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can tell us how this shape is different from the triangle we just looked at?'",
+          nextNode: 'end_game',
+          moveType: 'Add On',
+          tip: 'Excellent! Comparing shapes helps pupils notice important similarities and differences.',
+          metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REASONING] 'How does knowing what makes a triangle special help us understand other shapes?'",
+          nextNode: 'end_game',
+          moveType: 'Reasoning',
+          tip: 'Great! Asking for connections helps pupils see shape families and patterns.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
+        },
+        {
+          text: "[REVOICING] 'So you\'re saying that while both shapes have sides, the triangle has three and the square has four?'",
+          nextNode: 'end_game',
+          moveType: 'Revoicing',
+          tip: 'Good! Using comparative language helps pupils classify shapes by their properties.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'Exactly! Different shapes have different numbers of sides. Well done.'",
+          nextNode: 'end_game',
+          moveType: 'Evaluation',
+          tip: 'While positive, this misses the opportunity to have pupils explain their comparative reasoning.',
+          metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
+        }
+      ]
+    }
+  }
+};
+
+const simpleAddition: ChoiceScenarioDefinition = {
+  id: 'simple-addition',
+  title: 'Adding Objects',
+  subtitle: 'Priority Level 2',
+  description:
+    'Practice extending counting responses into addition explanations with Primary pupils combining small groups.',
+  recommendedOrder: 2,
+  focusAreas: ['addition', 'mathematical reasoning', 'language development'],
+  reflectionPrompt:
+    'How did you help pupils move beyond counting totals to explaining how they combined groups?',
+  recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
+  startNodeId: 'start_node',
+  passThreshold: 65,
+  startingMetrics: {
+    participation: 50,
+    reasoning: 50,
+    ownership: 50,
+  },
+  hotspots: baseHotspots,
+  dialogueTree: {
+    start_node: {
+      text: "You show 2 blocks and 3 blocks separately, then ask, 'How many blocks altogether?' Student A says, 'Five.' How do you respond?",
+      alternateTexts: [
+        "You show 1 block and 4 blocks, then ask, 'How many do we have in total?' Student A says, 'Five.'",
+        "You show 3 blocks and 2 blocks, then ask, 'How many blocks when we put them together?' Student A says, 'Five.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil gave the total but didn\'t explain how they combined the two groups.',
+      responseType: 'emergent-language',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about how they combined the groups)",
+          nextNode: 'turn_2',
+          moveType: 'Wait Time',
+          tip: 'Strong move. Waiting gives the pupil time to formulate an explanation of their addition strategy.',
+          metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
+        },
+        {
+          text: "[SAY MORE] 'That\'s an interesting answer, Student A. Can you tell me how you knew it was five altogether?'",
+          nextNode: 'turn_2',
+          moveType: 'Say More',
+          tip: 'Excellent! Asking for explanation pushes the pupil to articulate their addition process.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you looked at both groups and decided there were five blocks in total?'",
+          nextNode: 'turn_2',
+          moveType: 'Revoicing',
+          tip: 'Good! Revoicing confirms you heard correctly while inviting elaboration.',
+          metricsDelta: { participation: 12, reasoning: 8, ownership: 8 },
+        },
+        {
+          text: "[EVALUATION] 'Correct! Five blocks altogether. Who can show us a different way to make five?'",
+          nextNode: 'turn_2',
+          moveType: 'Evaluation',
+          tip: 'Accepting the answer stops the thinking process. Try asking for explanation instead.',
+          metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
+        }
+      ]
+    },
+    turn_2: {
+      text: "Student A says, 'I counted the first group: one, two. Then I kept going: three, four, five.' How do you build on this explanation?",
+      alternateTexts: [
+        "Student A says, 'I saw two blocks and then added three more.'",
+        "Student A says, 'I know two and three make five from my number facts.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil has explained their strategy but kept it very brief.',
+      responseType: 'partial-idea',
+      speakerId: 'studentA',
+      speakerName: 'Student A',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can show us a different way to count these blocks to find the total?'",
+          nextNode: 'turn_3',
+          moveType: 'Add On',
+          tip: 'Perfect! Inviting different approaches builds flexibility in addition strategies.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 8 },
+        },
+        {
+          text: "[SAY MORE] 'Can you tell me more about how you kept track when you started counting the second group?'",
+          nextNode: 'turn_3',
+          moveType: 'Say More',
+          tip: 'Great! Pushing for details helps pupils refine their addition strategies.',
+          metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REVOICING] 'So you used counting on, starting with two and then counting three more?'",
+          nextNode: 'turn_3',
+          moveType: 'Revoicing',
+          tip: 'Good! Using mathematical vocabulary helps pupils connect actions to concepts.',
+          metricsDelta: { participation: 10, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'That\'s right. Let\'s try a different combination.'",
+          nextNode: 'turn_3',
+          moveType: 'Evaluation',
+          tip: 'Moving on too quickly misses the chance to deepen understanding of addition strategies.',
+          metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
+        }
+      ]
+    },
+    turn_3: {
+      text: "Student B says, 'I know that three and two make five because it\'s the same as two and three.' How do you respond to this idea?",
+      alternateTexts: [
+        "Student B says, 'If I switch the groups, I still get five. It doesn\'t matter which comes first.'",
+        "Student B says, 'Five can be made with two and three or three and two.'"
+      ],
+      pressureCue: 'Pressure cue: the pupil is noticing the commutative property of addition, an important mathematical concept.',
+      responseType: 'partial-idea',
+      speakerId: 'studentB',
+      speakerName: 'Student B',
+      choices: [
+        {
+          text: "[ADD ON] 'Who can show us with the blocks that three and two is the same as two and three?'",
+          nextNode: 'end_game',
+          moveType: 'Add On',
+          tip: 'Excellent! Having pupils demonstrate properties helps everyone see mathematical truths.',
+          metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
+        },
+        {
+          text: "[REASONING] 'How does knowing that order doesn\'t matter help us with other addition problems?'",
+          nextNode: 'end_game',
+          moveType: 'Reasoning',
+          tip: 'Great! Asking for broader implications helps pupils see patterns in mathematics.',
+          metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
+        },
+        {
+          text: "[REVOICING] 'So you\'re saying that whether we count two then three or three then two, we still get five?'",
+          nextNode: 'end_game',
+          moveType: 'Revoicing',
+          tip: 'Good! Revoicing with mathematical language helps solidify the concept.',
+          metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
+        },
+        {
+          text: "[EVALUATION] 'Exactly! Three and two is the same as two and three. Good noticing!'",
+          nextNode: 'end_game',
+          moveType: 'Evaluation',
+          tip: 'While positive, this misses the opportunity to have pupils explain their reasoning about the property.',
+          metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
+        }
+      ]
+    }
+  }
+};
+
 export const choiceScenarios = {
   crushedCanInquiry,
   noHandsUp,
@@ -1234,6 +1672,9 @@ export const choiceScenarios = {
   targetedQuestioning,
   plannedCodeSwitching,
   curiosityHooks,
+  countingBlocks,
+  shapesSorting,
+  simpleAddition,
 } as const;
 
 export type ChoiceScenarioId = keyof typeof choiceScenarios;

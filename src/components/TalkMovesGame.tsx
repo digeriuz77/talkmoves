@@ -238,7 +238,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   const turnTotal = Object.keys(scenario.nodes).length;
 
   return (
-    <div className="relative flex aspect-video w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
+    <div className="relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
       {gameState === 'building' || gameState === 'executing' ? (
         <>
           <GameSessionHeader
@@ -249,9 +249,9 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             engagementScore={engagementScore}
             metrics={metrics}
             rightSlot={
-              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center">
-                <div className="text-[11px] font-semibold uppercase tracking-wider text-white/45">Turn</div>
-                <div className="font-mono text-xs tabular-nums text-white">
+              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-sm sm:text-base">
+                <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-white/45">Turn</div>
+                <div className="font-mono text-xs sm:text-sm tabular-nums text-white">
                   {turnIndex}/{turnTotal}
                 </div>
               </div>
