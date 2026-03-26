@@ -25,43 +25,45 @@ export default function GameSessionHeader({
   rightSlot,
 }: GameSessionHeaderProps) {
   return (
-    <header className="absolute left-0 right-0 top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-[#2c2520]/90 px-4 py-3 backdrop-blur-md">
-      <div className="flex min-w-0 max-w-[min(100%,28rem)] flex-1 items-center gap-3">
+    <header className="absolute left-0 right-0 top-0 z-20 flex items-center justify-between gap-2 border-b border-white/10 bg-[#2c2520]/90 px-3 sm:px-4 py-2.5 sm:py-3 backdrop-blur-md">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+        {/* 44px touch target on back button */}
         <button
           type="button"
           onClick={onExit}
-          className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-white/90 transition-colors hover:border-white/20 hover:bg-white/10"
+          className="inline-flex shrink-0 items-center gap-1.5 sm:gap-2 rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3 py-2 text-xs font-medium text-white/90 transition-colors touch-target hover:border-white/20 hover:bg-white/10"
         >
           <ArrowLeft className="h-4 w-4" />
-          <span className="font-display font-semibold" style={{ fontVariationSettings: "'SOFT' 100" }}>Levels</span>
+          <span className="hidden sm:inline font-display font-semibold" style={{ fontVariationSettings: "'SOFT' 100" }}>Levels</span>
         </button>
         <div className="min-w-0 flex-1">
-          <p className="truncate text-[10px] font-bold uppercase tracking-[0.18em] text-amber-200/60">
+          <p className="truncate text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.14em] sm:tracking-[0.18em] text-amber-200/60">
             {subtitle}
           </p>
-          <p className="truncate font-display text-sm font-semibold text-white" style={{ fontVariationSettings: "'SOFT' 100" }}>
+          <p className="truncate font-display text-xs sm:text-sm font-semibold text-white" style={{ fontVariationSettings: "'SOFT' 100" }}>
             {title}
           </p>
         </div>
-        <details className="group relative shrink-0">
-          <summary className="cursor-pointer list-none rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-[11px] font-medium text-white/50 transition-colors hover:bg-white/10 [&::-webkit-details-marker]:hidden">
+        {/* About dropdown — width constrained to viewport on mobile */}
+        <details className="group relative shrink-0 hidden sm:block">
+          <summary className="cursor-pointer list-none rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3 py-2 text-[10px] sm:text-[11px] font-medium text-white/50 transition-colors hover:bg-white/10 [&::-webkit-details-marker]:hidden">
             About
           </summary>
-          <div className="absolute left-0 top-full z-50 mt-2 max-h-36 w-64 overflow-y-auto rounded-lg border border-white/10 bg-[#2c2520]/95 p-4 text-xs leading-relaxed text-white/60 shadow-lg backdrop-blur-md">
+          <div className="absolute left-0 top-full z-50 mt-2 max-h-36 w-[min(16rem,calc(100vw-2rem))] overflow-y-auto rounded-lg border border-white/10 bg-[#2c2520]/95 p-4 text-xs leading-relaxed text-white/60 shadow-lg backdrop-blur-md">
             {description}
           </div>
         </details>
       </div>
 
-      <div className="flex shrink-0 items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         <details className="relative">
-          <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 [&::-webkit-details-marker]:hidden">
-            <span className="font-mono text-sm tabular-nums text-white">{engagementScore}%</span>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-white/40">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 sm:gap-2 rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3 py-2 [&::-webkit-details-marker]:hidden touch-target">
+            <span className="font-mono text-xs sm:text-sm tabular-nums text-white">{engagementScore}%</span>
+            <span className="hidden sm:inline text-[10px] font-bold uppercase tracking-wider text-white/40">
               Outcomes
             </span>
           </summary>
-          <div className="absolute right-0 top-full z-50 mt-2 w-52 rounded-lg border border-white/10 bg-[#2c2520]/95 p-4 shadow-lg backdrop-blur-md">
+          <div className="absolute right-0 top-full z-50 mt-2 w-[min(13rem,calc(100vw-2rem))] rounded-lg border border-white/10 bg-[#2c2520]/95 p-4 shadow-lg backdrop-blur-md">
             <p className="mb-3 text-[10px] font-bold uppercase tracking-wider text-white/40">
               Classroom outcomes
             </p>

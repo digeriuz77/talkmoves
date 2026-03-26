@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { useMemo } from 'react';
 import type { ClassroomHotspot } from '../data/choice-scenarios';
 import type { AssetUrls } from './AssetLoader';
 
@@ -32,6 +33,28 @@ export default function Classroom({
     return (name.slice(0, 1) || id.slice(-1)).toUpperCase();
   };
 
+  // Pre-compute particle positions to avoid Math.random in render
+  const engagedParticles = useMemo(
+    () =>
+      [...Array(6)].map(() => ({
+        x: `${Math.random() * 100}%`,
+        size: 5 + Math.random() * 4,
+        duration: 2 + Math.random() * 2,
+        delay: Math.random() * 2,
+      })),
+    [],
+  );
+
+  const disengagedParticles = useMemo(
+    () =>
+      [...Array(4)].map(() => ({
+        x: `${Math.random() * 100}%`,
+        duration: 3 + Math.random() * 3,
+        delay: Math.random() * 3,
+      })),
+    [],
+  );
+
   return (
     <div className="relative flex-1 w-full h-full overflow-hidden">
       {/* Base classroom layer */}
@@ -44,7 +67,7 @@ export default function Classroom({
         )}
         {!useNormalImage && (
           <>
-            {/* Wall — warm plaster tone */}
+            {/* Wall */}
             <div
               className="absolute inset-0"
               style={{
@@ -52,8 +75,7 @@ export default function Classroom({
                 background: 'linear-gradient(180deg, #e8dfd2 0%, #ddd3c4 100%)',
               }}
             />
-
-            {/* Floor — warm wood */}
+            {/* Floor */}
             <div
               className="absolute bottom-0 inset-x-0"
               style={{
@@ -61,79 +83,33 @@ export default function Classroom({
                 background: 'linear-gradient(0deg, #8b6f47 0%, #a68b5b 50%, #b89e6e 100%)',
               }}
             />
-
             {/* Windows */}
             <div
               className="absolute rounded-lg shadow-lg"
               style={{
-                top: '10%',
-                left: '15%',
-                width: '20%',
-                height: '25%',
+                top: '10%', left: '15%', width: '20%', height: '25%',
                 background: 'linear-gradient(135deg, #b5d0e0 0%, #8ab4cc 100%)',
                 border: '4px solid #f5f0e8',
               }}
             >
-              <div
-                className="absolute inset-2 rounded"
-                style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }}
-              />
+              <div className="absolute inset-2 rounded" style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }} />
             </div>
             <div
               className="absolute rounded-lg shadow-lg"
               style={{
-                top: '10%',
-                right: '15%',
-                width: '20%',
-                height: '25%',
+                top: '10%', right: '15%', width: '20%', height: '25%',
                 background: 'linear-gradient(135deg, #b5d0e0 0%, #8ab4cc 100%)',
                 border: '4px solid #f5f0e8',
               }}
             >
-              <div
-                className="absolute inset-2 rounded"
-                style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }}
-              />
+              <div className="absolute inset-2 rounded" style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }} />
             </div>
-
-            {/* Desk */}
-            <div
-              className="absolute rounded-lg shadow-lg"
-              style={{
-                bottom: '20%',
-                left: '20%',
-                width: '25%',
-                height: '15%',
-                background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)',
-              }}
-            />
-            <div
-              className="absolute rounded-lg shadow-lg"
-              style={{
-                bottom: '20%',
-                right: '20%',
-                width: '25%',
-                height: '15%',
-                background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)',
-              }}
-            />
-
+            {/* Desks */}
+            <div className="absolute rounded-lg shadow-lg" style={{ bottom: '20%', left: '20%', width: '25%', height: '15%', background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)' }} />
+            <div className="absolute rounded-lg shadow-lg" style={{ bottom: '20%', right: '20%', width: '25%', height: '15%', background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)' }} />
             {/* Board */}
-            <div
-              className="absolute rounded-lg shadow-lg"
-              style={{
-                top: '15%',
-                left: '35%',
-                width: '30%',
-                height: '20%',
-                background: 'linear-gradient(180deg, #3d5c3a 0%, #2d4a2e 100%)',
-                border: '4px solid #6b4f35',
-              }}
-            >
-              <div
-                className="absolute bottom-1 left-2 right-2 h-1 rounded"
-                style={{ background: 'rgba(107, 79, 53, 0.5)' }}
-              />
+            <div className="absolute rounded-lg shadow-lg" style={{ top: '15%', left: '35%', width: '30%', height: '20%', background: 'linear-gradient(180deg, #3d5c3a 0%, #2d4a2e 100%)', border: '4px solid #6b4f35' }}>
+              <div className="absolute bottom-1 left-2 right-2 h-1 rounded" style={{ background: 'rgba(107, 79, 53, 0.5)' }} />
             </div>
           </>
         )}
@@ -141,11 +117,7 @@ export default function Classroom({
 
       {/* Disengaged overlay */}
       <motion.div
-        className={
-          useBeastImage
-            ? 'absolute inset-0 bg-cover bg-center bg-no-repeat'
-            : 'absolute inset-0'
-        }
+        className={useBeastImage ? 'absolute inset-0 bg-cover bg-center bg-no-repeat' : 'absolute inset-0'}
         style={
           useBeastImage
             ? { backgroundImage: `url(${assets!.classroom_beasts})`, mixBlendMode: 'multiply' }
@@ -158,11 +130,7 @@ export default function Classroom({
 
       {/* Highly engaged overlay */}
       <motion.div
-        className={
-          useTransformerImage
-            ? 'absolute inset-0 bg-cover bg-center bg-no-repeat'
-            : 'absolute inset-0'
-        }
+        className={useTransformerImage ? 'absolute inset-0 bg-cover bg-center bg-no-repeat' : 'absolute inset-0'}
         style={
           useTransformerImage
             ? { backgroundImage: `url(${assets!.classroom_transformers})`, mixBlendMode: 'screen' }
@@ -173,65 +141,42 @@ export default function Classroom({
         transition={{ duration: 1 }}
       />
 
-      {/* Engagement particles — terracotta sparks */}
+      {/* Engagement particles — fewer on mobile, skipped on reduced motion */}
       {isHighlyEngaged && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(8)].map((_, i) => (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none motion-reduce:hidden">
+          {engagedParticles.map((p, i) => (
             <motion.div
               key={i}
               className="absolute rounded-full"
               style={{
-                width: 6 + Math.random() * 4,
-                height: 6 + Math.random() * 4,
+                width: p.size,
+                height: p.size,
                 background: i % 2 === 0 ? '#d4952b' : '#c45c3c',
               }}
-              initial={{
-                x: `${Math.random() * 100}%`,
-                y: '110%',
-                opacity: 0,
-              }}
-              animate={{
-                y: '-10%',
-                opacity: [0, 0.8, 0],
-              }}
-              transition={{
-                duration: 2 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
+              initial={{ x: p.x, y: '110%', opacity: 0 }}
+              animate={{ y: '-10%', opacity: [0, 0.8, 0] }}
+              transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
             />
           ))}
         </div>
       )}
 
-      {/* Disengagement particles */}
       {isDisengaged && (
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(5)].map((_, i) => (
+        <div className="absolute inset-0 overflow-hidden pointer-events-none motion-reduce:hidden">
+          {disengagedParticles.map((p, i) => (
             <motion.div
               key={i}
               className="absolute w-1 h-1 rounded-full"
               style={{ background: 'rgba(92, 82, 74, 0.4)' }}
-              initial={{
-                x: `${Math.random() * 100}%`,
-                y: '-10%',
-                opacity: 0,
-              }}
-              animate={{
-                y: '110%',
-                opacity: [0, 0.5, 0],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 3,
-                repeat: Infinity,
-                delay: Math.random() * 3,
-              }}
+              initial={{ x: p.x, y: '-10%', opacity: 0 }}
+              animate={{ y: '110%', opacity: [0, 0.5, 0] }}
+              transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
             />
           ))}
         </div>
       )}
 
-      {/* Hotspots / Student positions */}
+      {/* Hotspots / Student positions — min 28px touch area on mobile */}
       {hotspots.map((hotspot) => (
         <div
           key={hotspot.id}
@@ -245,8 +190,10 @@ export default function Classroom({
         >
           <div
             title={`${hotspot.name}${spokenStudentIds.includes(hotspot.id) ? ' · has spoken' : ''}`}
-            className="flex h-full w-full items-center justify-center rounded-full text-xs font-bold tabular-nums transition-all duration-300"
+            className="flex h-full w-full items-center justify-center rounded-full text-[10px] sm:text-xs font-bold tabular-nums transition-all duration-300"
             style={{
+              minWidth: '28px',
+              minHeight: '28px',
               border: spokenStudentIds.includes(hotspot.id)
                 ? '2px solid #8aab8f'
                 : engagementScore > 70

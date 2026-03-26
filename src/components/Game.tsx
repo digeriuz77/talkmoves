@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
 import Classroom from './Classroom';
 import DialogueBox from './DialogueBox';
 import EndScreen, { type ChoiceGameResult } from './EndScreen';
@@ -89,7 +88,6 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
     if (currentNode?.responseType) {
       setResponseTypesSeen((previous) => [...previous, currentNode.responseType as StudentResponseType]);
     }
-
     if (currentNode?.speakerId) {
       setSpokenStudents((previous) =>
         previous.includes(currentNode.speakerId as string)
@@ -97,9 +95,7 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
           : [...previous, currentNode.speakerId as string],
       );
     }
-
     setFeedback(choice.tip ?? null);
-
     if (choice.nextNode === 'end_game') {
       const completed = isPassingScore(nextMetrics, scenario.passThreshold);
       setGameState(completed ? 'win' : 'loss');
@@ -110,7 +106,6 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       });
       return;
     }
-
     setCurrentNodeId(choice.nextNode);
   };
 
@@ -127,10 +122,17 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
   };
 
   return (
-    <div className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl aspect-video" style={{ background: '#2c2520' }}>
+    <div
+      className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      style={{
+        background: '#2c2520',
+        /* Full-height on portrait phones, aspect-video on landscape/desktop */
+        minHeight: 'min(100dvh - 2rem, 800px)',
+      }}
+    >
       {gameState === 'playing' ? (
         <>
-          <div className="min-h-0 flex-1 pt-[3.25rem]">
+          <div className="min-h-0 flex-1 pt-[2.75rem] sm:pt-[3.25rem]">
             <Classroom
               engagementScore={engagementScore}
               lastDelta={lastDelta}
