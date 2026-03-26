@@ -23,10 +23,12 @@ export function updateLevelProgress(
   };
 }
 
+export type StatusKey = 'completed' | 'inProgress' | 'new';
+
 export function getLevelStatus(
   current: LevelProgressMap,
   levelId: string,
-): LevelProgressEntry & { statusLabel: string } {
+): LevelProgressEntry & { statusKey: StatusKey } {
   const entry = current[levelId] ?? {
     attempts: 0,
     bestScore: 0,
@@ -35,6 +37,6 @@ export function getLevelStatus(
 
   return {
     ...entry,
-    statusLabel: entry.completed ? 'Completed' : entry.attempts > 0 ? 'In Progress' : 'New',
+    statusKey: entry.completed ? 'completed' : entry.attempts > 0 ? 'inProgress' : 'new',
   };
 }

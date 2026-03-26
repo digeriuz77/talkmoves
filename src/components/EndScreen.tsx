@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
   AlertTriangle,
@@ -10,6 +11,7 @@ import {
 } from 'lucide-react';
 import { talkMovesMap, type PedagogicalProfile } from '../data/talk_moves';
 import type { Metrics } from '../lib/game-progress';
+import { useLang } from '../lib/i18n';
 
 type EndResultBase = {
   title: string;
@@ -47,7 +49,12 @@ const METRIC_COLORS: Record<string, string> = {
 };
 
 export default function EndScreen({ result, onRestart, onExit }: EndScreenProps) {
+  const { t } = useLang();
   const isWin = result.outcome === 'win';
+
+  const description = isWin
+    ? t('end.winDescription', { title: result.title })
+    : t('end.lossDescription', { title: result.title });
 
   return (
     <motion.div
@@ -63,7 +70,6 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
     >
       <div className="mx-auto flex min-h-full max-w-4xl items-center justify-center p-4 sm:p-6">
         <div className="w-full rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6 md:p-8 text-center backdrop-blur-sm sm:backdrop-blur-xl" style={{ background: 'rgba(44, 37, 32, 0.6)' }}>
-          {/* Icon */}
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
@@ -84,7 +90,6 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             )}
           </motion.div>
 
-          {/* Title — fluid via Fraunces */}
           <motion.h1
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -97,7 +102,7 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
               wordBreak: 'break-word',
             }}
           >
-            {isWin ? 'Discussion Opened Up' : 'Keep Rehearsing the Routine'}
+            {isWin ? t('end.discussionOpened') : t('end.keepRehearsing')}
           </motion.h1>
 
           <motion.p
@@ -107,12 +112,9 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             className="mx-auto mt-2 sm:mt-3 max-w-2xl text-xs sm:text-sm md:text-base leading-relaxed"
             style={{ color: 'rgba(245, 240, 232, 0.6)', wordBreak: 'break-word' }}
           >
-            {isWin
-              ? `You created a more dialogic version of "${result.title}" by widening participation and protecting student thinking, even before pupils could say everything cleanly in English.`
-              : `This run shows how quickly discussion can collapse back into answer-hunting when time pressure and teacher anxiety take over. "${result.title}" is designed to be replayed so those trade-offs feel real.`}
+            {description}
           </motion.p>
 
-          {/* Score badge */}
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -121,11 +123,10 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(245,240,232,0.8)' }}
           >
             <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#d4952b' }} />
-            Composite outcome
+            {t('end.compositeOutcome')}
             <span className="font-mono font-bold text-white">{result.finalScore}%</span>
           </motion.div>
 
-          {/* Metrics — stacked on phone, 3-col on md+ */}
           <div className="mt-5 sm:mt-8 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
             {METRIC_ORDER.map((metric, i) => (
               <motion.div
@@ -155,18 +156,17 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             ))}
           </div>
 
-          {/* Talk-moves profile */}
           {result.variant === 'talk-moves' && (
             <>
               <div className="mt-5 sm:mt-8 inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2" style={{ background: 'rgba(255,255,255,0.08)' }}>
                 <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#d4952b' }} />
                 <span className="text-xs sm:text-sm font-bold text-white">{result.profile.style}</span>
-                <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(245,240,232,0.45)' }}>Teaching Style</span>
+                <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(245,240,232,0.45)' }}>{t('end.teachingStyle')}</span>
               </div>
 
               <div className="mt-4 sm:mt-6 rounded-lg sm:rounded-xl p-3 sm:p-5 text-left" style={{ background: 'rgba(255,255,255,0.04)' }}>
                 <h3 className="mb-3 sm:mb-4 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(245,240,232,0.4)' }}>
-                  Talk Move Profile
+                  {t('end.talkMoveProfile')}
                 </h3>
                 <div className="space-y-2.5 sm:space-y-3">
                   {Object.entries(result.profile.movesById)
@@ -182,7 +182,7 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
                             <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(245,240,232,0.35)' }}>{move.category}</span>
-                            <span className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm" style={{ background: 'rgba(107,143,113,0.1)', color: '#8aab8f' }}>×{count}</span>
+                            <span className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm" style={{ background: 'rgba(107,143,113,0.1)', color: '#8aab8f' }}>&times;{count}</span>
                           </div>
                         </div>
                       );
@@ -192,10 +192,9 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             </>
           )}
 
-          {/* Move Pattern */}
           <div className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl p-3 sm:p-5 text-left" style={{ background: 'rgba(255,255,255,0.04)' }}>
             <h3 className="mb-3 sm:mb-4 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(245,240,232,0.4)' }}>
-              Move Pattern
+              {t('end.movePattern')}
             </h3>
             <div className="grid grid-cols-1 gap-2.5 sm:gap-3 md:grid-cols-2">
               {Object.entries(result.historyCounts).length > 0 ? (
@@ -204,42 +203,40 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
                   .map(([label, count]) => (
                     <div key={label} className="flex items-center justify-between border-b pb-2" style={{ borderColor: 'rgba(255,255,255,0.05)' }}>
                       <span className="text-sm" style={{ color: 'rgba(245,240,232,0.75)' }}>{label}</span>
-                      <span className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(245,240,232,0.6)' }}>×{count}</span>
+                      <span className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm" style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(245,240,232,0.6)' }}>&times;{count}</span>
                     </div>
                   ))
               ) : (
-                <div className="text-sm" style={{ color: 'rgba(245,240,232,0.35)' }}>No moves recorded.</div>
+                <div className="text-sm" style={{ color: 'rgba(245,240,232,0.35)' }}>{t('end.noMoves')}</div>
               )}
             </div>
           </div>
 
-          {/* Reflection */}
           <div className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl border p-3 sm:p-5 text-left" style={{ borderColor: 'rgba(42,100,140,0.2)', background: 'rgba(42,100,140,0.06)' }}>
             <h3 className="mb-2 sm:mb-3 text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: '#8aab8f' }}>
-              Reflection Prompt
+              {t('end.reflectionPrompt')}
             </h3>
             <p className="text-xs sm:text-sm leading-relaxed" style={{ color: 'rgba(245,240,232,0.7)', wordBreak: 'break-word' }}>
               {result.reflectionPrompt}
             </p>
             {result.advice.length > 0 && (
               <div className="mt-3 sm:mt-4 space-y-1.5 sm:space-y-2">
-                {result.advice.map((advice) => (
-                  <div key={advice} className="text-xs sm:text-sm" style={{ color: 'rgba(245,240,232,0.65)', wordBreak: 'break-word' }}>
-                    · {advice}
+                {result.advice.map((advice, i) => (
+                  <div key={i} className="text-xs sm:text-sm" style={{ color: 'rgba(245,240,232,0.65)', wordBreak: 'break-word' }}>
+                    &middot; {advice}
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Actions — full-width buttons on phone */}
           <div className="mt-5 sm:mt-8 flex flex-col justify-center gap-2.5 sm:gap-3 sm:flex-row">
             <button
               onClick={onRestart}
               className="btn-primary inline-flex items-center justify-center gap-2 rounded-lg px-6 sm:px-8 py-3.5 sm:py-4"
             >
               <RotateCcw className="h-5 w-5" />
-              Try Again
+              {t('end.tryAgain')}
             </button>
             <button
               onClick={onExit}
@@ -247,7 +244,7 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
               style={{ borderColor: 'rgba(245,240,232,0.2)', color: 'rgba(245,240,232,0.85)' }}
             >
               <ArrowLeft className="h-5 w-5" />
-              Back to Levels
+              {t('end.backToLevels')}
             </button>
           </div>
         </div>

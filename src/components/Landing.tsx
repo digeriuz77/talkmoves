@@ -1,13 +1,10 @@
 /**
  * Landing page — editorial hero with warm scholarly palette.
- * Fluid typography, safe touch targets, word-break protection.
  */
 import { motion } from 'motion/react';
 import { ArrowRight, Mail } from 'lucide-react';
+import { useLang } from '../lib/i18n';
 
-const WELCOME =
-  'Welcome to Talk Moves. These are short scenarios to help teachers think about dialogic practice in the classroom.';
-const CONTACT = 'For further levels, contact Gary at:';
 const EMAIL = 'gstanyard@gmail.com';
 
 type LandingProps = {
@@ -15,6 +12,8 @@ type LandingProps = {
 };
 
 export default function Landing({ onEnter }: LandingProps) {
+  const { t } = useLang();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -22,7 +21,6 @@ export default function Landing({ onEnter }: LandingProps) {
       transition={{ duration: 0.6 }}
       className="mx-auto max-w-lg px-5 sm:px-6 text-center"
     >
-      {/* Decorative top rule */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -30,17 +28,15 @@ export default function Landing({ onEnter }: LandingProps) {
         className="mx-auto mb-6 sm:mb-8 h-[3px] w-12 sm:w-16 rounded-full bg-terracotta"
       />
 
-      {/* Issue marker */}
       <motion.p
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
         className="label-section mb-3 sm:mb-4"
       >
-        Dialogic Teaching Practice
+        {t('landing.tagline')}
       </motion.p>
 
-      {/* Title — fluid via .heading-editorial */}
       <motion.h1
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -48,10 +44,9 @@ export default function Landing({ onEnter }: LandingProps) {
         className="heading-editorial mb-5 sm:mb-6"
         style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
       >
-        Talk Moves
+        {t('landing.title')}
       </motion.h1>
 
-      {/* Subtitle rule */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -59,17 +54,15 @@ export default function Landing({ onEnter }: LandingProps) {
         className="rule-editorial mx-auto mb-5 sm:mb-6 max-w-[220px] sm:max-w-xs"
       />
 
-      {/* Welcome text */}
       <motion.p
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.55 }}
         className="text-body mx-auto mb-6 sm:mb-8 max-w-md"
       >
-        {WELCOME}
+        {t('landing.welcome')}
       </motion.p>
 
-      {/* Enter button — full-width on phone via .btn-primary */}
       <motion.div
         initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
@@ -80,12 +73,11 @@ export default function Landing({ onEnter }: LandingProps) {
           onClick={onEnter}
           className="btn-primary inline-flex items-center justify-center gap-2.5 rounded-lg touch-target sm:w-auto"
         >
-          Enter
+          {t('landing.enter')}
           <ArrowRight className="h-4 w-4" />
         </button>
       </motion.div>
 
-      {/* Bottom rule */}
       <motion.div
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
@@ -93,14 +85,13 @@ export default function Landing({ onEnter }: LandingProps) {
         className="rule-editorial mx-auto mt-8 sm:mt-10 mb-4 sm:mb-5 max-w-[160px] sm:max-w-[200px]"
       />
 
-      {/* Contact — 44px touch target on email link */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.85 }}
         className="space-y-2"
       >
-        <p className="text-sm text-ink-muted">{CONTACT}</p>
+        <p className="text-sm text-ink-muted">{t('landing.contact')}</p>
         <a
           href={`mailto:${EMAIL}`}
           className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-terracotta transition-colors hover:text-terracotta-soft touch-target"

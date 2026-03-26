@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { MessageSquare, X } from 'lucide-react';
+import { useLang } from '../lib/i18n';
 
 export default function CoachingStrip({
   message,
@@ -10,6 +11,8 @@ export default function CoachingStrip({
   onDismiss: () => void;
   className?: string;
 }) {
+  const { t } = useLang();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -8 }}
@@ -31,18 +34,17 @@ export default function CoachingStrip({
             className="text-[10px] font-bold uppercase tracking-[0.14em]"
             style={{ color: 'rgba(212, 149, 43, 0.8)' }}
           >
-            Program response
+            {t('coaching.programResponse')}
           </p>
           <p className="mt-1 text-sm leading-snug text-white/90" style={{ wordBreak: 'break-word' }}>
             {message}
           </p>
         </div>
-        {/* 44px touch target on dismiss */}
         <button
           type="button"
           onClick={onDismiss}
           className="shrink-0 rounded-lg p-2.5 text-white/40 transition-colors touch-target hover:bg-white/10 hover:text-white/80"
-          aria-label="Dismiss"
+          aria-label={t('coaching.dismiss')}
         >
           <X className="h-4 w-4" />
         </button>

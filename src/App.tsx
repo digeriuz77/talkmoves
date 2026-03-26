@@ -9,13 +9,14 @@ import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
 import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
-import { Sparkles, Layers, ArrowRight, BookOpen } from 'lucide-react';
+import { Sparkles, Layers, ArrowRight, BookOpen, Languages } from 'lucide-react';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
 import {
   getLevelStatus,
   updateLevelProgress,
   type LevelProgressMap,
 } from './lib/level-progress';
+import { useLang, type Lang } from './lib/i18n';
 
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
@@ -24,6 +25,7 @@ export default function App() {
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
   const selectedGame = gameCatalog.find((game) => game.id === selectedGameId) ?? null;
+  const { t, lang, setLang } = useLang();
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
@@ -43,10 +45,15 @@ export default function App() {
     setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
   };
 
+  const toggleLang = () => {
+    setLang(lang === 'en' ? 'ms' : 'en');
+  };
+
   if (!pastLanding) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
         <Landing onEnter={() => setPastLanding(true)} />
+        <LangToggle lang={lang} onToggle={toggleLang} t={t} />
       </div>
     );
   }
@@ -70,7 +77,22 @@ export default function App() {
           onComplete={handleLevelComplete}
         />
       )}
+      <LangToggle lang={lang} onToggle={toggleLang} t={t} />
     </div>
+  );
+}
+
+function LangToggle({ lang, onToggle, t }: { lang: Lang; onToggle: () => void; t: (key: string) => string }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      className="fixed bottom-4 right-4 z-[100] flex items-center gap-1.5 rounded-full border border-ink/10 bg-parchment-light/90 px-3 py-2 text-xs font-bold uppercase tracking-wider text-ink-muted shadow-md backdrop-blur-sm transition-colors hover:border-ink/20 hover:text-ink touch-target"
+      title={t('lang.name')}
+    >
+      <Languages className="h-3.5 w-3.5" />
+      {t('lang.label')}
+    </button>
   );
 }
 
@@ -81,6 +103,8 @@ function ModeSelect({
   onSelect: (gameId: string) => void;
   levelProgress: LevelProgressMap;
 }) {
+  const { t } = useLang();
+
   return (
     <motion.div
       initial={{ opacity: 0 }}
@@ -88,7 +112,6 @@ function ModeSelect({
       transition={{ duration: 0.5 }}
       className="w-full max-w-6xl px-4 sm:px-6"
     >
-      {/* Header — editorial style */}
       <div className="text-center mb-6 sm:mb-10 md:mb-12">
         <motion.div
           initial={{ scaleX: 0 }}
@@ -103,7 +126,7 @@ function ModeSelect({
           transition={{ delay: 0.15 }}
           className="label-section mb-2 sm:mb-3"
         >
-          Primary Classroom Practice
+          {t('mode.tagline')}
         </motion.p>
 
         <motion.h1
@@ -113,7 +136,7 @@ function ModeSelect({
           className="heading-editorial mb-1"
           style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
         >
-          Dialogic Classroom
+          {t('mode.title')}
         </motion.h1>
 
         <motion.div
@@ -129,11 +152,10 @@ function ModeSelect({
           transition={{ delay: 0.4 }}
           className="text-body mx-auto max-w-2xl"
         >
-          Practice realistic Primary classroom routines where pupils may think in Malay, answer in partial English, and still need help turning half-formed ideas into stronger talk.
+          {t('mode.description')}
         </motion.p>
       </div>
 
-      {/* Game cards — single column on phone, 2-col tablet, 3-col desktop */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
         {gameCatalog.map((game, index) => (
           <Fragment key={game.id}>
@@ -147,7 +169,6 @@ function ModeSelect({
         ))}
       </div>
 
-      {/* Info Section — editorial aside */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -160,11 +181,10 @@ function ModeSelect({
           </div>
           <div className="flex-1">
             <h3 className="font-display text-lg font-bold text-ink mb-2" style={{ fontVariationSettings: "'SOFT' 100" }}>
-              About This Training Build
+              {t('mode.aboutTitle')}
             </h3>
             <p className="text-sm leading-relaxed text-ink-soft">
-              Based on research by Edwards-Groves, Chapin, O'Connor, and Alexander.
-              These levels are designed to help teachers rehearse dialogic routines that keep English available for reasoning, even when lesson time is tight and the temptation is to take the one fast correct answer.
+              {t('mode.aboutBody')}
             </p>
           </div>
         </div>
@@ -184,6 +204,7 @@ function GameCard({
   onSelect: (gameId: string) => void;
   progress: ReturnType<typeof getLevelStatus>;
 }) {
+  const { t } = useLang();
   const isTalkMoves = game.engine === 'talk-moves';
   const Icon = isTalkMoves ? Sparkles : Layers;
 
@@ -195,28 +216,25 @@ function GameCard({
       onClick={() => onSelect(game.id)}
       className="group card-warm relative p-4 sm:p-5 md:p-6 text-left transition-shadow duration-300 touch-target"
     >
-      {/* Icon */}
       <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-ink/5">
         <Icon className="h-4 w-4 text-ink-muted" />
       </div>
 
-      {/* Subtitle + status */}
       <div className="mb-2 sm:mb-3 flex items-center justify-between gap-2">
         <div className="label-section">{game.subtitle}</div>
         <div
           className={
-            progress.completed
+            progress.statusKey === 'completed'
               ? 'pill-sage'
-              : progress.attempts > 0
+              : progress.statusKey === 'inProgress'
                 ? 'pill-amber'
                 : 'pill-terracotta'
           }
         >
-          {progress.statusLabel}
+          {t(`status.${progress.statusKey}`)}
         </div>
       </div>
 
-      {/* Title — fluid via .heading-editorial */}
       <h2
         className="heading-editorial mb-2 sm:mb-2.5"
         style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
@@ -224,10 +242,8 @@ function GameCard({
         {game.title}
       </h2>
 
-      {/* Description */}
       <p className="mb-3 sm:mb-4 text-sm leading-relaxed text-ink-soft">{game.description}</p>
 
-      {/* Focus areas */}
       <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5">
         {game.focusAreas.slice(0, 3).map((area) => (
           <span
@@ -239,19 +255,17 @@ function GameCard({
         ))}
       </div>
 
-      {/* CTA */}
       <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
-        Start level
+        {t('card.startLevel')}
         <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
       </div>
 
-      {/* Footer meta */}
       <div className="mt-3 sm:mt-4 border-t border-ink/[0.06] pt-2.5 sm:pt-3 text-[11px] text-ink-muted space-y-1">
         <div>
-          {isTalkMoves ? 'Chain responses · Talk-move combos' : 'Scenario choices · Visible classroom consequences'}
+          {isTalkMoves ? t('card.chainInfo') : t('card.choiceInfo')}
         </div>
         <div className="font-mono text-[11px]">
-          Best score: {progress.bestScore}% · Attempts: {progress.attempts}
+          {t('card.bestScore')} {progress.bestScore}% &middot; {t('card.attempts')} {progress.attempts}
         </div>
       </div>
     </motion.button>
