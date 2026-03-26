@@ -127,7 +127,7 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
   };
 
   return (
-    <div className="relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl aspect-video">
+    <div className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl aspect-video" style={{ background: '#2c2520' }}>
       {gameState === 'playing' ? (
         <>
           <div className="min-h-0 flex-1 pt-[3.25rem]">

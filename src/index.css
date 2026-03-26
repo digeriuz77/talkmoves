@@ -1,6 +1,44 @@
 @import "tailwindcss";
 
-/* Custom responsive utilities */
+/* ============================================
+   DIALOGIC CLASSROOM — Warm Editorial Design
+   ============================================
+   Aesthetic: Mid-century academic journal meets
+   modern editorial. Warm, scholarly, inviting.
+   
+   Typography: Fraunces (display) + Lora (body)
+   Palette: Warm creams, charcoal, terracotta, sage
+   ============================================ */
+
+@theme {
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Lora', serif;
+  
+  --color-parchment: #f5f0e8;
+  --color-parchment-light: #faf7f2;
+  --color-parchment-dark: #ebe4d6;
+  --color-ink: #2c2520;
+  --color-ink-soft: #5c524a;
+  --color-ink-muted: #8a7f75;
+  --color-ink-faint: #b5aa9e;
+  --color-terracotta: #c45c3c;
+  --color-terracotta-soft: #d4795e;
+  --color-terracotta-muted: #e8a892;
+  --color-terracotta-bg: #fdf0ec;
+  --color-sage: #6b8f71;
+  --color-sage-soft: #8aab8f;
+  --color-sage-muted: #b5d0b8;
+  --color-sage-bg: #eef5ef;
+  --color-amber: #d4952b;
+  --color-amber-soft: #e0ad4f;
+  --color-amber-muted: #f0d48a;
+  --color-amber-bg: #fdf6e8;
+  --color-navy: #2d3a4a;
+  --color-navy-soft: #4a5a6e;
+  --color-navy-muted: #7a8a9e;
+  --color-navy-bg: #eef1f5;
+}
+
 @layer base {
   :root {
     --font-size-base: 1rem;
@@ -10,81 +48,427 @@
     --font-size-3xl: 1.875rem;
     --font-size-4xl: 2.25rem;
   }
-  
-  /* Responsive text scaling */
-  .text-responsive {
-    @apply text-base;
+
+  html {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-parchment);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  
-  @media (min-width: 640px) {
-    .text-responsive {
-      @apply text-lg;
-    }
+
+  body {
+    min-height: 100vh;
+    position: relative;
   }
-  
-  @media (min-width: 768px) {
-    .text-responsive {
-      @apply text-xl;
-    }
+
+  /* Grain texture overlay on body */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
   }
-  
-  /* Minimum touch target size */
-  .touch-target {
-    @apply min-h-[48px] min-w-[48px];
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 8px;
   }
-  
-  /* Responsive spacing */
-  .space-y-responsive {
-    @apply space-y-3;
+  ::-webkit-scrollbar-track {
+    background: var(--color-parchment-dark);
   }
-  
-  @media (min-width: 640px) {
-    .space-y-responsive {
-      @apply space-y-4;
-    }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-faint);
+    border-radius: 4px;
   }
-  
-  @media (min-width: 1024px) {
-    .space-y-responsive {
-      @apply space-y-6;
-    }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-muted);
   }
 }
 
-/* Improve button touch targets */
-button:not(.btn-sm):not(.btn-lg) {
-  @apply min-h-[48px] min-w-[48px];
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Editorial heading styles */
+.heading-editorial {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--color-ink);
+}
+
+/* Section label — small caps tracking */
+.label-section {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-ink-muted);
+}
+
+/* Body text — warm and readable */
+.text-body {
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  line-height: 1.7;
+  color: var(--color-ink-soft);
+}
+
+/* ============================================
+   DECORATIVE ELEMENTS
+   ============================================ */
+
+/* Thin editorial rule */
+.rule-editorial {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-ink-faint) 20%,
+    var(--color-ink-faint) 80%,
+    transparent
+  );
+}
+
+/* Thick accent rule */
+.rule-accent {
+  height: 3px;
+  background: var(--color-terracotta);
+  border-radius: 2px;
+}
+
+/* Warm card surface */
+.card-warm {
+  background: var(--color-parchment-light);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--color-ink) 5%, transparent),
+    0 4px 12px color-mix(in srgb, var(--color-ink) 3%, transparent);
+}
+
+.card-warm:hover {
+  box-shadow:
+    0 2px 6px color-mix(in srgb, var(--color-ink) 8%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-ink) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+
+/* Dark card surface (for game scenes) */
+.card-dark {
+  background: var(--color-ink);
+  border: 1px solid color-mix(in srgb, white 8%, transparent);
+  border-radius: 12px;
+}
+
+/* Terracotta accent pill */
+.pill-terracotta {
+  background: var(--color-terracotta-bg);
+  color: var(--color-terracotta);
+  border: 1px solid color-mix(in srgb, var(--color-terracotta) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Sage accent pill */
+.pill-sage {
+  background: var(--color-sage-bg);
+  color: var(--color-sage);
+  border: 1px solid color-mix(in srgb, var(--color-sage) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* Amber accent pill */
+.pill-amber {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+  border: 1px solid color-mix(in srgb, var(--color-amber) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+
+/* Warm button — primary */
+.btn-primary {
+  background: var(--color-terracotta);
+  color: var(--color-parchment-light);
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-terracotta) 25%, transparent);
+}
+
+.btn-primary:hover {
+  background: color-mix(in srgb, var(--color-terracotta) 90%, black);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--color-terracotta) 35%, transparent);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Warm button — secondary */
+.btn-secondary {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1.5px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-family: var(--font-body);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+  background: color-mix(in srgb, var(--color-ink) 4%, transparent);
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+.text-responsive {
+  font-size: var(--font-size-base);
+}
+
+@media (min-width: 640px) {
+  .text-responsive {
+    font-size: var(--font-size-lg);
+  }
+}
+
+@media (min-width: 768px) {
+  .text-responsive {
+    font-size: var(--font-size-xl);
+  }
+}
+
+/* Minimum touch target size */
+.touch-target {
+  min-height: 48px;
+  min-width: 48px;
 }
 
 /* Ensure readable text sizes */
 .text-xs {
-  @apply text-[0.75rem]; /* 12px */
+  font-size: 0.75rem; /* 12px */
 }
 
 .text-sm {
-  @apply text-[0.875rem]; /* 14px */
+  font-size: 0.875rem; /* 14px */
 }
 
 .text-base {
-  @apply text-[1rem]; /* 16px */
+  font-size: 1rem; /* 16px */
 }
 
 .text-lg {
-  @apply text-[1.125rem]; /* 18px */
+  font-size: 1.125rem; /* 18px */
 }
 
 .text-xl {
-  @apply text-[1.25rem]; /* 20px */
+  font-size: 1.25rem; /* 20px */
 }
 
 .text-2xl {
-  @apply text-[1.5rem]; /* 24px */
+  font-size: 1.5rem; /* 24px */
 }
 
 .text-3xl {
-  @apply text-[1.875rem]; /* 30px */
+  font-size: 1.875rem; /* 30px */
 }
 
 .text-4xl {
-  @apply text-[2.25rem]; /* 36px */
+  font-size: 2.25rem; /* 36px */
+}
+
+/* ============================================
+   GAME-SPECIFIC OVERRIDES (warm palette)
+   ============================================ */
+
+/* Override dark UI elements to use ink tones */
+.game-surface {
+  background: var(--color-ink);
+  color: var(--color-parchment-light);
+}
+
+.game-surface .text-white\/60 {
+  color: color-mix(in srgb, var(--color-parchment-light) 60%, transparent);
+}
+
+.game-surface .text-white\/40 {
+  color: color-mix(in srgb, var(--color-parchment-light) 40%, transparent);
+}
+
+.game-surface .text-white\/45 {
+  color: color-mix(in srgb, var(--color-parchment-light) 45%, transparent);
+}
+
+.game-surface .text-white\/50 {
+  color: color-mix(in srgb, var(--color-parchment-light) 50%, transparent);
+}
+
+.game-surface .text-white\/70 {
+  color: color-mix(in srgb, var(--color-parchment-light) 70%, transparent);
+}
+
+.game-surface .text-white\/80 {
+  color: color-mix(in srgb, var(--color-parchment-light) 80%, transparent);
+}
+
+.game-surface .text-white\/85 {
+  color: color-mix(in srgb, var(--color-parchment-light) 85%, transparent);
+}
+
+.game-surface .text-white\/90 {
+  color: color-mix(in srgb, var(--color-parchment-light) 90%, transparent);
+}
+
+.game-surface .text-white {
+  color: var(--color-parchment-light);
+}
+
+/* Override border-white/\* in game surfaces */
+.game-surface .border-white\/10 {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent);
+}
+
+.game-surface .border-white\/15 {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 15%, transparent);
+}
+
+.game-surface .border-white\/20 {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 20%, transparent);
+}
+
+.game-surface .border-white\/25 {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 25%, transparent);
+}
+
+.game-surface .border-white\/30 {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 30%, transparent);
+}
+
+/* Override bg-white/\* in game surfaces */
+.game-surface .bg-white\/5 {
+  background-color: color-mix(in srgb, var(--color-parchment-light) 5%, transparent);
+}
+
+.game-surface .bg-white\/10 {
+  background-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent);
+}
+
+.game-surface .bg-neutral-800\/50 {
+  background-color: color-mix(in srgb, var(--color-ink) 80%, transparent);
+}
+
+.game-surface .bg-neutral-900 {
+  background-color: var(--color-ink);
+}
+
+.game-surface .bg-black {
+  background-color: var(--color-ink);
+}
+
+.game-surface .bg-black\/40 {
+  background-color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+}
+
+.game-surface .bg-black\/45 {
+  background-color: color-mix(in srgb, var(--color-ink) 45%, transparent);
+}
+
+.game-surface .bg-black\/60 {
+  background-color: color-mix(in srgb, var(--color-ink) 60%, transparent);
+}
+
+.game-surface .bg-black\/75 {
+  background-color: color-mix(in srgb, var(--color-ink) 75%, transparent);
+}
+
+.game-surface .bg-black\/90 {
+  background-color: color-mix(in srgb, var(--color-ink) 90%, transparent);
+}
+
+.game-surface .bg-black\/95 {
+  background-color: color-mix(in srgb, var(--color-ink) 95%, transparent);
+}
+
+.game-surface .bg-black\/98 {
+  background-color: color-mix(in srgb, var(--color-ink) 98%, transparent);
+}
+
+/* Override hover states */
+.game-surface .hover\:border-white\/20:hover {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 20%, transparent);
+}
+
+.game-surface .hover\:border-white\/25:hover {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 25%, transparent);
+}
+
+.game-surface .hover\:border-white\/30:hover {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 30%, transparent);
+}
+
+.game-surface .hover\:border-white\/35:hover {
+  border-color: color-mix(in srgb, var(--color-parchment-light) 35%, transparent);
+}
+
+.game-surface .hover\:bg-white\/10:hover {
+  background-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent);
+}
+
+.game-surface .hover\:bg-white\/\[0\.07\]:hover {
+  background-color: color-mix(in srgb, var(--color-parchment-light) 7%, transparent);
+}
+
+.game-surface .hover\:text-white\/70:hover {
+  color: color-mix(in srgb, var(--color-parchment-light) 70%, transparent);
+}
+
+.game-surface .hover\:text-white:hover {
+  color: var(--color-parchment-light);
 }

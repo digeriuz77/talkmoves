@@ -45,14 +45,14 @@ export default function App() {
 
   if (!pastLanding) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-neutral-900 p-4 font-sans text-white">
+      <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
         <Landing onEnter={() => setPastLanding(true)} />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-neutral-900 p-4 font-sans text-white">
+    <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
       {!selectedGame ? (
         <ModeSelect onSelect={setSelectedGameId} levelProgress={levelProgress} />
       ) : selectedGame.engine === 'choice' ? (
@@ -82,65 +82,88 @@ function ModeSelect({
   levelProgress: LevelProgressMap;
 }) {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="max-w-6xl w-full px-4"
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      className="max-w-6xl w-full px-4 sm:px-6"
     >
-      <div className="text-center mb-6">
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold mb-3 bg-gradient-to-r from-amber-200 to-emerald-200 bg-clip-text text-transparent">
+      {/* Header — editorial style */}
+      <div className="text-center mb-8 sm:mb-12">
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.1, duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
+          className="mx-auto mb-6 h-[3px] w-12 rounded-full bg-terracotta"
+        />
+
+        <motion.p
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="label-section mb-3"
+        >
+          Primary Classroom Practice
+        </motion.p>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          className="heading-editorial text-3xl sm:text-4xl md:text-5xl"
+          style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
+        >
           Dialogic Classroom
-        </h1>
-        <p className="text-sm md:text-lg text-white/60">
+        </motion.h1>
+
+        <motion.div
+          initial={{ scaleX: 0 }}
+          animate={{ scaleX: 1 }}
+          transition={{ delay: 0.35, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
+          className="rule-editorial mx-auto mt-5 mb-4 max-w-xs"
+        />
+
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.4 }}
+          className="text-body mx-auto max-w-2xl text-sm sm:text-base"
+        >
           Practice realistic Primary classroom routines where pupils may think in Malay, answer in partial English, and still need help turning half-formed ideas into stronger talk.
-        </p>
+        </motion.p>
       </div>
 
-      <div className="grid gap-4 sm:gap-6">
-        <div className="sm:hidden space-y-4">
-          {/* Mobile view: vertical stack */}
-          {gameCatalog.map((game, index) => (
-            <Fragment key={game.id}>
-              <GameCard
-                game={game}
-                index={index}
-                onSelect={onSelect}
-                progress={getLevelStatus(levelProgress, game.id)}
-              />
-            </Fragment>
-          ))}
-        </div>
-        
-          <div className="hidden sm:block">
-            {/* Desktop view: grid layout */}
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 gap-y-8">
-              {gameCatalog.map((game, index) => (
-                <Fragment key={game.id}>
-                  <GameCard
-                    game={game}
-                    index={index}
-                    onSelect={onSelect}
-                    progress={getLevelStatus(levelProgress, game.id)}
-                  />
-                </Fragment>
-              ))}
-            </div>
-          </div>
+      {/* Game cards — editorial grid */}
+      <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3 gap-y-6 sm:gap-y-8">
+        {gameCatalog.map((game, index) => (
+          <Fragment key={game.id}>
+            <GameCard
+              game={game}
+              index={index}
+              onSelect={onSelect}
+              progress={getLevelStatus(levelProgress, game.id)}
+            />
+          </Fragment>
+        ))}
       </div>
 
-      {/* Info Section */}
+      {/* Info Section — editorial aside */}
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-        className="mt-6 sm:mt-8 bg-blue-900/20 border border-blue-500/20 rounded-2xl p-4 sm:p-6"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.5 }}
+        className="mt-8 sm:mt-12 rounded-2xl border border-navy/10 bg-navy-bg/40 p-5 sm:p-8"
       >
-        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-6">
-          <BookOpen className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 flex-shrink-0 mt-2 sm:mt-1" />
+        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-5">
+          <div className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy/10 sm:mb-0">
+            <BookOpen className="h-5 w-5 text-navy" />
+          </div>
           <div className="flex-1">
-            <h3 className="font-bold text-white mb-2 sm:mb-3">About This Training Build</h3>
-            <p className="text-xs sm:text-sm text-white/60 leading-relaxed">
-              Based on research by Edwards-Groves, Chapin, O'Connor, and Alexander. 
+            <h3 className="font-display text-lg font-bold text-ink mb-2" style={{ fontVariationSettings: "'SOFT' 100" }}>
+              About This Training Build
+            </h3>
+            <p className="text-sm leading-relaxed text-ink-soft">
+              Based on research by Edwards-Groves, Chapin, O'Connor, and Alexander.
               These levels are designed to help teachers rehearse dialogic routines that keep English available for reasoning, even when lesson time is tight and the temptation is to take the one fast correct answer.
             </p>
           </div>
@@ -168,51 +191,67 @@ function GameCard({
     <motion.button
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.04 }}
+      transition={{ delay: 0.25 + index * 0.05, duration: 0.4 }}
       onClick={() => onSelect(game.id)}
-      className="group relative rounded-2xl border border-white/10 bg-neutral-800/50 p-4 sm:p-6 text-left transition-all hover:border-white/25 touch-target"
+      className="group card-warm relative p-5 sm:p-6 text-left transition-all duration-300 touch-target"
     >
-      <div className="absolute right-2 top-2 sm:right-4 sm:top-4 flex h-8 w-8 sm:h-10 sm:w-10 items-center justify-center rounded-full bg-white/5">
-        <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-white/70" />
+      {/* Icon */}
+      <div className="absolute right-4 top-4 sm:right-5 sm:top-5 flex h-9 w-9 items-center justify-center rounded-lg bg-ink/5">
+        <Icon className="h-4 w-4 text-ink-muted" />
       </div>
 
-      <div className="mb-2 sm:mb-3 flex items-center justify-between gap-2 sm:gap-3">
-        <div className="text-xs sm:text-sm font-bold uppercase tracking-[0.18em] text-white/45">
-          {game.subtitle}
-        </div>
+      {/* Subtitle + status */}
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <div className="label-section">{game.subtitle}</div>
         <div
-          className={`rounded-full px-2 sm:px-3 py-1 sm:px-2 text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.14em] ${
+          className={
             progress.completed
-              ? 'bg-emerald-400/15 text-emerald-200'
+              ? 'pill-sage'
               : progress.attempts > 0
-                ? 'bg-amber-300/15 text-amber-100'
-                : 'bg-white/10 text-white/50'
-          }`}
+                ? 'pill-amber'
+                : 'pill-terracotta'
+          }
         >
           {progress.statusLabel}
         </div>
       </div>
-      <h2 className="mb-2 sm:mb-3 flex-1 pr-2 sm:pr-4 text-lg sm:text-xl font-serif font-bold">{game.title}</h2>
-      <p className="mb-2 sm:mb-3 text-xs sm:text-sm leading-relaxed text-white/60">{game.description}</p>
 
-      <div className="mb-2 sm:mb-3 flex flex-wrap gap-1 sm:gap-2">
+      {/* Title */}
+      <h2
+        className="heading-editorial mb-2.5 pr-10 text-xl sm:text-2xl"
+        style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
+      >
+        {game.title}
+      </h2>
+
+      {/* Description */}
+      <p className="mb-4 text-sm leading-relaxed text-ink-soft">{game.description}</p>
+
+      {/* Focus areas */}
+      <div className="mb-4 flex flex-wrap gap-1.5">
         {game.focusAreas.slice(0, 3).map((area) => (
-          <span key={area} className="rounded-full border border-white/10 bg-white/5 px-2 sm:px-3 py-0.5 sm:py-1 text-[9px] sm:text-[10px] uppercase tracking-[0.14em] text-white/45">
+          <span
+            key={area}
+            className="rounded-full border border-ink/8 bg-ink/[0.03] px-2.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-ink-muted"
+          >
             {area}
           </span>
         ))}
       </div>
 
-      <div className="flex items-center gap-1 sm:gap-2 font-bold text-white/80 text-xs sm:text-sm">
-        Start level <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 transition-transform group-hover:translate-x-1" />
+      {/* CTA */}
+      <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
+        Start level
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
       </div>
 
-      <div className="mt-2 sm:mt-4 border-t border-white/10 pt-2 sm:pt-4 text-xs sm:text-[9px] text-white/40 space-y-1 sm:space-y-2">
-        <div className="flex-1">
-          {isTalkMoves ? 'Chain responses • Talk-move combos' : 'Scenario choices • Visible classroom consequences'}
+      {/* Footer meta */}
+      <div className="mt-4 border-t border-ink/[0.06] pt-3 text-[11px] text-ink-muted space-y-1">
+        <div>
+          {isTalkMoves ? 'Chain responses · Talk-move combos' : 'Scenario choices · Visible classroom consequences'}
         </div>
-        <div className="font-mono text-xs sm:text-sm">
-          Best score: {progress.bestScore}% • Attempts: {progress.attempts}
+        <div className="font-mono text-xs">
+          Best score: {progress.bestScore}% · Attempts: {progress.attempts}
         </div>
       </div>
     </motion.button>

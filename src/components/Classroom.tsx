@@ -16,13 +16,9 @@ export default function Classroom({
   spokenStudentIds = [],
   assets,
 }: ClassroomProps) {
-  // Calculate opacities based on engagement score (0 to 100)
-  // Beast fades in as score drops from 50 to 0.
   const beastOpacity = Math.max(0, (50 - engagementScore) / 50);
-  // Transformer fades in as score rises from 50 to 100.
   const transformerOpacity = Math.max(0, (engagementScore - 50) / 50);
 
-  // Determine overall classroom "mood"
   const isDisengaged = engagementScore < 30;
   const isHighlyEngaged = engagementScore > 70;
 
@@ -38,8 +34,8 @@ export default function Classroom({
 
   return (
     <div className="relative flex-1 w-full h-full overflow-hidden">
-      {/* Base classroom layer - image when provided, else CSS gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-100 via-orange-50 to-yellow-50">
+      {/* Base classroom layer */}
+      <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50">
         {useNormalImage && (
           <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -48,104 +44,187 @@ export default function Classroom({
         )}
         {!useNormalImage && (
           <>
-            {/* Wall */}
-            <div className="absolute inset-0 bg-gradient-to-b from-slate-100 to-slate-200" style={{ height: '40%' }} />
-            
-            {/* Floor */}
-            <div className="absolute bottom-0 inset-x-0 h-[60%] bg-gradient-to-t from-amber-800 to-amber-700" />
-            
+            {/* Wall — warm plaster tone */}
+            <div
+              className="absolute inset-0"
+              style={{
+                height: '40%',
+                background: 'linear-gradient(180deg, #e8dfd2 0%, #ddd3c4 100%)',
+              }}
+            />
+
+            {/* Floor — warm wood */}
+            <div
+              className="absolute bottom-0 inset-x-0"
+              style={{
+                height: '60%',
+                background: 'linear-gradient(0deg, #8b6f47 0%, #a68b5b 50%, #b89e6e 100%)',
+              }}
+            />
+
             {/* Windows */}
-            <div className="absolute top-[10%] left-[15%] w-[20%] h-[25%] bg-gradient-to-br from-sky-200 to-sky-300 rounded-lg border-4 border-white shadow-lg">
-              <div className="absolute inset-2 bg-gradient-to-br from-sky-100 to-sky-200" />
+            <div
+              className="absolute rounded-lg shadow-lg"
+              style={{
+                top: '10%',
+                left: '15%',
+                width: '20%',
+                height: '25%',
+                background: 'linear-gradient(135deg, #b5d0e0 0%, #8ab4cc 100%)',
+                border: '4px solid #f5f0e8',
+              }}
+            >
+              <div
+                className="absolute inset-2 rounded"
+                style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }}
+              />
             </div>
-            <div className="absolute top-[10%] right-[15%] w-[20%] h-[25%] bg-gradient-to-br from-sky-200 to-sky-300 rounded-lg border-4 border-white shadow-lg">
-              <div className="absolute inset-2 bg-gradient-to-br from-sky-100 to-sky-200" />
+            <div
+              className="absolute rounded-lg shadow-lg"
+              style={{
+                top: '10%',
+                right: '15%',
+                width: '20%',
+                height: '25%',
+                background: 'linear-gradient(135deg, #b5d0e0 0%, #8ab4cc 100%)',
+                border: '4px solid #f5f0e8',
+              }}
+            >
+              <div
+                className="absolute inset-2 rounded"
+                style={{ background: 'linear-gradient(135deg, #d4e6f0 0%, #c2dae6 100%)' }}
+              />
             </div>
-            
-            {/* Desk/table representation */}
-            <div className="absolute bottom-[20%] left-[20%] w-[25%] h-[15%] bg-gradient-to-b from-amber-600 to-amber-700 rounded-lg shadow-lg" />
-            <div className="absolute bottom-[20%] right-[20%] w-[25%] h-[15%] bg-gradient-to-b from-amber-600 to-amber-700 rounded-lg shadow-lg" />
-            
+
+            {/* Desk */}
+            <div
+              className="absolute rounded-lg shadow-lg"
+              style={{
+                bottom: '20%',
+                left: '20%',
+                width: '25%',
+                height: '15%',
+                background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)',
+              }}
+            />
+            <div
+              className="absolute rounded-lg shadow-lg"
+              style={{
+                bottom: '20%',
+                right: '20%',
+                width: '25%',
+                height: '15%',
+                background: 'linear-gradient(180deg, #7a5c3a 0%, #5e4528 100%)',
+              }}
+            />
+
             {/* Board */}
-            <div className="absolute top-[15%] left-[35%] w-[30%] h-[20%] bg-gradient-to-b from-green-700 to-green-800 rounded-lg border-4 border-amber-900 shadow-lg">
-              <div className="absolute bottom-1 left-2 right-2 h-1 bg-amber-900/50 rounded" />
+            <div
+              className="absolute rounded-lg shadow-lg"
+              style={{
+                top: '15%',
+                left: '35%',
+                width: '30%',
+                height: '20%',
+                background: 'linear-gradient(180deg, #3d5c3a 0%, #2d4a2e 100%)',
+                border: '4px solid #6b4f35',
+              }}
+            >
+              <div
+                className="absolute bottom-1 left-2 right-2 h-1 rounded"
+                style={{ background: 'rgba(107, 79, 53, 0.5)' }}
+              />
             </div>
           </>
         )}
       </div>
 
-      {/* Disengaged overlay - image when provided, else gradient */}
+      {/* Disengaged overlay */}
       <motion.div
-        className={useBeastImage ? 'absolute inset-0 bg-cover bg-center bg-no-repeat' : 'absolute inset-0 bg-gradient-to-t from-gray-900/60 via-gray-800/40 to-gray-900/60'}
+        className={
+          useBeastImage
+            ? 'absolute inset-0 bg-cover bg-center bg-no-repeat'
+            : 'absolute inset-0'
+        }
         style={
           useBeastImage
             ? { backgroundImage: `url(${assets!.classroom_beasts})`, mixBlendMode: 'multiply' }
-            : undefined
+            : { background: 'linear-gradient(0deg, rgba(44,37,32,0.6) 0%, rgba(44,37,32,0.3) 50%, rgba(44,37,32,0.6) 100%)' }
         }
         initial={{ opacity: 0 }}
         animate={{ opacity: beastOpacity }}
         transition={{ duration: 1 }}
       />
 
-      {/* Highly engaged overlay - image when provided, else gradient */}
+      {/* Highly engaged overlay */}
       <motion.div
-        className={useTransformerImage ? 'absolute inset-0 bg-cover bg-center bg-no-repeat' : 'absolute inset-0 bg-gradient-to-t from-emerald-900/30 via-yellow-200/20 to-amber-500/30'}
+        className={
+          useTransformerImage
+            ? 'absolute inset-0 bg-cover bg-center bg-no-repeat'
+            : 'absolute inset-0'
+        }
         style={
           useTransformerImage
             ? { backgroundImage: `url(${assets!.classroom_transformers})`, mixBlendMode: 'screen' }
-            : undefined
+            : { background: 'linear-gradient(0deg, rgba(107,143,113,0.2) 0%, rgba(212,149,43,0.15) 50%, rgba(196,92,60,0.2) 100%)' }
         }
         initial={{ opacity: 0 }}
         animate={{ opacity: transformerOpacity }}
         transition={{ duration: 1 }}
       />
 
-      {/* Engagement indicator particles */}
+      {/* Engagement particles — terracotta sparks */}
       {isHighlyEngaged && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(8)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-2 h-2 rounded-full bg-amber-400"
-              initial={{ 
-                x: Math.random() * 100 + '%', 
+              className="absolute rounded-full"
+              style={{
+                width: 6 + Math.random() * 4,
+                height: 6 + Math.random() * 4,
+                background: i % 2 === 0 ? '#d4952b' : '#c45c3c',
+              }}
+              initial={{
+                x: `${Math.random() * 100}%`,
                 y: '110%',
-                opacity: 0 
+                opacity: 0,
               }}
-              animate={{ 
+              animate={{
                 y: '-10%',
-                opacity: [0, 1, 0]
+                opacity: [0, 0.8, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 2 + Math.random() * 2,
                 repeat: Infinity,
-                delay: Math.random() * 2
+                delay: Math.random() * 2,
               }}
             />
           ))}
         </div>
       )}
 
-      {/* Disengagement indicator */}
+      {/* Disengagement particles */}
       {isDisengaged && (
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           {[...Array(5)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute w-1 h-1 rounded-full bg-gray-500"
-              initial={{ 
-                x: Math.random() * 100 + '%', 
+              className="absolute w-1 h-1 rounded-full"
+              style={{ background: 'rgba(92, 82, 74, 0.4)' }}
+              initial={{
+                x: `${Math.random() * 100}%`,
                 y: '-10%',
-                opacity: 0 
+                opacity: 0,
               }}
-              animate={{ 
+              animate={{
                 y: '110%',
-                opacity: [0, 0.5, 0]
+                opacity: [0, 0.5, 0],
               }}
-              transition={{ 
+              transition={{
                 duration: 3 + Math.random() * 3,
                 repeat: Infinity,
-                delay: Math.random() * 3
+                delay: Math.random() * 3,
               }}
             />
           ))}
@@ -164,18 +243,29 @@ export default function Classroom({
             height: `${hotspot.height}%`,
           }}
         >
-          {/* Student indicator */}
           <div
             title={`${hotspot.name}${spokenStudentIds.includes(hotspot.id) ? ' · has spoken' : ''}`}
-            className={`flex h-full w-full items-center justify-center rounded-full border-2 text-sm font-bold tabular-nums ${
-              spokenStudentIds.includes(hotspot.id)
-                ? 'border-emerald-300 bg-emerald-500 text-emerald-950 ring-2 ring-emerald-300/50'
+            className="flex h-full w-full items-center justify-center rounded-full text-xs font-bold tabular-nums transition-all duration-300"
+            style={{
+              border: spokenStudentIds.includes(hotspot.id)
+                ? '2px solid #8aab8f'
                 : engagementScore > 70
-                  ? 'border-emerald-200/50 bg-emerald-400/90 text-emerald-950'
+                  ? '2px solid rgba(107, 143, 113, 0.5)'
                   : engagementScore < 30
-                    ? 'border-gray-300/40 bg-gray-500 text-gray-100'
-                    : 'border-blue-200/40 bg-blue-500 text-white'
-            }`}
+                    ? '2px solid rgba(138, 127, 117, 0.3)'
+                    : '2px solid rgba(196, 92, 60, 0.4)',
+              background: spokenStudentIds.includes(hotspot.id)
+                ? '#6b8f71'
+                : engagementScore > 70
+                  ? '#8aab8f'
+                  : engagementScore < 30
+                    ? '#8a7f75'
+                    : '#c45c3c',
+              color: '#f5f0e8',
+              boxShadow: spokenStudentIds.includes(hotspot.id)
+                ? '0 0 12px rgba(107, 143, 113, 0.4)'
+                : '0 2px 8px rgba(44, 37, 32, 0.2)',
+            }}
           >
             {shortLabel(hotspot.name, hotspot.id)}
           </div>
