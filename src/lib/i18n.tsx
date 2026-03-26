@@ -133,15 +133,15 @@ const ms: Record<string, string> = {
   'landing.tagline': 'Amalan Pengajaran Dialogik',
   'landing.title': 'Langkah Perbincangan',
   'landing.welcome':
-    'Selamat datang ke Langkah Perbincangan. Ini ialah senario ringkas untuk membantu guru berfikir tentang amalan dialogik di dalam bilik darjah.',
+    'Selamat datang ke Langkah Perbincangan. Ini ialah senario ringkas untuk membantu guru berfikir tentang amalan dialogik di dalam bilik kelas.',
   'landing.contact': 'Untuk tahap seterusnya, hubungi Gary di:',
   'landing.enter': 'Masuk',
 
   // ModeSelect
-  'mode.tagline': 'Amalan Bilik Darjah Rendah',
-  'mode.title': 'Bilik Darjah Dialogik',
+  'mode.tagline': 'Amalan Bilik Kelas Rendah',
+  'mode.title': 'Bilik Kelas Dialogik',
   'mode.description':
-    'Latih rutin bilik darjah Rendah yang realistik di mana murid mungkin berfikir dalam BM, menjawab dalam Inggeris separa, dan masih memerlukan bantuan mengubah idea separa bentuk kepada perbincangan yang lebih mantap.',
+    'Latih rutin bilik kelas Rendah yang realistik di mana pelajar mungkin berfikir dalam BM, menjawab dalam Inggeris separa, dan masih memerlukan bantuan mengubah idea separa bentuk kepada perbincangan yang lebih mantap.',
   'mode.aboutTitle': 'Tentang Binaan Latihan Ini',
   'mode.aboutBody':
     "Berdasarkan penyelidikan oleh Edwards-Groves, Chapin, O'Connor, dan Alexander. Tahap-tahap ini direka untuk membantu guru melatih rutin dialogik yang mengekalkan Inggeris tersedia untuk penaakulan, walaupun masa pengajaran terhad dan godaan untuk mengambil satu jawapan pantas yang betul.",
@@ -149,7 +149,7 @@ const ms: Record<string, string> = {
   // GameCard
   'card.startLevel': 'Mula tahap',
   'card.chainInfo': 'Rantaian respons \u00b7 Gabungan langkah perbincangan',
-  'card.choiceInfo': 'Pilihan senario \u00b7 Akibat bilik darjah yang nyata',
+  'card.choiceInfo': 'Pilihan senario \u00b7 Akibat bilik kelas yang nyata',
   'card.bestScore': 'Markah terbaik:',
   'card.attempts': 'Percubaan:',
 
@@ -162,7 +162,7 @@ const ms: Record<string, string> = {
   'header.levels': 'Tahap',
   'header.about': 'Tentang',
   'header.outcomes': 'Hasil',
-  'header.classroomOutcomes': 'Hasil bilik darjah',
+  'header.classroomOutcomes': 'Hasil bilik kelas',
   'header.turn': 'Giliran',
 
   // DialogueBox
@@ -194,19 +194,19 @@ const ms: Record<string, string> = {
   // Response types
   'response.partialIdea': 'Idea Separa',
   'response.partialIdea.coaching':
-    'Ada pemikiran sebenar di sini. Suarakan semula, tambah ketepatan, dan kekalkan murid dalam perbualan.',
+    'Ada pemikiran sebenar di sini. Suarakan semula, tambah ketepatan, dan kekalkan pelajar dalam perbualan.',
   'response.echo': 'Gema',
   'response.echo.coaching':
-    'Murid mengulang bahasa yang sudah ada dalam bilik. Tekan untuk apa yang dimaksudkan atau minta seseorang membina atasnya.',
+    'Pelajar mengulang bahasa yang sudah ada dalam bilik kelas. Tekan untuk apa yang dimaksudkan atau minta seseorang membina atasnya.',
   'response.misconception': 'Salah Faham',
   'response.misconception.coaching':
-    'Murid menampakkan idea yang salah. Ketengahkan penaakulan, biarkan kelas menguji dan menyemak semula idea itu.',
+    'Pelajar menampakkan idea yang salah. Ketengahkan penaakulan, biarkan kelas menguji dan menyemak semula idea itu.',
   'response.partnerReport': 'Laporan Rakan',
   'response.partnerReport.coaching':
     'Ini penyertaan risiko rendah ke perbincangan kelas. Gunakannya untuk meluaskan penyertaan sebelum meminta huraian peribadi.',
   'response.prediction': 'Ramalan',
   'response.prediction.coaching':
-    'Ramalan membuka inkuiri. Kekal dengan mengapa supaya murid menghubungkannya dengan bukti, bukan meneka cepat.',
+    'Ramalan membuka inkuiri. Kekal dengan mengapa supaya pelajar menghubungkannya dengan bukti, bukan meneka cepat.',
   'response.emergentLanguage': 'Bahasa Muncul',
   'response.emergentLanguage.coaching':
     'Pemikiran mungkin mendahului Inggeris. Bina dari idea dahulu, kemudian perkukuh bahasa di sekelilingnya.',
@@ -217,23 +217,23 @@ const ms: Record<string, string> = {
   'advice.lowReasoning':
     'Perbincangan memerlukan lebih langkah pembangunan. Tanya mengapa, bukti, perbandingan, atau semakan sebelum membuat keputusan.',
   'advice.lowOwnership':
-    'Kawalan guru kekal tinggi. Biar murid membawa lebih penerangan secara terbuka, walaupun Inggeris masih kasar.',
+    'Kawalan guru kekal tinggi. Biar pelajar membawa lebih penerangan secara terbuka, walaupun Inggeris masih kasar.',
   'advice.partialIdeas':
-    'Anda melihat beberapa idea separa. Dalam konteks bilik darjah ini, inilah masa untuk melanjutkan, menyuarakan semula, dan menghubungkan, bukan menggantikan.',
+    'Anda melihat beberapa idea separa. Dalam konteks bilik kelas ini, inilah masa untuk melanjutkan, menyuarakan semula, dan menghubungkan, bukan menggantikan.',
   'advice.misconceptions':
-    'Salah faham muncul. Terus tekan mengapa murid berfikir begitu, kemudian gunakan kelas untuk menguji dan menyemak idea itu.',
+    'Salah faham muncul. Terus tekan mengapa pelajar berfikir begitu, kemudian gunakan kelas untuk menguji dan menyemak idea itu.',
   'advice.echoes':
     'Beberapa respons menggema bahasa guru atau rakan. Ikut dengan "Apa maksud kamu?" atau "Siapa boleh tambah sebab baru?" supaya perbincangan tidak cetek.',
   'advice.emergentLang':
-    'Sesetengah murid ada pemikiran sebelum ada Inggeris. Suarakan semula secara strategik dan gunakan batang ayat supaya sokongan bahasa tidak menjadi pengambilalihan guru.',
+    'Sesetengah pelajar ada pemikiran sebelum ada Inggeris. Suarakan semula secara strategik dan gunakan batang ayat supaya sokongan bahasa tidak menjadi pengambilalihan guru.',
 
   // EndScreen
   'end.discussionOpened': 'Perbincangan Terbuka',
   'end.keepRehearsing': 'Teruskan Berlatih Rutin',
   'end.winDescription':
-    'Anda mencipta versi lebih dialogik "{title}" dengan meluaskan penyertaan dan melindungi pemikiran murid, walaupun sebelum murid boleh menyatakan semuanya dengan jelas dalam Inggeris.',
+    'Anda mencipta versi lebih dialogik "{title}" dengan meluaskan penyertaan dan melindungi pemikiran pelajar, walaupun sebelum pelajar boleh menyatakan semuanya dengan jelas dalam Inggeris.',
   'end.lossDescription':
-    'Percubaan ini menunjukkan betapa cepatnya perbincangan runtuh kembali kepada pemburuan jawatan apabila tekanan masa dan kebimbangan guru mengambil alih. "{title}" direka untuk dimainkan semula supaya pertukaran itu terasa nyata.',
+    'Percubaan ini menunjukkan betapa cepatnya perbincangan runtuh kembali kepada pemburuan jawapan apabila tekanan masa dan kebimbangan guru mengambil alih. "{title}" direka untuk dimainkan semula supaya pertukaran itu terasa nyata.',
   'end.compositeOutcome': 'Hasil komposit',
   'end.teachingStyle': 'Gaya Pengajaran',
   'end.talkMoveProfile': 'Profil Langkah Perbincangan',
