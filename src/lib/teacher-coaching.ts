@@ -71,6 +71,7 @@ export function getResponseTypeMeta(type: StudentResponseType): ResponseTypeMeta
 }
 
 export function buildCoachingSignals(
+export function buildDynamicAdviceKeys(
   metrics: Metrics,
   responseTypes: StudentResponseType[],
 ): CoachingSignal[] {
@@ -103,6 +104,31 @@ export function buildCoachingSignals(
 
   if ((counts['emergent-language'] ?? 0) >= 1) {
     signals.push('emergent-language-visible');
+    advice.push('advice.lowParticipation');
+  }
+
+  if (metrics.reasoning < 50) {
+    advice.push('advice.lowReasoning');
+  }
+
+  if (metrics.ownership < 50) {
+    advice.push('advice.lowOwnership');
+  }
+
+  if ((counts['partial-idea'] ?? 0) >= 2) {
+    advice.push('advice.partialIdeas');
+  }
+
+  if ((counts.misconception ?? 0) >= 1) {
+    advice.push('advice.misconceptions');
+  }
+
+  if ((counts.echo ?? 0) >= 2) {
+    advice.push('advice.echoes');
+  }
+
+  if ((counts['emergent-language'] ?? 0) >= 1) {
+    advice.push('advice.emergentLang');
   }
 
   return signals;
@@ -114,5 +140,13 @@ export function buildDynamicAdviceKeys(metrics: Metrics, responseTypes: StudentR
 
 /** @deprecated Prefer `buildDynamicAdviceKeys` + `t()` in components */
 export function buildDynamicAdvice(metrics: Metrics, responseTypes: StudentResponseType[]): string[] {
+  return buildDynamicAdviceKeys(metrics, responseTypes);
+}
+
+// Legacy wrapper for backward compatibility
+export function buildDynamicAdvice(
+  metrics: Metrics,
+  responseTypes: StudentResponseType[],
+): string[] {
   return buildDynamicAdviceKeys(metrics, responseTypes);
 }

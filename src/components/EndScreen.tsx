@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import { motion } from 'motion/react';
 import {
   AlertTriangle,
@@ -56,9 +57,19 @@ const METRIC_COLORS: Record<string, string> = {
   ownership: '#f0d48a',
 };
 
+const METRIC_COLORS: Record<string, string> = {
+  participation: '#e8a892',
+  reasoning: '#8aab8f',
+  ownership: '#f0d48a',
+};
+
 export default function EndScreen({ result, onRestart, onExit }: EndScreenProps) {
   const { t } = useLang();
   const isWin = result.outcome === 'win';
+
+  const description = isWin
+    ? t('end.winDescription', { title: result.title })
+    : t('end.lossDescription', { title: result.title });
 
   return (
     <motion.div

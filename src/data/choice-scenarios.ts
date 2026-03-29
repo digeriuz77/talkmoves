@@ -1258,6 +1258,8 @@ const countingBlocks: ChoiceScenarioDefinition = {
       alternateTexts: [
         "You hold up three blocks in a row and ask the class to count them. Student A says, 'Three.'",
         "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'"
+        "You hold up 5 blocks and ask the class to count them. Student A says, 'Five.'",
+        "You arrange 7 blocks in a line and ask, 'How many do we have?' Student A says, 'Seven.'"
       ],
       pressureCue: 'Pressure cue: the pupil gave a single-word answer, missing the opportunity to explain their counting strategy.',
       responseType: 'emergent-language',
@@ -1404,6 +1406,8 @@ const shapesSorting: ChoiceScenarioDefinition = {
       alternateTexts: [
         "You hold up a different triangle and ask, 'What shape is this?' Student A says, 'Triangle.'",
         "You point to a triangle on the poster and ask, 'What do we call this shape?' Student A says, 'Triangle.'"
+        "You hold up a square and ask the class to name it. Student A says, 'Square.'",
+        "You show a circle and ask, 'What do we call this shape?' Student A says, 'Circle.'"
       ],
       pressureCue: 'Pressure cue: the pupil gave the correct shape name but didn\'t describe its properties.',
       responseType: 'emergent-language',
@@ -1486,6 +1490,8 @@ const shapesSorting: ChoiceScenarioDefinition = {
       alternateTexts: [
         "Student B says, 'A square has four corners, not three like a triangle.'",
         "Student B says, 'This shape has more sides than the triangle we looked at.'"
+        "Student B says, 'A rectangle has two long sides and two short sides.'",
+        "Student B says, 'A circle is round all the way around.'"
       ],
       pressureCue: 'Pressure cue: the pupil is noticing differences between shapes, a key classification skill.',
       responseType: 'partial-idea',

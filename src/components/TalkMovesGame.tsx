@@ -240,6 +240,10 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       scenario.title,
       lang,
     ],
+      advice: adviceTranslated,
+      profile,
+    }),
+    [engagementScore, gameState, metrics, moveHistory, profile, adviceTranslated, scenario.reflectionPrompt, scenario.title],
   );
 
   const chainScorePreview = responseChain.length > 0

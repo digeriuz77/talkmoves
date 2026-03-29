@@ -106,6 +106,9 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       scenario.title,
       lang,
     ],
+      advice: adviceTranslated,
+    }),
+    [engagementScore, gameState, metrics, moveHistory, adviceTranslated, scenario.reflectionPrompt, scenario.title],
   );
 
   const handleChoice = (choice: ChoiceMove) => {
