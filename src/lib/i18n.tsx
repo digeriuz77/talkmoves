@@ -178,6 +178,12 @@ const en: Record<string, string> = {
   // Language toggle
   'lang.label': 'EN',
   'lang.name': 'English',
+  'lang.segmentEn': 'English',
+  'lang.segmentMs': 'Bahasa Melayu',
+  'lang.aria': 'Interface language — choose English or Bahasa Melayu',
+
+  // Talk-moves layout
+  'talk.studentTurn': 'Student turn',
 };
 
 const ms: Record<string, string> = {
@@ -354,6 +360,12 @@ const ms: Record<string, string> = {
   // Language toggle
   'lang.label': 'BM',
   'lang.name': 'Bahasa Melayu',
+  'lang.segmentEn': 'English',
+  'lang.segmentMs': 'Bahasa Melayu',
+  'lang.aria': 'Bahasa paparan — pilih English atau Bahasa Melayu',
+
+  // Talk-moves layout
+  'talk.studentTurn': 'Giliran pelajar',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };

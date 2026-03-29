@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @license
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -45,15 +45,11 @@ export default function App() {
     setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
   };
 
-  const toggleLang = () => {
-    setLang(lang === 'en' ? 'ms' : 'en');
-  };
-
   if (!pastLanding) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
         <Landing onEnter={() => setPastLanding(true)} />
-        <LangToggle lang={lang} onToggle={toggleLang} t={t} />
+        <LangToggle lang={lang} setLang={setLang} t={t} />
       </div>
     );
   }
@@ -77,22 +73,50 @@ export default function App() {
           onComplete={handleLevelComplete}
         />
       )}
-      <LangToggle lang={lang} onToggle={toggleLang} t={t} />
+      <LangToggle lang={lang} setLang={setLang} t={t} />
     </div>
   );
 }
 
-function LangToggle({ lang, onToggle, t }: { lang: Lang; onToggle: () => void; t: (key: string) => string }) {
+function LangToggle({
+  lang,
+  setLang,
+  t,
+}: {
+  lang: Lang;
+  setLang: (next: Lang) => void;
+  t: (key: string) => string;
+}) {
   return (
-    <button
-      type="button"
-      onClick={onToggle}
-      className="fixed bottom-4 right-4 z-[100] flex items-center gap-1.5 rounded-full border border-ink/10 bg-parchment-light/90 px-3 py-2 text-xs font-bold uppercase tracking-wider text-ink-muted shadow-md backdrop-blur-sm transition-colors hover:border-ink/20 hover:text-ink touch-target"
-      title={t('lang.name')}
+    <div
+      role="group"
+      aria-label={t('lang.aria')}
+      className="fixed bottom-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] items-stretch overflow-hidden rounded-xl border-2 border-terracotta/40 bg-parchment-light/95 text-ink shadow-lg backdrop-blur-md"
     >
-      <Languages className="h-3.5 w-3.5" />
-      {t('lang.label')}
-    </button>
+      <div
+        className="hidden items-center justify-center border-r-2 border-terracotta/25 px-2 sm:flex"
+        aria-hidden
+      >
+        <Languages className="h-4 w-4 text-terracotta" />
+      </div>
+      <button
+        type="button"
+        onClick={() => setLang('en')}
+        aria-pressed={lang === 'en'}
+        className={`touch-target min-w-[5.5rem] px-3 py-2.5 text-center text-[11px] font-semibold sm:min-w-0 sm:text-xs ${lang === 'en' ? 'bg-terracotta/20 text-ink' : 'text-ink-muted hover:bg-parchment/80'}`}
+      >
+        {t('lang.segmentEn')}
+      </button>
+      <span className="w-px shrink-0 self-stretch bg-ink/15" aria-hidden />
+      <button
+        type="button"
+        onClick={() => setLang('ms')}
+        aria-pressed={lang === 'ms'}
+        className={`touch-target min-w-[5.5rem] px-2 py-2.5 text-center text-[11px] font-semibold leading-snug sm:min-w-0 sm:px-3 sm:text-xs ${lang === 'ms' ? 'bg-terracotta/20 text-ink' : 'text-ink-muted hover:bg-parchment/80'}`}
+      >
+        {t('lang.segmentMs')}
+      </button>
+    </div>
   );
 }
 
