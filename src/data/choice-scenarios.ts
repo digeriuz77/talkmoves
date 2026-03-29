@@ -1,5 +1,6 @@
 import legacyScenario from './scenario.json';
 import type { MetricDelta, Metrics } from '../lib/game-progress';
+import type { ReflectionContext } from '../lib/reflection-context';
 import type { StudentResponseType } from '../lib/teacher-coaching';
 
 export type ClassroomHotspot = {
@@ -38,6 +39,7 @@ export type ChoiceScenarioDefinition = {
   recommendedOrder: number;
   focusAreas: string[];
   reflectionPrompt: string;
+  reflectionContext?: ReflectionContext;
   recommendedMoves: string[];
   startNodeId: string;
   passThreshold: number;
@@ -212,6 +214,9 @@ const noHandsUp: ChoiceScenarioDefinition = {
   focusAreas: ['equity', 'think time', 'participation'],
   reflectionPrompt:
     'Which choices widened access to the conversation, and which ones rewarded only speed, confidence, and the one pupil already ready in English?',
+  reflectionContext: {
+    supportLanguage: 'Malay',
+  },
   recommendedMoves: ['Wait Time', 'No Hands Up', 'Turn and Talk', 'Learning-Focused Response'],
   startNodeId: 'start_node',
   passThreshold: 68,
@@ -677,7 +682,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
           text: "[TEACHER PARAPHRASE] 'I probably know what most pairs said, so I will summarise.'",
           nextNode: 'end_game',
           moveType: 'Teacher Paraphrase',
-          tip: 'Students lose the chance to make their partner’s thinking visible.',
+          tip: 'Students lose the chance to make their partner?s thinking visible.',
           metricsDelta: { participation: -10, reasoning: -4, ownership: -10 },
         },
       ],
@@ -792,7 +797,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
       speakerName: 'Student C',
       choices: [
         {
-          text: "[BUILD ON] 'Who can build on Student B’s idea or test it with another example?'",
+          text: "[BUILD ON] 'Who can build on Student B?s idea or test it with another example?'",
           nextNode: 'end_game',
           moveType: 'Add On',
           tip: 'Perfect. The uncomfortable silence has now set up stronger student-to-student reasoning.',
@@ -965,6 +970,9 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
   focusAreas: ['multilingual talk', 'code-switching', 'sentence stems'],
   reflectionPrompt:
     'Did you use the first language as a bridge back into academic English, or did it become an unplanned escape from thinking aloud?',
+  reflectionContext: {
+    supportLanguage: 'Malay',
+  },
   recommendedMoves: ['Sentence Stems', 'Vocabulary Support', 'Partner Rehearsal', 'Planned Revoicing'],
   startNodeId: 'start_node',
   passThreshold: 69,
@@ -1210,7 +1218,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
           text: "[SINGLE RIGHT ANSWER] 'I only want the correct explanation now.'",
           nextNode: 'end_game',
           moveType: 'Single Answer Demand',
-          tip: 'Curiosity shrinks when students feel they are guessing the teacher’s answer.',
+          tip: 'Curiosity shrinks when students feel they are guessing the teacher?s answer.',
           metricsDelta: { participation: -10, reasoning: -10, ownership: -10 },
         },
         {
@@ -1248,6 +1256,8 @@ const countingBlocks: ChoiceScenarioDefinition = {
     start_node: {
       text: "You show a pile of blocks and ask, 'How many blocks are there?' Student A says, 'Three.' How do you respond?",
       alternateTexts: [
+        "You hold up three blocks in a row and ask the class to count them. Student A says, 'Three.'",
+        "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'"
         "You hold up 5 blocks and ask the class to count them. Student A says, 'Five.'",
         "You arrange 7 blocks in a line and ask, 'How many do we have?' Student A says, 'Seven.'"
       ],
@@ -1394,6 +1404,8 @@ const shapesSorting: ChoiceScenarioDefinition = {
     start_node: {
       text: "You show a triangle and ask, 'What shape is this?' Student A says, 'Triangle.' How do you respond?",
       alternateTexts: [
+        "You hold up a different triangle and ask, 'What shape is this?' Student A says, 'Triangle.'",
+        "You point to a triangle on the poster and ask, 'What do we call this shape?' Student A says, 'Triangle.'"
         "You hold up a square and ask the class to name it. Student A says, 'Square.'",
         "You show a circle and ask, 'What do we call this shape?' Student A says, 'Circle.'"
       ],
@@ -1476,6 +1488,8 @@ const shapesSorting: ChoiceScenarioDefinition = {
     turn_3: {
       text: "Student B says, 'This square has four sides that are the same length.' How do you connect different shapes?",
       alternateTexts: [
+        "Student B says, 'A square has four corners, not three like a triangle.'",
+        "Student B says, 'This shape has more sides than the triangle we looked at.'"
         "Student B says, 'A rectangle has two long sides and two short sides.'",
         "Student B says, 'A circle is round all the way around.'"
       ],

@@ -6,6 +6,7 @@
  */
 
 import { clampScore, type MetricDelta, type Metrics } from '../lib/game-progress';
+import type { ReflectionContext } from '../lib/reflection-context';
 import type { StudentResponseType } from '../lib/teacher-coaching';
 
 // ============================================
@@ -52,6 +53,7 @@ export interface TalkMoveScenarioDefinition {
   recommendedOrder: number;
   focusAreas: string[];
   reflectionPrompt: string;
+  reflectionContext?: ReflectionContext;
   recommendedMoves: string[];
   startingMetrics: Metrics;
   passThreshold: number;
@@ -441,6 +443,9 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
     focusAreas: ['sequencing', 'reasoning', 'scientific inquiry'],
     reflectionPrompt:
       'Which move combinations helped students reason together instead of waiting for you to finish the explanation?',
+    reflectionContext: {
+      supportLanguage: 'Malay',
+    },
     recommendedMoves: ['Wait Time', 'Turn and Talk', 'Say More', 'Press for Reasoning'],
     startingMetrics: {
       participation: 50,
@@ -461,6 +466,9 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
     focusAreas: ['share-out', 'partner reporting', 'uptake'],
     reflectionPrompt:
       'Did your public discussion sample pair thinking in a way that broadened participation and kept ideas moving between students?',
+    reflectionContext: {
+      supportLanguage: 'Malay',
+    },
     recommendedMoves: ['Turn and Talk', 'Repeating', 'Add On', 'Press for Reasoning'],
     startingMetrics: {
       participation: 48,
