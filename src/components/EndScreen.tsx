@@ -57,12 +57,6 @@ const METRIC_COLORS: Record<string, string> = {
   ownership: '#f0d48a',
 };
 
-const METRIC_COLORS: Record<string, string> = {
-  participation: '#e8a892',
-  reasoning: '#8aab8f',
-  ownership: '#f0d48a',
-};
-
 export default function EndScreen({ result, onRestart, onExit }: EndScreenProps) {
   const { t } = useLang();
   const isWin = result.outcome === 'win';

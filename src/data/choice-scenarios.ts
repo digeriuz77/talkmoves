@@ -1257,7 +1257,7 @@ const countingBlocks: ChoiceScenarioDefinition = {
       text: "You show a pile of blocks and ask, 'How many blocks are there?' Student A says, 'Three.' How do you respond?",
       alternateTexts: [
         "You hold up three blocks in a row and ask the class to count them. Student A says, 'Three.'",
-        "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'"
+        "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'",
         "You hold up 5 blocks and ask the class to count them. Student A says, 'Five.'",
         "You arrange 7 blocks in a line and ask, 'How many do we have?' Student A says, 'Seven.'"
       ],
@@ -1405,7 +1405,7 @@ const shapesSorting: ChoiceScenarioDefinition = {
       text: "You show a triangle and ask, 'What shape is this?' Student A says, 'Triangle.' How do you respond?",
       alternateTexts: [
         "You hold up a different triangle and ask, 'What shape is this?' Student A says, 'Triangle.'",
-        "You point to a triangle on the poster and ask, 'What do we call this shape?' Student A says, 'Triangle.'"
+        "You point to a triangle on the poster and ask, 'What do we call this shape?' Student A says, 'Triangle.'",
         "You hold up a square and ask the class to name it. Student A says, 'Square.'",
         "You show a circle and ask, 'What do we call this shape?' Student A says, 'Circle.'"
       ],
@@ -1489,7 +1489,7 @@ const shapesSorting: ChoiceScenarioDefinition = {
       text: "Student B says, 'This square has four sides that are the same length.' How do you connect different shapes?",
       alternateTexts: [
         "Student B says, 'A square has four corners, not three like a triangle.'",
-        "Student B says, 'This shape has more sides than the triangle we looked at.'"
+        "Student B says, 'This shape has more sides than the triangle we looked at.'",
         "Student B says, 'A rectangle has two long sides and two short sides.'",
         "Student B says, 'A circle is round all the way around.'"
       ],

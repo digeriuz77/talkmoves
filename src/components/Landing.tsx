@@ -1,5 +1,5 @@
-﻿/**
- * Landing page ΓÇö editorial hero with warm scholarly palette.
+/**
+ * Landing page — editorial hero with warm scholarly palette.
  */
 import { motion } from 'motion/react';
 import { ArrowRight, Mail } from 'lucide-react';

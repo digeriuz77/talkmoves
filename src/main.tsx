@@ -4,22 +4,6 @@ import App from './App.tsx';
 import { LangProvider, getInitialLang, persistLang, setDocumentLang, type Lang } from './lib/i18n.tsx';
 import { initObservability } from './lib/observability';
 import './index.css';
-import {useState, useEffect} from 'react';
-
-function Root() {
-  const [lang, setLangState] = useState<Lang>(getInitialLang);
-
-  useEffect(() => {
-    persistLang(lang);
-    setDocumentLang(lang);
-  }, [lang]);
-
-  return (
-    <LangProvider lang={lang} setLang={setLangState}>
-      <App />
-    </LangProvider>
-  );
-}
 
 initObservability();
 
