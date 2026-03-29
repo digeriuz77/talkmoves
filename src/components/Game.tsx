@@ -34,7 +34,7 @@ type GameProps = {
 };
 
 export default function Game({ assets, scenario, onExit, onComplete }: GameProps) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
   const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [moveHistory, setMoveHistory] = useState<MoveHistoryItem[]>([]);
@@ -79,16 +79,19 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       reflectionPrompt: scenario.reflectionPrompt,
       historyCounts: summarizeLabels(moveHistory.map((entry) => entry.moveType)),
       advice: adviceTranslated,
-      reflection: createReflectionSummary({
-        title: scenario.title,
-        outcome: gameState === 'win' ? 'win' : 'loss',
-        finalScore: engagementScore,
-        passThreshold: scenario.passThreshold,
-        metrics,
-        responseTypes: responseTypesSeen,
-        moveLabels: moveHistory.map((entry) => entry.moveType),
-        supportLanguage: scenario.reflectionContext?.supportLanguage,
-      }),
+      reflection: createReflectionSummary(
+        {
+          title: scenario.title,
+          outcome: gameState === 'win' ? 'win' : 'loss',
+          finalScore: engagementScore,
+          passThreshold: scenario.passThreshold,
+          metrics,
+          responseTypes: responseTypesSeen,
+          moveLabels: moveHistory.map((entry) => entry.moveType),
+          supportLanguage: scenario.reflectionContext?.supportLanguage,
+        },
+        lang,
+      ),
     }),
     [
       engagementScore,
@@ -101,6 +104,7 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       scenario.reflectionContext,
       scenario.reflectionPrompt,
       scenario.title,
+      lang,
     ],
   );
 

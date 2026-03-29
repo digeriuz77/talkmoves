@@ -50,7 +50,7 @@ type TalkMovesGameProps = {
 };
 
 export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMovesGameProps) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
   const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [responseChain, setResponseChain] = useState<ChainItem[]>([]);
@@ -209,18 +209,21 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
         moveHistory.map((entry) => talkMovesMap[entry.moveId]?.name).filter((name): name is string => Boolean(name)),
       ),
       advice: adviceTranslated,
-      reflection: createReflectionSummary({
-        title: scenario.title,
-        outcome: gameState === 'win' ? 'win' : 'loss',
-        finalScore: engagementScore,
-        passThreshold: scenario.passThreshold,
-        metrics,
-        responseTypes: responseTypesSeen,
-        moveLabels: moveHistory
-          .map((entry) => talkMovesMap[entry.moveId]?.name)
-          .filter((name): name is string => Boolean(name)),
-        supportLanguage: scenario.reflectionContext?.supportLanguage,
-      }),
+      reflection: createReflectionSummary(
+        {
+          title: scenario.title,
+          outcome: gameState === 'win' ? 'win' : 'loss',
+          finalScore: engagementScore,
+          passThreshold: scenario.passThreshold,
+          metrics,
+          responseTypes: responseTypesSeen,
+          moveLabels: moveHistory
+            .map((entry) => talkMovesMap[entry.moveId]?.name)
+            .filter((name): name is string => Boolean(name)),
+          supportLanguage: scenario.reflectionContext?.supportLanguage,
+        },
+        lang,
+      ),
       profile,
     }),
     [
@@ -235,6 +238,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       scenario.reflectionContext,
       scenario.reflectionPrompt,
       scenario.title,
+      lang,
     ],
   );
 

@@ -98,4 +98,28 @@ describe('reflection summary', () => {
 
     expect(summary.headline).toBe('Ideas needed more time.');
   });
+
+  it('uses Malay strings when lang is ms', () => {
+    const summary = createReflectionSummary(
+      {
+        title: 'Counting Blocks',
+        outcome: 'win',
+        finalScore: 72,
+        passThreshold: 65,
+        metrics: {
+          participation: 70,
+          reasoning: 76,
+          ownership: 71,
+        },
+        responseTypes: ['partial-idea'],
+        moveLabels: ['Wait Time', 'Say More', 'Add On'],
+      },
+      'ms',
+    );
+
+    expect(summary.headline).toBe('Idea menjadi lebih kukuh.');
+    expect(summary.summary).toContain('sasaran');
+    expect(summary.summary).toContain('Counting Blocks');
+    expect(summary.strength).toMatch(/mengapa|bagaimana/i);
+  });
 });

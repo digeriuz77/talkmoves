@@ -134,6 +134,47 @@ const en: Record<string, string> = {
   'end.tryAgain': 'Try Again',
   'end.backToLevels': 'Back to Levels',
 
+  // End-of-run reflection (dynamic summary; follows UI language)
+  'reflection.headline.win.participation': 'More pupils joined.',
+  'reflection.headline.win.reasoning': 'Ideas got stronger.',
+  'reflection.headline.win.ownership': 'Pupils carried more of the thinking.',
+  'reflection.headline.close': 'You were close.',
+  'reflection.headline.loss.participation': 'More pupils needed to join.',
+  'reflection.headline.loss.reasoning': 'Ideas needed more time.',
+  'reflection.headline.loss.ownership': 'Pupils needed more room to think.',
+  'reflection.summary.win': 'You reached the goal for "{title}" with a score of {score}%.',
+  'reflection.summary.loss': 'You got {score}%. The goal for "{title}" is {goal}%.',
+  'reflection.strength.participation':
+    'You widened the talk and brought in more than one voice.',
+  'reflection.strength.reasoning':
+    'You kept the class on the thinking by staying with "why" and "how", not just the answer.',
+  'reflection.strength.ownership': 'You let pupils carry more of the explanation themselves.',
+  'reflection.strength.default': 'You kept the discussion moving.',
+  'reflection.risk.participation': 'Too much of the talk stayed with a small number of pupils.',
+  'reflection.risk.reasoning': 'The talk needed more "why" and "how" before the answer.',
+  'reflection.risk.ownership': 'The teacher voice was still doing too much of the work.',
+  'reflection.risk.default': 'The discussion closed too quickly.',
+  'reflection.next.participation.open':
+    'Next run, use pair talk or invite one more pupil in before moving on.',
+  'reflection.next.participation.closed':
+    'Next run, add one more participation move before you close the turn.',
+  'reflection.next.reasoning':
+    'Next run, ask one more "Why?" or "What makes you think that?" before moving on.',
+  'reflection.next.ownership.open':
+    'Next run, revoice briefly, then give the explanation back to the pupil.',
+  'reflection.next.ownership.closed':
+    'Next run, add one more pupil-owned move before you close the turn.',
+  'reflection.next.default.open': 'Next run, stay with the pupil idea a little longer.',
+  'reflection.next.default.closed': 'Next run, add one more talk move before you close the turn.',
+  'reflection.evidence.topMove': 'You used {move} more than any other move.',
+  'reflection.evidence.variety.good': 'You used a good mix of talk moves.',
+  'reflection.evidence.variety.narrow': 'You leaned on the same move pattern a lot.',
+  'reflection.evidence.signal.participation': 'The room opened up to more voices.',
+  'reflection.evidence.signal.reasoning': 'Pupils had more space to explain their thinking.',
+  'reflection.evidence.signal.ownership': 'Pupils carried more of the explanation themselves.',
+  'reflection.languageNote':
+    'When pupils start in {language} or partial English, keep the idea first. Then help them say it in simple English.',
+
   // Language toggle
   'lang.label': 'EN',
   'lang.name': 'English',
@@ -265,12 +306,68 @@ const ms: Record<string, string> = {
   'end.tryAgain': 'Cuba Lagi',
   'end.backToLevels': 'Kembali ke Tahap',
 
+  // Refleksi akhir permainan (ikut bahasa UI)
+  'reflection.headline.win.participation': 'Lebih ramai pelajar menyertai.',
+  'reflection.headline.win.reasoning': 'Idea menjadi lebih kukuh.',
+  'reflection.headline.win.ownership': 'Pelajar membawa lebih banyak pemikiran.',
+  'reflection.headline.close': 'Anda hampir mencapai sasaran.',
+  'reflection.headline.loss.participation': 'Lebih ramai pelajar perlu menyertai.',
+  'reflection.headline.loss.reasoning': 'Idea memerlukan lebih masa.',
+  'reflection.headline.loss.ownership': 'Pelajar memerlukan lebih ruang untuk berfikir.',
+  'reflection.summary.win': 'Anda mencapai sasaran untuk "{title}" dengan markah {score}%.',
+  'reflection.summary.loss': 'Anda mendapat {score}%. Sasaran untuk "{title}" ialah {goal}%.',
+  'reflection.strength.participation':
+    'Anda meluaskan perbincangan dan membawa lebih daripada satu suara.',
+  'reflection.strength.reasoning':
+    'Anda mengekalkan kelas pada pemikiran dengan "mengapa" dan "bagaimana", bukan hanya jawapan.',
+  'reflection.strength.ownership': 'Anda membiarkan pelajar membawa lebih banyak penerangan sendiri.',
+  'reflection.strength.default': 'Anda mengekalkan perbincangan berjalan.',
+  'reflection.risk.participation':
+    'Terlalu banyak perbincangan terpusu pada bilangan pelajar yang kecil.',
+  'reflection.risk.reasoning':
+    'Perbincangan memerlukan lebih "mengapa" dan "bagaimana" sebelum jawapan.',
+  'reflection.risk.ownership': 'Suara guru masih membawa terlalu banyak tugas.',
+  'reflection.risk.default': 'Perbincangan ditutup terlalu cepat.',
+  'reflection.next.participation.open':
+    'Percubaan seterusnya, gunakan perbualan berpasangan atau jemput satu pelajar lagi sebelum teruskan.',
+  'reflection.next.participation.closed':
+    'Percubaan seterusnya, tambah satu langkah penyertaan lagi sebelum menutup giliran.',
+  'reflection.next.reasoning':
+    'Percubaan seterusnya, tanya sekali lagi "Mengapa?" atau "Apa yang buat kamu fikir begitu?" sebelum teruskan.',
+  'reflection.next.ownership.open':
+    'Percubaan seterusnya, suarakan semula secara ringkas, kemudian pulangkan penerangan kepada pelajar.',
+  'reflection.next.ownership.closed':
+    'Percubaan seterusnya, tambah satu langkah pemilikan pelajar lagi sebelum menutup giliran.',
+  'reflection.next.default.open':
+    'Percubaan seterusnya, kekal sedikit lebih lama dengan idea pelajar.',
+  'reflection.next.default.closed':
+    'Percubaan seterusnya, tambah satu langkah perbincangan lagi sebelum menutup giliran.',
+  'reflection.evidence.topMove': 'Anda menggunakan {move} lebih kerap daripada langkah lain.',
+  'reflection.evidence.variety.good': 'Anda menggunakan campuran langkah perbincangan yang baik.',
+  'reflection.evidence.variety.narrow': 'Anda banyak merujuk corak langkah yang sama.',
+  'reflection.evidence.signal.participation': 'Bilik terbuka kepada lebih ramai suara.',
+  'reflection.evidence.signal.reasoning': 'Pelajar mempunyai lebih ruang untuk menerangkan pemikiran.',
+  'reflection.evidence.signal.ownership': 'Pelajar membawa lebih banyak penerangan mereka sendiri.',
+  'reflection.languageNote':
+    'Apabila pelajar mula dalam {language} atau Inggeris separa, kekalkan idea dahulu. Kemudian bantu mereka menyatakannya dalam Inggeris mudah.',
+
   // Language toggle
   'lang.label': 'BM',
   'lang.name': 'Bahasa Melayu',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };
+
+/** Static copy without React context (e.g. reflection builder, tests). */
+export function translate(lang: Lang, key: string, params?: Record<string, string>): string {
+  let str = translations[lang][key] ?? translations.en[key] ?? key;
+  if (params) {
+    for (const k of Object.keys(params)) {
+      str = str.split(`{${k}}`).join(params[k]);
+    }
+  }
+  return str;
+}
 
 // ============================================
 // CONTEXT

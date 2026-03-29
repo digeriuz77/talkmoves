@@ -1,3 +1,5 @@
+import type { Lang } from './i18n';
+import { translate } from './i18n';
 import type { MetricKey, Metrics } from './game-progress';
 import { buildCoachingSignals, type StudentResponseType } from './teacher-coaching';
 
@@ -22,19 +24,8 @@ type ReflectionSummaryInput = {
   supportLanguage?: string;
 };
 
-const SIMPLE_METRIC_NAMES: Record<MetricKey, string> = {
-  participation: 'More pupils joined',
-  reasoning: 'Ideas got stronger',
-  ownership: 'Pupils carried more of the thinking',
-};
-
 const STRONGEST_PRIORITY: MetricKey[] = ['reasoning', 'participation', 'ownership'];
 const WEAKEST_PRIORITY: MetricKey[] = ['reasoning', 'ownership', 'participation'];
-const LOSS_HEADLINES: Record<MetricKey, string> = {
-  participation: 'More pupils needed to join.',
-  reasoning: 'Ideas needed more time.',
-  ownership: 'Pupils needed more room to think.',
-};
 
 function pickMetricByPriority(
   metrics: Metrics,
@@ -72,48 +63,28 @@ function hasGoodMoveVariety(moveLabels: string[]): boolean {
   return new Set(moveLabels).size >= 3;
 }
 
-function buildStrengthText(strongestMetric: MetricKey): string {
-  switch (strongestMetric) {
-    case 'participation':
-      return 'You widened the talk and brought in more than one voice.';
-    case 'reasoning':
-      return 'You kept the class on the thinking by staying with "why" and "how", not just the answer.';
-    case 'ownership':
-      return 'You let pupils carry more of the explanation themselves.';
-    default:
-      return 'You kept the discussion moving.';
-  }
+function buildStrengthText(strongestMetric: MetricKey, lang: Lang): string {
+  return translate(lang, `reflection.strength.${strongestMetric}`);
 }
 
-function buildRiskText(weakestMetric: MetricKey): string {
-  switch (weakestMetric) {
-    case 'participation':
-      return 'Too much of the talk stayed with a small number of pupils.';
-    case 'reasoning':
-      return 'The talk needed more "why" and "how" before the answer.';
-    case 'ownership':
-      return 'The teacher voice was still doing too much of the work.';
-    default:
-      return 'The discussion closed too quickly.';
-  }
+function buildRiskText(weakestMetric: MetricKey, lang: Lang): string {
+  return translate(lang, `reflection.risk.${weakestMetric}`);
 }
 
-function buildNextStep(weakestMetric: MetricKey, moveLabels: string[]): string {
+function buildNextStep(weakestMetric: MetricKey, moveLabels: string[], lang: Lang): string {
+  const open = hasGoodMoveVariety(moveLabels);
   switch (weakestMetric) {
     case 'participation':
-      return hasGoodMoveVariety(moveLabels)
-        ? 'Next run, use pair talk or invite one more pupil in before moving on.'
-        : 'Next run, add one more participation move before you close the turn.';
+      return translate(
+        lang,
+        open ? 'reflection.next.participation.open' : 'reflection.next.participation.closed',
+      );
     case 'reasoning':
-      return 'Next run, ask one more "Why?" or "What makes you think that?" before moving on.';
+      return translate(lang, 'reflection.next.reasoning');
     case 'ownership':
-      return hasGoodMoveVariety(moveLabels)
-        ? 'Next run, revoice briefly, then give the explanation back to the pupil.'
-        : 'Next run, add one more pupil-owned move before you close the turn.';
+      return translate(lang, open ? 'reflection.next.ownership.open' : 'reflection.next.ownership.closed');
     default:
-      return hasGoodMoveVariety(moveLabels)
-        ? 'Next run, stay with the pupil idea a little longer.'
-        : 'Next run, add one more talk move before you close the turn.';
+      return translate(lang, open ? 'reflection.next.default.open' : 'reflection.next.default.closed');
   }
 }
 
@@ -123,16 +94,17 @@ function buildHeadline(
   outcome: 'win' | 'loss',
   finalScore: number,
   passThreshold: number,
+  lang: Lang,
 ): string {
   if (outcome === 'win') {
-    return `${SIMPLE_METRIC_NAMES[strongestMetric]}.`;
+    return translate(lang, `reflection.headline.win.${strongestMetric}`);
   }
 
   if (passThreshold - finalScore <= 4) {
-    return 'You were close.';
+    return translate(lang, 'reflection.headline.close');
   }
 
-  return LOSS_HEADLINES[weakestMetric];
+  return translate(lang, `reflection.headline.loss.${weakestMetric}`);
 }
 
 function buildSummary(
@@ -140,53 +112,67 @@ function buildSummary(
   outcome: 'win' | 'loss',
   finalScore: number,
   passThreshold: number,
+  lang: Lang,
 ): string {
   if (outcome === 'win') {
-    return `You reached the goal for "${title}" with a score of ${finalScore}%.`;
+    return translate(lang, 'reflection.summary.win', {
+      title,
+      score: String(finalScore),
+    });
   }
 
-  return `You got ${finalScore}%. The goal for "${title}" is ${passThreshold}%.`;
+  return translate(lang, 'reflection.summary.loss', {
+    score: String(finalScore),
+    goal: String(passThreshold),
+    title,
+  });
 }
 
-function buildEvidence(moveLabels: string[], strongestMetric: MetricKey): string[] {
+function buildEvidence(moveLabels: string[], strongestMetric: MetricKey, lang: Lang): string[] {
   const evidence: string[] = [];
   const topMoveLabel = getTopMoveLabel(moveLabels);
 
   if (topMoveLabel) {
-    evidence.push(`You used ${topMoveLabel} more than any other move.`);
+    evidence.push(translate(lang, 'reflection.evidence.topMove', { move: topMoveLabel }));
   }
 
   evidence.push(
-    hasGoodMoveVariety(moveLabels)
-      ? 'You used a good mix of talk moves.'
-      : 'You leaned on the same move pattern a lot.',
+    translate(
+      lang,
+      hasGoodMoveVariety(moveLabels) ? 'reflection.evidence.variety.good' : 'reflection.evidence.variety.narrow',
+    ),
   );
 
-  if (strongestMetric === 'participation') {
-    evidence.push('The room opened up to more voices.');
-  } else if (strongestMetric === 'reasoning') {
-    evidence.push('Pupils had more space to explain their thinking.');
-  } else {
-    evidence.push('Pupils carried more of the explanation themselves.');
-  }
+  evidence.push(translate(lang, `reflection.evidence.signal.${strongestMetric}`));
 
   return evidence;
 }
 
-export function createReflectionSummary(input: ReflectionSummaryInput): ReflectionSummary {
+export function createReflectionSummary(
+  input: ReflectionSummaryInput,
+  lang: Lang = 'en',
+): ReflectionSummary {
   const { strongest, weakest } = getMetricExtremes(input.metrics);
   const signals = buildCoachingSignals(input.metrics, input.responseTypes);
   const languageSignalSeen = signals.includes('emergent-language-visible');
 
   return {
-    headline: buildHeadline(strongest, weakest, input.outcome, input.finalScore, input.passThreshold),
-    summary: buildSummary(input.title, input.outcome, input.finalScore, input.passThreshold),
-    strength: buildStrengthText(strongest),
-    risk: buildRiskText(weakest),
-    nextStep: buildNextStep(weakest, input.moveLabels),
-    evidence: buildEvidence(input.moveLabels, strongest),
-    languageNote: languageSignalSeen && input.supportLanguage
-      ? `When pupils start in ${input.supportLanguage} or partial English, keep the idea first. Then help them say it in simple English.`
-      : undefined,
+    headline: buildHeadline(
+      strongest,
+      weakest,
+      input.outcome,
+      input.finalScore,
+      input.passThreshold,
+      lang,
+    ),
+    summary: buildSummary(input.title, input.outcome, input.finalScore, input.passThreshold, lang),
+    strength: buildStrengthText(strongest, lang),
+    risk: buildRiskText(weakest, lang),
+    nextStep: buildNextStep(weakest, input.moveLabels, lang),
+    evidence: buildEvidence(input.moveLabels, strongest, lang),
+    languageNote:
+      languageSignalSeen && input.supportLanguage
+        ? translate(lang, 'reflection.languageNote', { language: input.supportLanguage })
+        : undefined,
   };
 }
