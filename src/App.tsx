@@ -55,7 +55,9 @@ export default function App() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-parchment p-3 sm:p-4 font-body text-ink">
+    <div
+      className={`flex min-h-screen items-center justify-center bg-parchment font-body text-ink ${selectedGame ? 'p-1 sm:p-2' : 'p-3 sm:p-4'}`}
+    >
       {!selectedGame ? (
         <ModeSelect onSelect={setSelectedGameId} levelProgress={levelProgress} />
       ) : selectedGame.engine === 'choice' ? (
@@ -73,7 +75,7 @@ export default function App() {
           onComplete={handleLevelComplete}
         />
       )}
-      <LangToggle lang={lang} setLang={setLang} t={t} />
+      {!selectedGame ? <LangToggle lang={lang} setLang={setLang} t={t} /> : null}
     </div>
   );
 }

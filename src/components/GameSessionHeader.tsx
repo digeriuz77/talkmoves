@@ -1,4 +1,4 @@
-﻿import type { ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft } from 'lucide-react';
 import type { Metrics } from '../lib/game-progress';
@@ -13,6 +13,8 @@ type GameSessionHeaderProps = {
   description: string;
   engagementScore: number;
   metrics: Metrics;
+  /** e.g. in-game English / Bahasa Melayu control */
+  langSlot?: ReactNode;
   rightSlot?: ReactNode;
 };
 
@@ -23,6 +25,7 @@ export default function GameSessionHeader({
   description,
   engagementScore,
   metrics,
+  langSlot,
   rightSlot,
 }: GameSessionHeaderProps) {
   const { t } = useLang();
@@ -96,6 +99,7 @@ export default function GameSessionHeader({
             </div>
           </div>
         </details>
+        {langSlot}
         {rightSlot}
       </div>
     </header>

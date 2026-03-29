@@ -184,6 +184,12 @@ const en: Record<string, string> = {
 
   // Talk-moves layout
   'talk.studentTurn': 'Student turn',
+  'talk.turnSummary': 'How your chain played out',
+  'talk.continue': 'Continue',
+  'talk.scoreAfterTurn': 'Score after this turn: {score}%',
+  'talk.movePurpose': 'Purpose',
+  'talk.moveTip': 'Research note',
+  'talk.continueHint': 'Or press Enter',
 };
 
 const ms: Record<string, string> = {
@@ -366,6 +372,12 @@ const ms: Record<string, string> = {
 
   // Talk-moves layout
   'talk.studentTurn': 'Giliran pelajar',
+  'talk.turnSummary': 'Bagaimana rantaian anda berjalan',
+  'talk.continue': 'Teruskan',
+  'talk.scoreAfterTurn': 'Markah selepas giliran ini: {score}%',
+  'talk.movePurpose': 'Tujuan',
+  'talk.moveTip': 'Nota penyelidikan',
+  'talk.continueHint': 'Atau tekan Enter',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };

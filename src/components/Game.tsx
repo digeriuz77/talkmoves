@@ -3,6 +3,7 @@ import Classroom from './Classroom';
 import DialogueBox from './DialogueBox';
 import EndScreen, { type ChoiceGameResult } from './EndScreen';
 import GameSessionHeader from './GameSessionHeader';
+import GameLangSegment from './GameLangSegment';
 import type { AssetUrls } from './AssetLoader';
 import type { ChoiceMove, ChoiceNode, ChoiceScenarioDefinition } from '../data/choice-scenarios';
 import {
@@ -158,8 +159,8 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
 
   return (
     <div
-      className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
-      style={{ background: '#2c2520', minHeight: 'min(100dvh - 2rem, 800px)' }}
+      className="game-surface relative flex w-full max-w-[min(100%,92rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      style={{ background: '#2c2520', minHeight: 'min(100dvh - 0.5rem, 960px)' }}
     >
       {gameState === 'playing' ? (
         <>
@@ -180,6 +181,7 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
             description={scenario.description}
             engagementScore={engagementScore}
             metrics={metrics}
+            langSlot={<GameLangSegment />}
           />
 
           <DialogueBox

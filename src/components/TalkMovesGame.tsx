@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AssetUrls } from './AssetLoader';
 import CoachingStrip from './CoachingStrip';
@@ -29,8 +29,17 @@ import {
   type StudentResponseType,
 } from '../lib/teacher-coaching';
 import { useLang } from '../lib/i18n';
+import GameLangSegment from './GameLangSegment';
 
-type GameState = 'building' | 'executing' | 'win' | 'loss';
+type GameState = 'building' | 'reviewingTurn' | 'win' | 'loss';
+
+type PendingTurnReview = {
+  executedChain: ChainItem[];
+  feedback: string;
+  nextNodeId: string | null;
+  snapshotScore: number;
+  passCompleted: boolean;
+};
 
 export type ChainItem = {
   moveId: string;
@@ -61,6 +70,9 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   const [playthroughSeed, setPlaythroughSeed] = useState<number>(0);
   const [responseTypesSeen, setResponseTypesSeen] = useState<StudentResponseType[]>([]);
   const [previousTerminalMoveId, setPreviousTerminalMoveId] = useState<string | undefined>(undefined);
+  const [pendingTurnReview, setPendingTurnReview] = useState<PendingTurnReview | null>(null);
+  const pendingTurnReviewRef = useRef<PendingTurnReview | null>(null);
+  pendingTurnReviewRef.current = pendingTurnReview;
 
   const currentNode = useMemo(() => {
     const node = scenario.nodes[currentNodeId];
@@ -90,6 +102,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   );
 
   const addToChain = (moveId: string) => {
+    if (gameState !== 'building') return;
     const move = talkMovesMap[moveId];
     if (!move) return;
     if (responseChain.length > 0) {
@@ -101,6 +114,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   };
 
   const removeFromChain = (index: number) => {
+    if (gameState !== 'building') return;
     const newChain = [...responseChain];
     newChain.splice(index, 1);
     setResponseChain(newChain);
@@ -136,32 +150,47 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       setResponseTypesSeen((previous) => [...previous, currentNode.responseType as StudentResponseType]);
     }
 
-    if (comboText) {
-      setFeedback(`${chainAssessment.feedback} ${comboText} You earned ${turnScore} points!`);
-    } else {
-      setFeedback(`${chainAssessment.feedback} You earned ${turnScore} points!`);
-    }
+    const feedbackText = comboText
+      ? `${chainAssessment.feedback} ${comboText} You earned ${turnScore} points!`
+      : `${chainAssessment.feedback} You earned ${turnScore} points!`;
+
     setPreviousTerminalMoveId(chainAssessment.terminalMoveId);
-    setResponseChain([]);
 
     const nodeKeys = Object.keys(scenario.nodes);
     const currentIndex = nodeKeys.indexOf(currentNodeId);
-    const nextNode = nodeKeys[currentIndex + 1];
+    const nextNodeId = nodeKeys[currentIndex + 1] ?? null;
+    const passCompleted =
+      nextNodeId === null ? isPassingScore(nextMetrics, scenario.passThreshold) : false;
 
-    if (nextNode) {
-      setTimeout(() => {
-        setCurrentNodeId(nextNode);
-        setGameState('building');
-        setFeedback(null);
-      }, 1500);
-    } else {
-      setTimeout(() => {
-        const completed = isPassingScore(nextMetrics, scenario.passThreshold);
-        setGameState(completed ? 'win' : 'loss');
-        onComplete({ levelId: scenario.id, score: newScore, completed });
-      }, 1500);
-    }
+    setPendingTurnReview({
+      executedChain: [...responseChain],
+      feedback: feedbackText,
+      nextNodeId,
+      snapshotScore: newScore,
+      passCompleted,
+    });
+    setResponseChain([]);
+    setGameState('reviewingTurn');
   };
+
+  const confirmTurnReview = useCallback(() => {
+    const current = pendingTurnReviewRef.current;
+    if (!current) return;
+    pendingTurnReviewRef.current = null;
+    setPendingTurnReview(null);
+    setFeedback(null);
+    if (current.nextNodeId) {
+      setCurrentNodeId(current.nextNodeId);
+      setGameState('building');
+    } else {
+      setGameState(current.passCompleted ? 'win' : 'loss');
+      onComplete({
+        levelId: scenario.id,
+        score: current.snapshotScore,
+        completed: current.passCompleted,
+      });
+    }
+  }, [onComplete, scenario.id]);
 
   const handleRestart = () => {
     setCurrentNodeId(scenario.startNodeId);
@@ -174,16 +203,22 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
     setPlaythroughSeed((previous) => previous + 1);
     setResponseTypesSeen([]);
     setPreviousTerminalMoveId(undefined);
+    setPendingTurnReview(null);
   };
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (gameState === 'reviewingTurn' && pendingTurnReview && (e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        confirmTurnReview();
+        return;
+      }
       if (e.key === 'Enter' && canExecute && gameState === 'building') executeChain();
-      if (e.key === 'Escape') setResponseChain([]);
+      if (e.key === 'Escape' && gameState === 'building') setResponseChain([]);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [canExecute, gameState, responseChain]);
+  }, [canExecute, gameState, responseChain, pendingTurnReview, confirmTurnReview]);
 
   const profile: PedagogicalProfile = generateProfile(moveHistory.map(m => m.moveId));
 
@@ -251,10 +286,10 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
   return (
     <div
-      className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
-      style={{ background: '#2c2520', minHeight: 'min(100dvh - 2rem, 800px)' }}
+      className="game-surface relative flex w-full max-w-[min(100%,92rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      style={{ background: '#2c2520', minHeight: 'min(100dvh - 0.5rem, 960px)' }}
     >
-      {gameState === 'building' || gameState === 'executing' ? (
+      {gameState === 'building' || gameState === 'reviewingTurn' ? (
         <>
           <GameSessionHeader
             onExit={onExit}
@@ -263,6 +298,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             description={scenario.description}
             engagementScore={engagementScore}
             metrics={metrics}
+            langSlot={<GameLangSegment />}
             rightSlot={
               <div className="rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center">
                 <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-200/50">{t('header.turn')}</div>
@@ -362,14 +398,14 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               </AnimatePresence>
 
               {responseChain.length > 0 ? (
-                <div className="shrink-0 rounded-lg border border-white/10 p-3 sm:p-4" style={{ background: 'rgba(44,37,32,0.85)' }}>
+                <div className="flex max-h-[min(40dvh,18rem)] shrink-0 flex-col rounded-lg border border-white/10 p-3 sm:p-4" style={{ background: 'rgba(44,37,32,0.85)' }}>
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/45">{t('talk.chain')}</h3>
                     <div className="flex items-center gap-2">
                       <span className="text-[11px] text-white/40">
                         ~{chainScorePreview} {t('talk.pts')}
                       </span>
-                      {canExecute ? (
+                      {canExecute && gameState === 'building' ? (
                         <button
                           type="button"
                           onClick={executeChain}
@@ -381,42 +417,54 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                       ) : null}
                     </div>
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <ol className="min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5">
                     {responseChain.map((item, index) => {
                       const move = talkMovesMap[item.moveId];
                       const isTerminal = move?.category === 'terminal';
                       return (
-                        <span
+                        <li
                           key={`${item.moveId}-${index}`}
-                          className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
+                          className="flex gap-2 rounded-lg border px-2.5 py-2 sm:px-3"
                           style={{
-                            borderColor: isTerminal ? 'rgba(212,149,43,0.4)' : 'rgba(255,255,255,0.12)',
-                            background: isTerminal ? 'rgba(212,149,43,0.15)' : 'rgba(255,255,255,0.08)',
-                            color: isTerminal ? '#f0d48a' : 'rgba(245,240,232,0.8)',
+                            borderColor: isTerminal ? 'rgba(212,149,43,0.35)' : 'rgba(255,255,255,0.1)',
+                            background: isTerminal ? 'rgba(212,149,43,0.08)' : 'rgba(255,255,255,0.04)',
                           }}
                         >
-                          {item.label}
-                          <button
-                            type="button"
-                            onClick={() => removeFromChain(index)}
-                            className="rounded p-1 text-white/40 touch-target hover:text-white/80"
-                            aria-label="Remove"
-                            style={{
-                              minWidth: '28px',
-                              minHeight: '28px',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                            }}
-                          >
-                            &times;
-                          </button>
-                        </span>
+                          <span className="mt-0.5 shrink-0 font-mono text-[11px] tabular-nums text-amber-200/75">
+                            {index + 1}.
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold leading-snug text-white/95">{item.label}</p>
+                            {move ? (
+                              <>
+                                <p className="mt-1 text-[11px] leading-snug text-white/55">
+                                  <span className="font-bold text-white/40">{t('talk.movePurpose')}: </span>
+                                  {move.purpose}
+                                </p>
+                                <p className="mt-1 text-[11px] leading-snug text-white/45">
+                                  <span className="font-bold text-white/35">{t('talk.moveTip')}: </span>
+                                  {move.researchTip}
+                                </p>
+                              </>
+                            ) : null}
+                          </div>
+                          {gameState === 'building' ? (
+                            <button
+                              type="button"
+                              onClick={() => removeFromChain(index)}
+                              className="shrink-0 self-start rounded p-1.5 text-white/40 touch-target hover:text-white/80"
+                              aria-label="Remove"
+                            >
+                              &times;
+                            </button>
+                          ) : null}
+                        </li>
                       );
                     })}
-                    {canExecute ? <span className="self-center" style={{ color: '#8aab8f' }}>&rarr;</span> : null}
-                  </div>
-                  {!canExecute ? <p className="mt-2 text-[11px] text-white/35">{t('talk.addTerminal')}</p> : null}
+                  </ol>
+                  {gameState === 'building' && !canExecute ? (
+                    <p className="mt-2 shrink-0 text-[11px] text-white/35">{t('talk.addTerminal')}</p>
+                  ) : null}
                 </div>
               ) : null}
 
@@ -437,7 +485,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                           type="button"
                           whileTap={{ scale: 0.97 }}
                           onClick={() => addToChain(move.id)}
-                          disabled={isInChain}
+                          disabled={isInChain || gameState !== 'building'}
                           title={`${move.name}: ${move.purpose}`}
                           className="rounded-lg border px-2 py-2 sm:py-1.5 text-left text-[11px] transition-all duration-200 touch-target"
                           style={{
@@ -474,6 +522,55 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               </div>
             </div>
           </div>
+
+          {gameState === 'reviewingTurn' && pendingTurnReview ? (
+            <div
+              className="absolute inset-0 z-40 flex flex-col justify-end bg-black/45 backdrop-blur-[2px]"
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="turn-summary-title"
+            >
+              <div
+                className="max-h-[min(72dvh,560px)] overflow-y-auto rounded-t-2xl border-t border-x border-white/15 bg-[#1e1916] px-4 pb-5 pt-4 shadow-2xl sm:px-6 sm:pb-6 sm:pt-5"
+                style={{ boxShadow: '0 -12px 40px rgba(0,0,0,0.45)' }}
+              >
+                <h2 id="turn-summary-title" className="mb-1 font-display text-base font-semibold text-white sm:text-lg" style={{ fontVariationSettings: "'SOFT' 100" }}>
+                  {t('talk.turnSummary')}
+                </h2>
+                <p className="mb-4 font-mono text-xs tabular-nums text-amber-200/70">
+                  {t('talk.scoreAfterTurn', { score: String(pendingTurnReview.snapshotScore) })}
+                </p>
+                <ol className="mb-4 space-y-3 border-b border-white/10 pb-4">
+                  {pendingTurnReview.executedChain.map((item, index) => {
+                    const move = talkMovesMap[item.moveId];
+                    return (
+                      <li key={`review-${item.moveId}-${index}`} className="flex gap-2">
+                        <span className="mt-0.5 font-mono text-xs tabular-nums text-amber-200/65">{index + 1}.</span>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-white/95">{item.label}</p>
+                          {move ? (
+                            <>
+                              <p className="mt-1 text-xs leading-relaxed text-white/55">{move.purpose}</p>
+                              <p className="mt-1 text-xs leading-relaxed text-white/45 italic">{move.researchTip}</p>
+                            </>
+                          ) : null}
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <p className="mb-5 text-sm leading-relaxed text-white/85">{pendingTurnReview.feedback}</p>
+                <button
+                  type="button"
+                  onClick={confirmTurnReview}
+                  className="w-full rounded-xl border border-white/15 bg-[#6b8f71] py-3.5 text-center text-sm font-bold text-white shadow-md transition-colors touch-target hover:bg-[#5a7a60] sm:text-base"
+                >
+                  {t('talk.continue')}
+                </button>
+                <p className="mt-2 text-center text-[10px] text-white/35">{t('talk.continueHint')}</p>
+              </div>
+            </div>
+          ) : null}
         </>
       ) : (
         <EndScreen result={result} onRestart={handleRestart} onExit={onExit} />
