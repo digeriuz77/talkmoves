@@ -2,15 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { buildDynamicAdvice, getResponseTypeMeta } from './teacher-coaching';
 
 describe('teacher coaching', () => {
-  it('returns readable metadata for each response type', () => {
-    expect(getResponseTypeMeta('partial-idea')).toEqual({
-      label: 'Partial Idea',
-      coaching:
-        'There is real thinking here. Revoice it, add precision, and keep the pupil in the conversation.',
-    });
+  it('returns translation key metadata for each response type', () => {
+    const meta = getResponseTypeMeta('partial-idea');
+    expect(meta.labelKey).toBe('response.partialIdea');
+    expect(meta.coachingKey).toBe('response.partialIdea.coaching');
   });
 
-  it('builds advice from weak participation and echo-heavy patterns', () => {
+  it('builds advice keys from weak participation and echo-heavy patterns', () => {
     expect(
       buildDynamicAdvice(
         {
@@ -40,6 +38,19 @@ describe('teacher coaching', () => {
         'You heard several half-formed ideas. Stay with them and help pupils build them.',
         'A wrong idea came up. Ask for the thinking first, then let the class test it.',
       ]),
+    ).toContain('advice.lowParticipation');
+  });
+
+  it('builds advice keys for partial ideas and misconceptions', () => {
+    const advice = buildDynamicAdvice(
+      {
+        participation: 64,
+        reasoning: 44,
+        ownership: 60,
+      },
+      ['partial-idea', 'misconception', 'partial-idea'],
     );
+    expect(advice).toContain('advice.partialIdeas');
+    expect(advice).toContain('advice.misconceptions');
   });
 });

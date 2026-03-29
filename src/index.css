@@ -1,1 +1,408 @@
 @import "tailwindcss";
+
+/* ============================================
+   DIALOGIC CLASSROOM — Warm Editorial Design
+   ============================================ */
+
+@theme {
+  --font-display: 'Fraunces', serif;
+  --font-body: 'Lora', serif;
+  
+  --color-parchment: #f5f0e8;
+  --color-parchment-light: #faf7f2;
+  --color-parchment-dark: #ebe4d6;
+  --color-ink: #2c2520;
+  --color-ink-soft: #5c524a;
+  --color-ink-muted: #8a7f75;
+  --color-ink-faint: #b5aa9e;
+  --color-terracotta: #c45c3c;
+  --color-terracotta-soft: #d4795e;
+  --color-terracotta-muted: #e8a892;
+  --color-terracotta-bg: #fdf0ec;
+  --color-sage: #6b8f71;
+  --color-sage-soft: #8aab8f;
+  --color-sage-muted: #b5d0b8;
+  --color-sage-bg: #eef5ef;
+  --color-amber: #d4952b;
+  --color-amber-soft: #e0ad4f;
+  --color-amber-muted: #f0d48a;
+  --color-amber-bg: #fdf6e8;
+  --color-navy: #2d3a4a;
+  --color-navy-soft: #4a5a6e;
+  --color-navy-muted: #7a8a9e;
+  --color-navy-bg: #eef1f5;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-parchment);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    /* Prevent iOS double-tap zoom */
+    touch-action: manipulation;
+  }
+
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    position: relative;
+    /* Prevent tap highlight on all interactive elements */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Grain texture overlay — disable on reduced motion / low power */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.035;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    background-size: 256px 256px;
+  }
+
+  /* Scrollbar styling */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-parchment-dark);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-ink-faint);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink-muted);
+  }
+
+  /* Selection styling */
+  ::selection {
+    background: color-mix(in srgb, var(--color-terracotta) 20%, transparent);
+    color: var(--color-ink);
+  }
+
+  /* Disable user-select on interactive elements */
+  button, a, [role="button"] {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION — kill all animations
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    display: none;
+  }
+
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ============================================
+   TYPOGRAPHY UTILITIES
+   ============================================ */
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-body {
+  font-family: var(--font-body);
+}
+
+/* Editorial heading — fluid sizing + word-break protection */
+.heading-editorial {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: var(--color-ink);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  /* Fluid: 28px → 48px across 320px → 768px */
+  font-size: clamp(1.75rem, 1.2rem + 2.5vw, 3rem);
+}
+
+/* Section label — small caps tracking */
+.label-section {
+  font-family: var(--font-body);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  color: var(--color-ink-muted);
+}
+
+/* Body text — warm and readable, minimum 16px to prevent iOS zoom */
+.text-body {
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  line-height: 1.7;
+  color: var(--color-ink-soft);
+}
+
+/* ============================================
+   DECORATIVE ELEMENTS
+   ============================================ */
+
+/* Thin editorial rule */
+.rule-editorial {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--color-ink-faint) 20%,
+    var(--color-ink-faint) 80%,
+    transparent
+  );
+}
+
+/* Thick accent rule */
+.rule-accent {
+  height: 3px;
+  background: var(--color-terracotta);
+  border-radius: 2px;
+}
+
+/* Warm card surface */
+.card-warm {
+  background: var(--color-parchment-light);
+  border: 1px solid color-mix(in srgb, var(--color-ink) 8%, transparent);
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px color-mix(in srgb, var(--color-ink) 5%, transparent),
+    0 4px 12px color-mix(in srgb, var(--color-ink) 3%, transparent);
+}
+
+.card-warm:hover {
+  box-shadow:
+    0 2px 6px color-mix(in srgb, var(--color-ink) 8%, transparent),
+    0 8px 24px color-mix(in srgb, var(--color-ink) 5%, transparent);
+  border-color: color-mix(in srgb, var(--color-ink) 14%, transparent);
+}
+
+/* Dark card surface (for game scenes) */
+.card-dark {
+  background: var(--color-ink);
+  border: 1px solid color-mix(in srgb, white 8%, transparent);
+  border-radius: 12px;
+}
+
+/* Terracotta accent pill */
+.pill-terracotta {
+  background: var(--color-terracotta-bg);
+  color: var(--color-terracotta);
+  border: 1px solid color-mix(in srgb, var(--color-terracotta) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* Sage accent pill */
+.pill-sage {
+  background: var(--color-sage-bg);
+  color: var(--color-sage);
+  border: 1px solid color-mix(in srgb, var(--color-sage) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* Amber accent pill */
+.pill-amber {
+  background: var(--color-amber-bg);
+  color: var(--color-amber);
+  border: 1px solid color-mix(in srgb, var(--color-amber) 20%, transparent);
+  border-radius: 100px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+
+/* ============================================
+   INTERACTIVE STATES
+   ============================================ */
+
+/* Warm button — primary (44px min touch target) */
+.btn-primary {
+  background: var(--color-terracotta);
+  color: var(--color-parchment-light);
+  border: none;
+  border-radius: 8px;
+  padding: 0.8125rem 1.5rem;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--color-terracotta) 25%, transparent);
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .btn-primary:hover {
+    background: color-mix(in srgb, var(--color-terracotta) 90%, black);
+    box-shadow: 0 4px 16px color-mix(in srgb, var(--color-terracotta) 35%, transparent);
+    transform: translateY(-1px);
+  }
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  background: color-mix(in srgb, var(--color-terracotta) 85%, black);
+}
+
+/* Warm button — secondary (44px min touch target) */
+.btn-secondary {
+  background: transparent;
+  color: var(--color-ink);
+  border: 1.5px solid color-mix(in srgb, var(--color-ink) 20%, transparent);
+  border-radius: 8px;
+  padding: 0.8125rem 1.5rem;
+  min-height: 44px;
+  font-family: var(--font-body);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (hover: hover) {
+  .btn-secondary:hover {
+    border-color: color-mix(in srgb, var(--color-ink) 40%, transparent);
+    background: color-mix(in srgb, var(--color-ink) 4%, transparent);
+  }
+}
+
+/* ============================================
+   RESPONSIVE UTILITIES
+   ============================================ */
+
+/* Minimum touch target */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* ============================================
+   PHONE (< 480px)
+   ============================================ */
+@media (max-width: 480px) {
+  .heading-editorial {
+    font-size: clamp(1.5rem, 1.2rem + 3vw, 2rem);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  .label-section {
+    font-size: 0.625rem;
+    letter-spacing: 0.14em;
+  }
+
+  .text-body {
+    font-size: 0.9375rem;
+    line-height: 1.65;
+  }
+
+  /* Tighten pill padding */
+  .pill-terracotta,
+  .pill-sage,
+  .pill-amber {
+    padding: 0.1875rem 0.5rem;
+    font-size: 0.625rem;
+  }
+
+  /* Larger buttons on phone */
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* ============================================
+   GAME-SPECIFIC OVERRIDES (warm palette)
+   ============================================ */
+
+.game-surface {
+  background: var(--color-ink);
+  color: var(--color-parchment-light);
+}
+
+.game-surface .text-white\/60 { color: color-mix(in srgb, var(--color-parchment-light) 60%, transparent); }
+.game-surface .text-white\/40 { color: color-mix(in srgb, var(--color-parchment-light) 40%, transparent); }
+.game-surface .text-white\/45 { color: color-mix(in srgb, var(--color-parchment-light) 45%, transparent); }
+.game-surface .text-white\/50 { color: color-mix(in srgb, var(--color-parchment-light) 50%, transparent); }
+.game-surface .text-white\/70 { color: color-mix(in srgb, var(--color-parchment-light) 70%, transparent); }
+.game-surface .text-white\/80 { color: color-mix(in srgb, var(--color-parchment-light) 80%, transparent); }
+.game-surface .text-white\/85 { color: color-mix(in srgb, var(--color-parchment-light) 85%, transparent); }
+.game-surface .text-white\/90 { color: color-mix(in srgb, var(--color-parchment-light) 90%, transparent); }
+.game-surface .text-white { color: var(--color-parchment-light); }
+
+.game-surface .border-white\/10 { border-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent); }
+.game-surface .border-white\/15 { border-color: color-mix(in srgb, var(--color-parchment-light) 15%, transparent); }
+.game-surface .border-white\/20 { border-color: color-mix(in srgb, var(--color-parchment-light) 20%, transparent); }
+.game-surface .border-white\/25 { border-color: color-mix(in srgb, var(--color-parchment-light) 25%, transparent); }
+.game-surface .border-white\/30 { border-color: color-mix(in srgb, var(--color-parchment-light) 30%, transparent); }
+
+.game-surface .bg-white\/5 { background-color: color-mix(in srgb, var(--color-parchment-light) 5%, transparent); }
+.game-surface .bg-white\/10 { background-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent); }
+.game-surface .bg-neutral-800\/50 { background-color: color-mix(in srgb, var(--color-ink) 80%, transparent); }
+.game-surface .bg-neutral-900 { background-color: var(--color-ink); }
+.game-surface .bg-black { background-color: var(--color-ink); }
+.game-surface .bg-black\/40 { background-color: color-mix(in srgb, var(--color-ink) 40%, transparent); }
+.game-surface .bg-black\/45 { background-color: color-mix(in srgb, var(--color-ink) 45%, transparent); }
+.game-surface .bg-black\/60 { background-color: color-mix(in srgb, var(--color-ink) 60%, transparent); }
+.game-surface .bg-black\/75 { background-color: color-mix(in srgb, var(--color-ink) 75%, transparent); }
+.game-surface .bg-black\/90 { background-color: color-mix(in srgb, var(--color-ink) 90%, transparent); }
+.game-surface .bg-black\/95 { background-color: color-mix(in srgb, var(--color-ink) 95%, transparent); }
+.game-surface .bg-black\/98 { background-color: color-mix(in srgb, var(--color-ink) 98%, transparent); }
+
+@media (hover: hover) {
+  .game-surface .hover\:border-white\/20:hover { border-color: color-mix(in srgb, var(--color-parchment-light) 20%, transparent); }
+  .game-surface .hover\:border-white\/25:hover { border-color: color-mix(in srgb, var(--color-parchment-light) 25%, transparent); }
+  .game-surface .hover\:border-white\/30:hover { border-color: color-mix(in srgb, var(--color-parchment-light) 30%, transparent); }
+  .game-surface .hover\:border-white\/35:hover { border-color: color-mix(in srgb, var(--color-parchment-light) 35%, transparent); }
+  .game-surface .hover\:bg-white\/10:hover { background-color: color-mix(in srgb, var(--color-parchment-light) 10%, transparent); }
+  .game-surface .hover\:bg-white\/\[0\.07\]:hover { background-color: color-mix(in srgb, var(--color-parchment-light) 7%, transparent); }
+  .game-surface .hover\:text-white\/70:hover { color: color-mix(in srgb, var(--color-parchment-light) 70%, transparent); }
+  .game-surface .hover\:text-white:hover { color: var(--color-parchment-light); }
+}
+
+/* ============================================
+   BACKDROP BLUR FALLBACK — remove on low-power
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-blur-sm,
+  .backdrop-blur-md,
+  .backdrop-blur-xl {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}

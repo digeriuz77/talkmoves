@@ -8,9 +8,9 @@ export type StudentResponseType =
   | 'prediction'
   | 'emergent-language';
 
-type ResponseTypeMeta = {
-  label: string;
-  coaching: string;
+export type ResponseTypeMeta = {
+  labelKey: string;
+  coachingKey: string;
 };
 
 export type CoachingSignal =
@@ -24,34 +24,28 @@ export type CoachingSignal =
 
 const RESPONSE_TYPE_META: Record<StudentResponseType, ResponseTypeMeta> = {
   'partial-idea': {
-    label: 'Partial Idea',
-    coaching:
-      'There is real thinking here. Revoice it, add precision, and keep the pupil in the conversation.',
+    labelKey: 'response.partialIdea',
+    coachingKey: 'response.partialIdea.coaching',
   },
   echo: {
-    label: 'Echo',
-    coaching:
-      'The pupil is repeating language already in the room. Press for what they mean or ask someone to build on it.',
+    labelKey: 'response.echo',
+    coachingKey: 'response.echo.coaching',
   },
   misconception: {
-    label: 'Misconception',
-    coaching:
-      'The pupil is making visible a flawed idea. Surface the reasoning, then let the class test and revise it.',
+    labelKey: 'response.misconception',
+    coachingKey: 'response.misconception.coaching',
   },
   'partner-report': {
-    label: 'Partner Report',
-    coaching:
-      'This is a low-risk entry into whole-class talk. Use it to widen participation before asking for personal elaboration.',
+    labelKey: 'response.partnerReport',
+    coachingKey: 'response.partnerReport.coaching',
   },
   prediction: {
-    label: 'Prediction',
-    coaching:
-      'A prediction opens inquiry. Stay with the why so pupils connect it to evidence instead of guessing quickly.',
+    labelKey: 'response.prediction',
+    coachingKey: 'response.prediction.coaching',
   },
   'emergent-language': {
-    label: 'Emergent Language',
-    coaching:
-      'The thinking may be ahead of the English. Build from the idea first, then strengthen the language around it.',
+    labelKey: 'response.emergentLanguage',
+    coachingKey: 'response.emergentLanguage.coaching',
   },
 };
 
@@ -67,6 +61,7 @@ export function getResponseTypeMeta(type: StudentResponseType): ResponseTypeMeta
 }
 
 export function buildCoachingSignals(
+export function buildDynamicAdviceKeys(
   metrics: Metrics,
   responseTypes: StudentResponseType[],
 ): CoachingSignal[] {
@@ -99,6 +94,31 @@ export function buildCoachingSignals(
 
   if ((counts['emergent-language'] ?? 0) >= 1) {
     signals.push('emergent-language-visible');
+    advice.push('advice.lowParticipation');
+  }
+
+  if (metrics.reasoning < 50) {
+    advice.push('advice.lowReasoning');
+  }
+
+  if (metrics.ownership < 50) {
+    advice.push('advice.lowOwnership');
+  }
+
+  if ((counts['partial-idea'] ?? 0) >= 2) {
+    advice.push('advice.partialIdeas');
+  }
+
+  if ((counts.misconception ?? 0) >= 1) {
+    advice.push('advice.misconceptions');
+  }
+
+  if ((counts.echo ?? 0) >= 2) {
+    advice.push('advice.echoes');
+  }
+
+  if ((counts['emergent-language'] ?? 0) >= 1) {
+    advice.push('advice.emergentLang');
   }
 
   return signals;
@@ -126,4 +146,12 @@ export function buildDynamicAdvice(
   };
 
   return buildCoachingSignals(metrics, responseTypes).map((signal) => signalToAdvice[signal]);
+}
+
+// Legacy wrapper for backward compatibility
+export function buildDynamicAdvice(
+  metrics: Metrics,
+  responseTypes: StudentResponseType[],
+): string[] {
+  return buildDynamicAdviceKeys(metrics, responseTypes);
 }
