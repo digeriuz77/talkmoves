@@ -20,12 +20,14 @@ import {
   summarizeLabels,
   type Metrics,
 } from '../lib/game-progress';
+import { createReflectionSummary } from '../lib/reflection-summary';
 import { resolveScenarioNode } from '../lib/scenario-variants';
 import {
   buildDynamicAdvice,
   getResponseTypeMeta,
   type StudentResponseType,
 } from '../lib/teacher-coaching';
+import { assessTalkMoveChain } from '../lib/talk-moves-balance';
 
 type GameState = 'building' | 'executing' | 'win' | 'loss';
 
@@ -56,6 +58,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   const [showHint, setShowHint] = useState<boolean>(false);
   const [playthroughSeed, setPlaythroughSeed] = useState<number>(0);
   const [responseTypesSeen, setResponseTypesSeen] = useState<StudentResponseType[]>([]);
+  const [previousTerminalMoveId, setPreviousTerminalMoveId] = useState<string | undefined>(undefined);
 
   const currentNode = useMemo(() => {
     const node = scenario.nodes[currentNodeId];
@@ -132,7 +135,8 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
     // Update score
     const chainMetrics = calculateChainMetrics(chainMoveIds);
-    const nextMetrics = applyMetricDelta(metrics, chainMetrics);
+    const chainAssessment = assessTalkMoveChain(chainMoveIds, previousTerminalMoveId);
+    const nextMetrics = applyMetricDelta(applyMetricDelta(metrics, chainMetrics), chainAssessment.adjustment);
     const newScore = calculateCompositeScore(nextMetrics);
     setMetrics(nextMetrics);
 
@@ -149,10 +153,12 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
     // Show feedback
     if (comboText) {
-      setFeedback(`Great chain! ${comboText} You earned ${turnScore} points!`);
+      setFeedback(`${chainAssessment.feedback} ${comboText} You earned ${turnScore} points!`);
     } else {
-      setFeedback(`Response executed. You earned ${turnScore} points!`);
+      setFeedback(`${chainAssessment.feedback} You earned ${turnScore} points!`);
     }
+
+    setPreviousTerminalMoveId(chainAssessment.terminalMoveId);
 
     // Clear chain
     setResponseChain([]);
@@ -192,6 +198,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
     setShowHint(false);
     setPlaythroughSeed((previous) => previous + 1);
     setResponseTypesSeen([]);
+    setPreviousTerminalMoveId(undefined);
   };
 
   // Keyboard shortcuts
@@ -216,6 +223,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       title: scenario.title,
       outcome: gameState === 'win' ? 'win' : 'loss',
       finalScore: engagementScore,
+      passThreshold: scenario.passThreshold,
       metrics,
       reflectionPrompt: scenario.reflectionPrompt,
       historyCounts: summarizeLabels(
@@ -224,9 +232,32 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
           .filter((name): name is string => Boolean(name)),
       ),
       advice: [...buildDynamicAdvice(metrics, responseTypesSeen), ...profile.advice],
+      reflection: createReflectionSummary({
+        title: scenario.title,
+        outcome: gameState === 'win' ? 'win' : 'loss',
+        finalScore: engagementScore,
+        passThreshold: scenario.passThreshold,
+        metrics,
+        responseTypes: responseTypesSeen,
+        moveLabels: moveHistory
+          .map((entry) => talkMovesMap[entry.moveId]?.name)
+          .filter((name): name is string => Boolean(name)),
+        supportLanguage: scenario.reflectionContext?.supportLanguage,
+      }),
       profile,
     }),
-    [engagementScore, gameState, metrics, moveHistory, profile, responseTypesSeen, scenario.reflectionPrompt, scenario.title],
+    [
+      engagementScore,
+      gameState,
+      metrics,
+      moveHistory,
+      profile,
+      responseTypesSeen,
+      scenario.passThreshold,
+      scenario.reflectionContext,
+      scenario.reflectionPrompt,
+      scenario.title,
+    ],
   );
 
   // Current chain score preview

@@ -13,6 +13,15 @@ type ResponseTypeMeta = {
   coaching: string;
 };
 
+export type CoachingSignal =
+  | 'low-participation'
+  | 'low-reasoning'
+  | 'low-ownership'
+  | 'partial-ideas-visible'
+  | 'misconception-visible'
+  | 'echo-heavy'
+  | 'emergent-language-visible';
+
 const RESPONSE_TYPE_META: Record<StudentResponseType, ResponseTypeMeta> = {
   'partial-idea': {
     label: 'Partial Idea',
@@ -57,54 +66,64 @@ export function getResponseTypeMeta(type: StudentResponseType): ResponseTypeMeta
   return RESPONSE_TYPE_META[type];
 }
 
+export function buildCoachingSignals(
+  metrics: Metrics,
+  responseTypes: StudentResponseType[],
+): CoachingSignal[] {
+  const signals: CoachingSignal[] = [];
+  const counts = countResponseTypes(responseTypes);
+
+  if (metrics.participation < 45) {
+    signals.push('low-participation');
+  }
+
+  if (metrics.reasoning < 50) {
+    signals.push('low-reasoning');
+  }
+
+  if (metrics.ownership < 50) {
+    signals.push('low-ownership');
+  }
+
+  if ((counts['partial-idea'] ?? 0) >= 2) {
+    signals.push('partial-ideas-visible');
+  }
+
+  if ((counts.misconception ?? 0) >= 1) {
+    signals.push('misconception-visible');
+  }
+
+  if ((counts.echo ?? 0) >= 2) {
+    signals.push('echo-heavy');
+  }
+
+  if ((counts['emergent-language'] ?? 0) >= 1) {
+    signals.push('emergent-language-visible');
+  }
+
+  return signals;
+}
+
 export function buildDynamicAdvice(
   metrics: Metrics,
   responseTypes: StudentResponseType[],
 ): string[] {
-  const advice: string[] = [];
-  const counts = countResponseTypes(responseTypes);
+  const signalToAdvice: Record<CoachingSignal, string> = {
+    'low-participation':
+      'Too few pupils joined the talk. Use pair talk, wait time, or a wider mix of voices.',
+    'low-reasoning':
+      'The class needed more "why" and "how" before settling on an answer.',
+    'low-ownership':
+      'You carried too much of the talk. Let pupils explain more in their own words.',
+    'partial-ideas-visible':
+      'You heard several half-formed ideas. Stay with them and help pupils build them.',
+    'misconception-visible':
+      'A wrong idea came up. Ask for the thinking first, then let the class test it.',
+    'echo-heavy':
+      'Some answers only repeated teacher or peer words. Ask, "What do you mean?" or "Who can add a new idea?"',
+    'emergent-language-visible':
+      'Some pupils had the idea before the English. Keep the idea alive first, then support the English.',
+  };
 
-  if (metrics.participation < 45) {
-    advice.push(
-      'Too much of the room stayed peripheral. Use more no-hands-up routines, pair rehearsal, and targeted invitations after talk time.',
-    );
-  }
-
-  if (metrics.reasoning < 50) {
-    advice.push(
-      'The discussion needed more development moves. Ask for why, evidence, comparison, or revision before settling on an answer.',
-    );
-  }
-
-  if (metrics.ownership < 50) {
-    advice.push(
-      'Teacher control stayed high. Let pupils carry more of the explanation publicly, even when the English is still rough.',
-    );
-  }
-
-  if ((counts['partial-idea'] ?? 0) >= 2) {
-    advice.push(
-      'You saw several partial ideas. In this classroom context, those are the moments to extend, revoice, and connect rather than replace.',
-    );
-  }
-
-  if ((counts.misconception ?? 0) >= 1) {
-    advice.push(
-      'Misconceptions surfaced. Keep pressing for why pupils think that, then use the class to test and revise the idea.',
-    );
-  }
-
-  if ((counts.echo ?? 0) >= 2) {
-    advice.push(
-      'Several responses echoed teacher or peer language. Follow up with "What do you mean?" or "Who can add a new reason?" so talk does not stay superficial.',
-    );
-  }
-
-  if ((counts['emergent-language'] ?? 0) >= 1) {
-    advice.push(
-      'Some pupils had the thinking before they had the English. Revoice strategically and use stems so language support does not become teacher takeover.',
-    );
-  }
-
-  return advice;
+  return buildCoachingSignals(metrics, responseTypes).map((signal) => signalToAdvice[signal]);
 }

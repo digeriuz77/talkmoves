@@ -21,7 +21,7 @@ describe('teacher coaching', () => {
         ['echo', 'echo', 'partial-idea'],
       ),
     ).toContain(
-      'Too much of the room stayed peripheral. Use more no-hands-up routines, pair rehearsal, and targeted invitations after talk time.',
+      'Too few pupils joined the talk. Use pair talk, wait time, or a wider mix of voices.',
     );
   });
 
@@ -37,8 +37,8 @@ describe('teacher coaching', () => {
       ),
     ).toEqual(
       expect.arrayContaining([
-        'You saw several partial ideas. In this classroom context, those are the moments to extend, revoice, and connect rather than replace.',
-        'Misconceptions surfaced. Keep pressing for why pupils think that, then use the class to test and revise the idea.',
+        'You heard several half-formed ideas. Stay with them and help pupils build them.',
+        'A wrong idea came up. Ask for the thinking first, then let the class test it.',
       ]),
     );
   });

@@ -14,6 +14,7 @@ import {
   summarizeLabels,
   type Metrics,
 } from '../lib/game-progress';
+import { createReflectionSummary } from '../lib/reflection-summary';
 import { resolveScenarioNode } from '../lib/scenario-variants';
 import { buildDynamicAdvice, type StudentResponseType } from '../lib/teacher-coaching';
 
@@ -66,12 +67,33 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       title: scenario.title,
       outcome: gameState === 'win' ? 'win' : 'loss',
       finalScore: engagementScore,
+      passThreshold: scenario.passThreshold,
       metrics,
       reflectionPrompt: scenario.reflectionPrompt,
       historyCounts: summarizeLabels(moveHistory.map((entry) => entry.moveType)),
       advice: buildDynamicAdvice(metrics, responseTypesSeen),
+      reflection: createReflectionSummary({
+        title: scenario.title,
+        outcome: gameState === 'win' ? 'win' : 'loss',
+        finalScore: engagementScore,
+        passThreshold: scenario.passThreshold,
+        metrics,
+        responseTypes: responseTypesSeen,
+        moveLabels: moveHistory.map((entry) => entry.moveType),
+        supportLanguage: scenario.reflectionContext?.supportLanguage,
+      }),
     }),
-    [engagementScore, gameState, metrics, moveHistory, responseTypesSeen, scenario.reflectionPrompt, scenario.title],
+    [
+      engagementScore,
+      gameState,
+      metrics,
+      moveHistory,
+      responseTypesSeen,
+      scenario.passThreshold,
+      scenario.reflectionContext,
+      scenario.reflectionPrompt,
+      scenario.title,
+    ],
   );
 
   const handleChoice = (choice: ChoiceMove) => {

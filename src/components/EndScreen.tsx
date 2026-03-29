@@ -10,15 +10,18 @@ import {
 } from 'lucide-react';
 import { talkMovesMap, type PedagogicalProfile } from '../data/talk_moves';
 import type { Metrics } from '../lib/game-progress';
+import type { ReflectionSummary } from '../lib/reflection-summary';
 
 type EndResultBase = {
   title: string;
   outcome: 'win' | 'loss';
   finalScore: number;
+  passThreshold: number;
   metrics: Metrics;
   reflectionPrompt: string;
   historyCounts: Record<string, number>;
   advice: string[];
+  reflection: ReflectionSummary;
 };
 
 export type ChoiceGameResult = EndResultBase & {
@@ -39,6 +42,11 @@ interface EndScreenProps {
 }
 
 const METRIC_ORDER: Array<keyof Metrics> = ['participation', 'reasoning', 'ownership'];
+const METRIC_LABELS: Record<keyof Metrics, string> = {
+  participation: 'Who joined',
+  reasoning: 'How ideas grew',
+  ownership: 'Who did the thinking',
+};
 
 export default function EndScreen({ result, onRestart, onExit }: EndScreenProps) {
   const isWin = result.outcome === 'win';
@@ -73,24 +81,25 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
           </motion.div>
 
           <h1 className="text-4xl font-serif font-bold text-white">
-            {isWin ? 'Discussion Opened Up' : 'Keep Rehearsing the Routine'}
+            {result.reflection.headline}
           </h1>
           <p className="mx-auto mt-3 max-w-2xl text-base text-white/70">
-            {isWin
-              ? `You created a more dialogic version of "${result.title}" by widening participation and protecting student thinking, even before pupils could say everything cleanly in English.`
-              : `This run shows how quickly discussion can collapse back into answer-hunting when time pressure and teacher anxiety take over. "${result.title}" is designed to be replayed so those trade-offs feel real.`}
+            {result.reflection.summary}
           </p>
 
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80">
+          <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm text-white/80">
             <Target className="h-4 w-4 text-amber-300" />
-            Composite outcome
+            Score
             <span className="font-mono text-white">{result.finalScore}%</span>
+            <span className="text-white/35">|</span>
+            Goal
+            <span className="font-mono text-white">{result.passThreshold}%</span>
           </div>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
             {METRIC_ORDER.map((metric) => (
               <div key={metric} className="rounded-2xl bg-black/40 p-4 text-left">
-                <div className="text-xs uppercase tracking-[0.18em] text-white/45">{metric}</div>
+                <div className="text-xs uppercase tracking-[0.18em] text-white/45">{METRIC_LABELS[metric]}</div>
                 <div className="mt-2 text-2xl font-semibold text-white">{result.metrics[metric]}</div>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-white/10">
                   <div className="h-full bg-white/70" style={{ width: `${result.metrics[metric]}%` }} />
@@ -144,6 +153,39 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
             </>
           )}
 
+          <div className="mt-8 grid gap-4 text-left md:grid-cols-3">
+            <div className="rounded-2xl bg-emerald-950/30 p-5">
+              <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-emerald-200/70">What Worked</h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/80">{result.reflection.strength}</p>
+            </div>
+            <div className="rounded-2xl bg-amber-950/30 p-5">
+              <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-amber-200/70">Watch Out</h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/80">{result.reflection.risk}</p>
+            </div>
+            <div className="rounded-2xl bg-sky-950/30 p-5">
+              <h3 className="text-sm font-bold uppercase tracking-[0.18em] text-sky-200/70">Try Next</h3>
+              <p className="mt-3 text-sm leading-relaxed text-white/80">{result.reflection.nextStep}</p>
+            </div>
+          </div>
+
+          <div className="mt-8 rounded-2xl bg-black/50 p-6 text-left">
+            <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-white/45">
+              Replay Evidence
+            </h3>
+            <div className="space-y-2">
+              {result.reflection.evidence.map((line) => (
+                <div key={line} className="text-sm text-white/70">
+                  • {line}
+                </div>
+              ))}
+            </div>
+            {result.reflection.languageNote ? (
+              <p className="mt-4 rounded-xl border border-emerald-400/20 bg-emerald-950/20 px-4 py-3 text-sm leading-relaxed text-emerald-100/85">
+                {result.reflection.languageNote}
+              </p>
+            ) : null}
+          </div>
+
           <div className="mt-8 rounded-2xl bg-black/50 p-6 text-left">
             <h3 className="mb-4 text-sm font-bold uppercase tracking-[0.18em] text-white/45">
               Move Pattern
@@ -166,7 +208,7 @@ export default function EndScreen({ result, onRestart, onExit }: EndScreenProps)
 
           <div className="mt-8 rounded-2xl border border-blue-400/20 bg-blue-950/20 p-6 text-left">
             <h3 className="mb-3 text-sm font-bold uppercase tracking-[0.18em] text-blue-200">
-              Reflection Prompt
+              Trainer Debrief
             </h3>
             <p className="text-sm leading-relaxed text-white/75">{result.reflectionPrompt}</p>
 
