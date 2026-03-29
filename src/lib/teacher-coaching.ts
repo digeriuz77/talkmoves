@@ -8,10 +8,44 @@ export type StudentResponseType =
   | 'prediction'
   | 'emergent-language';
 
-type ResponseTypeMeta = {
-  label: string;
-  coaching: string;
+export type ResponseTypeMeta = {
+  labelKey: string;
+  coachingKey: string;
 };
+
+const RESPONSE_TYPE_META: Record<StudentResponseType, ResponseTypeMeta> = {
+  'partial-idea': {
+    labelKey: 'response.partialIdea',
+    coachingKey: 'response.partialIdea.coaching',
+  },
+  echo: {
+    labelKey: 'response.echo',
+    coachingKey: 'response.echo.coaching',
+  },
+  misconception: {
+    labelKey: 'response.misconception',
+    coachingKey: 'response.misconception.coaching',
+  },
+  'partner-report': {
+    labelKey: 'response.partnerReport',
+    coachingKey: 'response.partnerReport.coaching',
+  },
+  prediction: {
+    labelKey: 'response.prediction',
+    coachingKey: 'response.prediction.coaching',
+  },
+  'emergent-language': {
+    labelKey: 'response.emergentLanguage',
+    coachingKey: 'response.emergentLanguage.coaching',
+  },
+};
+
+function countResponseTypes(responseTypes: StudentResponseType[]): Partial<Record<StudentResponseType, number>> {
+  return responseTypes.reduce<Partial<Record<StudentResponseType, number>>>((counts, type) => {
+    counts[type] = (counts[type] ?? 0) + 1;
+    return counts;
+  }, {});
+}
 
 export type CoachingSignal =
   | 'low-participation'
@@ -22,45 +56,15 @@ export type CoachingSignal =
   | 'echo-heavy'
   | 'emergent-language-visible';
 
-const RESPONSE_TYPE_META: Record<StudentResponseType, ResponseTypeMeta> = {
-  'partial-idea': {
-    label: 'Partial Idea',
-    coaching:
-      'There is real thinking here. Revoice it, add precision, and keep the pupil in the conversation.',
-  },
-  echo: {
-    label: 'Echo',
-    coaching:
-      'The pupil is repeating language already in the room. Press for what they mean or ask someone to build on it.',
-  },
-  misconception: {
-    label: 'Misconception',
-    coaching:
-      'The pupil is making visible a flawed idea. Surface the reasoning, then let the class test and revise it.',
-  },
-  'partner-report': {
-    label: 'Partner Report',
-    coaching:
-      'This is a low-risk entry into whole-class talk. Use it to widen participation before asking for personal elaboration.',
-  },
-  prediction: {
-    label: 'Prediction',
-    coaching:
-      'A prediction opens inquiry. Stay with the why so pupils connect it to evidence instead of guessing quickly.',
-  },
-  'emergent-language': {
-    label: 'Emergent Language',
-    coaching:
-      'The thinking may be ahead of the English. Build from the idea first, then strengthen the language around it.',
-  },
+const SIGNAL_TO_ADVICE_KEY: Record<CoachingSignal, string> = {
+  'low-participation': 'advice.lowParticipation',
+  'low-reasoning': 'advice.lowReasoning',
+  'low-ownership': 'advice.lowOwnership',
+  'partial-ideas-visible': 'advice.partialIdeas',
+  'misconception-visible': 'advice.misconceptions',
+  'echo-heavy': 'advice.echoes',
+  'emergent-language-visible': 'advice.emergentLang',
 };
-
-function countResponseTypes(responseTypes: StudentResponseType[]): Partial<Record<StudentResponseType, number>> {
-  return responseTypes.reduce<Partial<Record<StudentResponseType, number>>>((counts, type) => {
-    counts[type] = (counts[type] ?? 0) + 1;
-    return counts;
-  }, {});
-}
 
 export function getResponseTypeMeta(type: StudentResponseType): ResponseTypeMeta {
   return RESPONSE_TYPE_META[type];
@@ -104,26 +108,11 @@ export function buildCoachingSignals(
   return signals;
 }
 
-export function buildDynamicAdvice(
-  metrics: Metrics,
-  responseTypes: StudentResponseType[],
-): string[] {
-  const signalToAdvice: Record<CoachingSignal, string> = {
-    'low-participation':
-      'Too few pupils joined the talk. Use pair talk, wait time, or a wider mix of voices.',
-    'low-reasoning':
-      'The class needed more "why" and "how" before settling on an answer.',
-    'low-ownership':
-      'You carried too much of the talk. Let pupils explain more in their own words.',
-    'partial-ideas-visible':
-      'You heard several half-formed ideas. Stay with them and help pupils build them.',
-    'misconception-visible':
-      'A wrong idea came up. Ask for the thinking first, then let the class test it.',
-    'echo-heavy':
-      'Some answers only repeated teacher or peer words. Ask, "What do you mean?" or "Who can add a new idea?"',
-    'emergent-language-visible':
-      'Some pupils had the idea before the English. Keep the idea alive first, then support the English.',
-  };
+export function buildDynamicAdviceKeys(metrics: Metrics, responseTypes: StudentResponseType[]): string[] {
+  return buildCoachingSignals(metrics, responseTypes).map((signal) => SIGNAL_TO_ADVICE_KEY[signal]);
+}
 
-  return buildCoachingSignals(metrics, responseTypes).map((signal) => signalToAdvice[signal]);
+/** @deprecated Prefer `buildDynamicAdviceKeys` + `t()` in components */
+export function buildDynamicAdvice(metrics: Metrics, responseTypes: StudentResponseType[]): string[] {
+  return buildDynamicAdviceKeys(metrics, responseTypes);
 }

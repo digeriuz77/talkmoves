@@ -55,7 +55,7 @@ describe('level progress', () => {
       attempts: 4,
       bestScore: 72,
       completed: true,
-      statusLabel: 'Completed',
+      statusKey: 'completed',
     });
   });
 });
