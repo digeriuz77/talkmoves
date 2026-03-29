@@ -682,7 +682,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
           text: "[TEACHER PARAPHRASE] 'I probably know what most pairs said, so I will summarise.'",
           nextNode: 'end_game',
           moveType: 'Teacher Paraphrase',
-          tip: 'Students lose the chance to make their partner?s thinking visible.',
+          tip: 'Students lose the chance to make their partner\'s thinking visible.',
           metricsDelta: { participation: -10, reasoning: -4, ownership: -10 },
         },
       ],
@@ -797,7 +797,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
       speakerName: 'Student C',
       choices: [
         {
-          text: "[BUILD ON] 'Who can build on Student B?s idea or test it with another example?'",
+          text: "[BUILD ON] 'Who can build on Student B's idea or test it with another example?'",
           nextNode: 'end_game',
           moveType: 'Add On',
           tip: 'Perfect. The uncomfortable silence has now set up stronger student-to-student reasoning.',
@@ -1218,7 +1218,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
           text: "[SINGLE RIGHT ANSWER] 'I only want the correct explanation now.'",
           nextNode: 'end_game',
           moveType: 'Single Answer Demand',
-          tip: 'Curiosity shrinks when students feel they are guessing the teacher?s answer.',
+          tip: 'Curiosity shrinks when students feel they are guessing the teacher\'s answer.',
           metricsDelta: { participation: -10, reasoning: -10, ownership: -10 },
         },
         {
