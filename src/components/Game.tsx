@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react';
-import { motion } from 'motion/react';
 import Classroom from './Classroom';
 import DialogueBox from './DialogueBox';
 import EndScreen, { type ChoiceGameResult } from './EndScreen';
@@ -15,7 +14,8 @@ import {
   type Metrics,
 } from '../lib/game-progress';
 import { resolveScenarioNode } from '../lib/scenario-variants';
-import { buildDynamicAdvice, type StudentResponseType } from '../lib/teacher-coaching';
+import { buildDynamicAdviceKeys, type StudentResponseType } from '../lib/teacher-coaching';
+import { useLang } from '../lib/i18n';
 
 export type Move = ChoiceMove;
 export type Node = ChoiceNode;
@@ -33,6 +33,7 @@ type GameProps = {
 };
 
 export default function Game({ assets, scenario, onExit, onComplete }: GameProps) {
+  const { t } = useLang();
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
   const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [moveHistory, setMoveHistory] = useState<MoveHistoryItem[]>([]);
@@ -60,6 +61,12 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
     return scenario.hotspots.find((h) => h.id === id)?.name ?? id;
   }, [currentNode.speakerId, scenario.hotspots]);
 
+  const adviceKeys = useMemo(
+    () => buildDynamicAdviceKeys(metrics, responseTypesSeen),
+    [metrics, responseTypesSeen],
+  );
+  const adviceTranslated = adviceKeys.map(key => t(key));
+
   const result: ChoiceGameResult = useMemo(
     () => ({
       variant: 'choice',
@@ -69,9 +76,9 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       metrics,
       reflectionPrompt: scenario.reflectionPrompt,
       historyCounts: summarizeLabels(moveHistory.map((entry) => entry.moveType)),
-      advice: buildDynamicAdvice(metrics, responseTypesSeen),
+      advice: adviceTranslated,
     }),
-    [engagementScore, gameState, metrics, moveHistory, responseTypesSeen, scenario.reflectionPrompt, scenario.title],
+    [engagementScore, gameState, metrics, moveHistory, adviceTranslated, scenario.reflectionPrompt, scenario.title],
   );
 
   const handleChoice = (choice: ChoiceMove) => {
@@ -89,7 +96,6 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
     if (currentNode?.responseType) {
       setResponseTypesSeen((previous) => [...previous, currentNode.responseType as StudentResponseType]);
     }
-
     if (currentNode?.speakerId) {
       setSpokenStudents((previous) =>
         previous.includes(currentNode.speakerId as string)
@@ -97,9 +103,7 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
           : [...previous, currentNode.speakerId as string],
       );
     }
-
     setFeedback(choice.tip ?? null);
-
     if (choice.nextNode === 'end_game') {
       const completed = isPassingScore(nextMetrics, scenario.passThreshold);
       setGameState(completed ? 'win' : 'loss');
@@ -110,7 +114,6 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       });
       return;
     }
-
     setCurrentNodeId(choice.nextNode);
   };
 
@@ -127,10 +130,13 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
   };
 
   return (
-    <div className="relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl aspect-video">
+    <div
+      className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      style={{ background: '#2c2520', minHeight: 'min(100dvh - 2rem, 800px)' }}
+    >
       {gameState === 'playing' ? (
         <>
-          <div className="min-h-0 flex-1 pt-[3.25rem]">
+          <div className="min-h-0 flex-1 pt-[2.75rem] sm:pt-[3.25rem]">
             <Classroom
               engagementScore={engagementScore}
               lastDelta={lastDelta}

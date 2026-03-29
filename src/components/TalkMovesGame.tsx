@@ -22,10 +22,11 @@ import {
 } from '../lib/game-progress';
 import { resolveScenarioNode } from '../lib/scenario-variants';
 import {
-  buildDynamicAdvice,
   getResponseTypeMeta,
+  buildDynamicAdviceKeys,
   type StudentResponseType,
 } from '../lib/teacher-coaching';
+import { useLang } from '../lib/i18n';
 
 type GameState = 'building' | 'executing' | 'win' | 'loss';
 
@@ -47,6 +48,7 @@ type TalkMovesGameProps = {
 };
 
 export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMovesGameProps) {
+  const { t } = useLang();
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
   const [metrics, setMetrics] = useState<Metrics>(createMetrics(scenario.startingMetrics));
   const [responseChain, setResponseChain] = useState<ChainItem[]>([]);
@@ -69,41 +71,29 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       currentNodeId,
       playthroughSeed,
     );
-
     return {
       ...node,
       studentText: resolved.text,
       pressureCue: resolved.pressureCue,
     };
   }, [currentNodeId, playthroughSeed, scenario.nodes]);
+
   const availableMoves = currentNode?.availableMoves.map(id => talkMovesMap[id]).filter(Boolean) || [];
   const engagementScore = calculateCompositeScore(metrics);
   const responseMeta = currentNode?.responseType ? getResponseTypeMeta(currentNode.responseType) : null;
 
-  // Calculate if we're ready to execute (has terminal move in chain)
   const canExecute = responseChain.some(
     chainItem => talkMovesMap[chainItem.moveId]?.category === 'terminal'
   );
 
-  // Check if chain is complete (terminal was last added)
-  const isChainComplete = responseChain.length > 0 && 
-    talkMovesMap[responseChain[responseChain.length - 1].moveId]?.category === 'terminal';
-
   const addToChain = (moveId: string) => {
     const move = talkMovesMap[moveId];
     if (!move) return;
-
-    // Don't add if already at terminal (need to execute first)
     if (responseChain.length > 0) {
       const lastInChain = talkMovesMap[responseChain[responseChain.length - 1].moveId];
-      if (lastInChain?.category === 'terminal') {
-        return; // Already have terminal, must execute
-      }
+      if (lastInChain?.category === 'terminal') return;
     }
-
-    // Add to chain
     setResponseChain([...responseChain, { moveId, label: move.chainLabel }]);
-    
     setFeedback(move.researchTip);
   };
 
@@ -115,49 +105,40 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
   const executeChain = () => {
     if (!canExecute) return;
-
-    // Calculate score for this turn's chain
     const chainMoveIds = responseChain.map(c => c.moveId);
     const turnScore = calculateChainScore(chainMoveIds);
-    
-    // Calculate combo bonus indicator
+
     let comboText = '';
     for (let i = 1; i < chainMoveIds.length; i++) {
       const currentMove = talkMovesMap[chainMoveIds[i]];
       const prevMove = talkMovesMap[chainMoveIds[i - 1]];
       if (currentMove?.effectiveAfter.includes(prevMove?.id || '')) {
-        comboText = '✨ Combo!';
+        comboText = 'Combo!';
       }
     }
 
-    // Update score
     const chainMetrics = calculateChainMetrics(chainMoveIds);
     const nextMetrics = applyMetricDelta(metrics, chainMetrics);
     const newScore = calculateCompositeScore(nextMetrics);
     setMetrics(nextMetrics);
 
-    // Record history
     chainMoveIds.forEach(moveId => {
-      setMoveHistory(prev => [...prev, { 
-        moveId, 
-        score: Math.floor(talkMovesMap[moveId]?.scoreValue || 0 / 10) 
+      setMoveHistory(prev => [...prev, {
+        moveId,
+        score: Math.floor(talkMovesMap[moveId]?.scoreValue || 0 / 10),
       }]);
     });
     if (currentNode?.responseType) {
       setResponseTypesSeen((previous) => [...previous, currentNode.responseType as StudentResponseType]);
     }
 
-    // Show feedback
     if (comboText) {
       setFeedback(`Great chain! ${comboText} You earned ${turnScore} points!`);
     } else {
       setFeedback(`Response executed. You earned ${turnScore} points!`);
     }
-
-    // Clear chain
     setResponseChain([]);
 
-    // Move to next node
     const nodeKeys = Object.keys(scenario.nodes);
     const currentIndex = nodeKeys.indexOf(currentNodeId);
     const nextNode = nodeKeys[currentIndex + 1];
@@ -169,15 +150,10 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
         setFeedback(null);
       }, 1500);
     } else {
-      // End of scenario
       setTimeout(() => {
         const completed = isPassingScore(nextMetrics, scenario.passThreshold);
         setGameState(completed ? 'win' : 'loss');
-        onComplete({
-          levelId: scenario.id,
-          score: newScore,
-          completed,
-        });
+        onComplete({ levelId: scenario.id, score: newScore, completed });
       }, 1500);
     }
   };
@@ -194,22 +170,24 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
     setResponseTypesSeen([]);
   };
 
-  // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Enter' && canExecute && gameState === 'building') {
-        executeChain();
-      }
-      if (e.key === 'Escape') {
-        setResponseChain([]);
-      }
+      if (e.key === 'Enter' && canExecute && gameState === 'building') executeChain();
+      if (e.key === 'Escape') setResponseChain([]);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [canExecute, gameState, responseChain]);
 
-  // Generate profile for end screen
   const profile: PedagogicalProfile = generateProfile(moveHistory.map(m => m.moveId));
+
+  // Build advice as translation keys, then translate
+  const adviceKeys = useMemo(
+    () => [...buildDynamicAdviceKeys(metrics, responseTypesSeen), ...profile.advice],
+    [metrics, responseTypesSeen, profile.advice],
+  );
+  const adviceTranslated = adviceKeys.map(key => t(key));
+
   const result: TalkMovesGameResult = useMemo(
     () => ({
       variant: 'talk-moves',
@@ -219,17 +197,14 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       metrics,
       reflectionPrompt: scenario.reflectionPrompt,
       historyCounts: summarizeLabels(
-        moveHistory
-          .map((entry) => talkMovesMap[entry.moveId]?.name)
-          .filter((name): name is string => Boolean(name)),
+        moveHistory.map((entry) => talkMovesMap[entry.moveId]?.name).filter((name): name is string => Boolean(name)),
       ),
-      advice: [...buildDynamicAdvice(metrics, responseTypesSeen), ...profile.advice],
+      advice: adviceTranslated,
       profile,
     }),
-    [engagementScore, gameState, metrics, moveHistory, profile, responseTypesSeen, scenario.reflectionPrompt, scenario.title],
+    [engagementScore, gameState, metrics, moveHistory, profile, adviceTranslated, scenario.reflectionPrompt, scenario.title],
   );
 
-  // Current chain score preview
   const chainScorePreview = responseChain.length > 0
     ? calculateChainScore(responseChain.map(c => c.moveId))
     : 0;
@@ -238,7 +213,10 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   const turnTotal = Object.keys(scenario.nodes).length;
 
   return (
-    <div className="relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 bg-black shadow-2xl">
+    <div
+      className="game-surface relative flex w-full max-w-6xl flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      style={{ background: '#2c2520', minHeight: 'min(100dvh - 2rem, 800px)' }}
+    >
       {gameState === 'building' || gameState === 'executing' ? (
         <>
           <GameSessionHeader
@@ -249,8 +227,8 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             engagementScore={engagementScore}
             metrics={metrics}
             rightSlot={
-              <div className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-center text-sm sm:text-base">
-                <div className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-white/45">Turn</div>
+              <div className="rounded-lg border border-white/10 bg-white/5 px-2.5 sm:px-3 py-1.5 sm:py-2 text-center">
+                <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-amber-200/50">{t('header.turn')}</div>
                 <div className="font-mono text-xs sm:text-sm tabular-nums text-white">
                   {turnIndex}/{turnTotal}
                 </div>
@@ -258,19 +236,16 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
             }
           />
 
-          <div
-            className="pointer-events-none absolute inset-x-0 top-11 bottom-0 bg-gradient-to-b from-slate-950/40 to-transparent"
-            aria-hidden
-          />
+          <div className="pointer-events-none absolute inset-x-0 top-11 bottom-0" style={{ background: 'linear-gradient(180deg, rgba(44,37,32,0.3) 0%, transparent 100%)' }} aria-hidden />
 
-          <div className="absolute bottom-0 left-0 right-0 z-30 flex max-h-[58%] min-h-0 flex-col justify-end gap-2 overflow-y-auto border-t border-white/10 bg-gradient-to-t from-black via-black/98 to-black/85 px-3 pb-3 pt-2 sm:px-4">
+          <div
+            className="absolute bottom-0 left-0 right-0 z-30 flex min-h-0 flex-col justify-end gap-2 overflow-y-auto border-t border-white/10 px-3 pb-3 pt-2 sm:px-4"
+            style={{ maxHeight: 'min(58%, 58dvh)', background: 'linear-gradient(0deg, rgba(44,37,32,0.99) 0%, rgba(44,37,32,0.97) 70%, rgba(44,37,32,0.85) 100%)' }}
+          >
             <AnimatePresence mode="wait">
               {feedback ? (
                 <div key={feedback.slice(0, 64)} className="shrink-0">
-                  <CoachingStrip
-                    message={feedback}
-                    onDismiss={() => setFeedback(null)}
-                  />
+                  <CoachingStrip message={feedback} onDismiss={() => setFeedback(null)} />
                 </div>
               ) : null}
             </AnimatePresence>
@@ -279,67 +254,63 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               key={currentNode?.studentText}
               initial={{ opacity: 0, y: 6 }}
               animate={{ opacity: 1, y: 0 }}
-              className="shrink-0 rounded-lg border border-white/10 bg-black/60 p-4"
+              className="shrink-0 rounded-lg border border-white/10 p-3 sm:p-4"
+              style={{ background: 'rgba(44, 37, 32, 0.7)' }}
             >
               <div className="mb-2">
-                <span className="inline-block rounded-full bg-blue-600/90 px-2.5 py-0.5 text-[11px] font-bold text-white">
+                <span className="inline-block rounded-full px-2.5 py-0.5 text-[10px] sm:text-[11px] font-bold text-white" style={{ background: '#c45c3c' }}>
                   {currentNode?.studentName}
                 </span>
               </div>
-              <p className="mb-3 font-serif text-base leading-relaxed text-white/90 sm:text-lg">
+              <p className="mb-2 sm:mb-3 text-sm sm:text-base leading-relaxed text-white/90" style={{ fontFamily: "'Lora', serif", wordBreak: 'break-word' }}>
                 {currentNode?.studentText}
               </p>
               <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:gap-3">
                 {currentNode?.pressureCue ? (
-                  <div className="min-w-0 flex-1 rounded-lg border border-amber-400/15 bg-amber-500/10 px-3 py-2 text-xs leading-snug text-amber-100/90">
-                    <span className="font-semibold text-amber-200">Pressure · </span>
+                  <div className="min-w-0 flex-1 rounded-lg border border-amber-400/15 px-3 py-2 text-xs leading-snug text-amber-100/90" style={{ background: 'rgba(212,149,43,0.08)' }}>
+                    <span className="font-semibold" style={{ color: '#d4952b' }}>{t('dialogue.timePressure')} &middot; </span>
                     {currentNode.pressureCue}
                   </div>
                 ) : null}
                 {responseMeta ? (
-                  <details className="min-w-0 flex-1 rounded-lg border border-sky-400/15 bg-sky-500/10 sm:max-w-[14rem]">
-                    <summary className="cursor-pointer list-none px-3 py-2 [&::-webkit-details-marker]:hidden">
-                      <span className="text-[10px] font-semibold uppercase tracking-wider text-sky-200/75">
-                        Response type
-                      </span>
-                      <span className="mt-0.5 block text-sm font-semibold text-sky-50">{responseMeta.label}</span>
-                      <span className="text-[11px] text-sky-200/50 group-open:hidden">Open for tip</span>
+                  <details className="min-w-0 flex-1 rounded-lg border border-sky-400/10 sm:max-w-[14rem]" style={{ background: 'rgba(42,100,140,0.06)' }}>
+                    <summary className="cursor-pointer list-none px-3 py-2 [&::-webkit-details-marker]:hidden touch-target">
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-sky-300/60">{t('dialogue.responseType')}</span>
+                      <span className="mt-0.5 block text-sm font-semibold text-sky-100">{t(responseMeta.labelKey)}</span>
+                      <span className="text-[11px] text-sky-300/35 group-open:hidden">{t('hint.openTip')}</span>
                     </summary>
-                    <p className="border-t border-sky-400/10 px-3 py-2 text-xs leading-relaxed text-sky-100/80">
-                      {responseMeta.coaching}
-                    </p>
+                    <p className="border-t border-sky-400/8 px-3 py-2 text-xs leading-relaxed text-sky-100/70">{t(responseMeta.coachingKey)}</p>
                   </details>
                 ) : null}
               </div>
               <button
                 type="button"
                 onClick={() => setShowHint(!showHint)}
-                className="mt-2 text-[11px] text-white/45 underline hover:text-white/70"
+                className="mt-2 rounded px-2 py-1 text-[11px] text-white/40 underline touch-target hover:text-white/65"
               >
-                {showHint ? 'Hide hint' : 'Pedagogical hint'}
+                {showHint ? t('hint.hide') : t('hint.pedagogical')}
               </button>
               {showHint && currentNode?.hint ? (
-                <p className="mt-2 rounded-lg border border-blue-500/25 bg-blue-950/50 px-3 py-2 text-xs text-blue-200/90">
+                <p className="mt-2 rounded-lg border border-white/10 px-3 py-2 text-xs leading-relaxed text-white/75" style={{ background: 'rgba(255,255,255,0.04)' }}>
                   {currentNode.hint}
                 </p>
               ) : null}
             </motion.div>
 
             {responseChain.length > 0 ? (
-              <div className="shrink-0 rounded-lg border border-white/10 bg-black/75 p-4">
+              <div className="shrink-0 rounded-lg border border-white/10 p-3 sm:p-4" style={{ background: 'rgba(44,37,32,0.8)' }}>
                 <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/50">
-                    Your chain
-                  </h3>
+                  <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/45">{t('talk.chain')}</h3>
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-white/45">~{chainScorePreview} pts</span>
+                    <span className="text-[11px] text-white/40">~{chainScorePreview} {t('talk.pts')}</span>
                     {canExecute ? (
                       <button
                         type="button"
                         onClick={executeChain}
-                        className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-bold text-white transition-colors hover:bg-emerald-500"
+                        className="rounded-full px-3 py-1.5 text-xs font-bold text-white transition-colors touch-target"
+                        style={{ background: '#6b8f71' }}
                       >
-                        Execute →
+                        {t('talk.execute')} &rarr;
                       </button>
                     ) : null}
                   </div>
@@ -351,39 +322,39 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                     return (
                       <span
                         key={`${item.moveId}-${index}`}
-                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs ${
-                          isTerminal
-                            ? 'border-amber-500/45 bg-amber-600/25 text-amber-100'
-                            : 'border-white/15 bg-white/10 text-white/85'
-                        }`}
+                        className="inline-flex items-center gap-1 rounded-full border px-2 py-1 text-xs"
+                        style={{
+                          borderColor: isTerminal ? 'rgba(212,149,43,0.4)' : 'rgba(255,255,255,0.12)',
+                          background: isTerminal ? 'rgba(212,149,43,0.15)' : 'rgba(255,255,255,0.08)',
+                          color: isTerminal ? '#f0d48a' : 'rgba(245,240,232,0.8)',
+                        }}
                       >
                         {item.label}
                         <button
                           type="button"
                           onClick={() => removeFromChain(index)}
-                          className="text-white/45 hover:text-white"
+                          className="rounded p-1 text-white/40 touch-target hover:text-white/80"
                           aria-label="Remove"
+                          style={{ minWidth: '28px', minHeight: '28px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          ×
+                          &times;
                         </button>
                       </span>
                     );
                   })}
-                  {canExecute ? <span className="self-center text-emerald-400">→</span> : null}
+                  {canExecute ? <span className="self-center" style={{ color: '#8aab8f' }}>&rarr;</span> : null}
                 </div>
                 {!canExecute ? (
-                  <p className="mt-2 text-[11px] text-white/40">
-                    Add a terminal move (amber) to run the chain.
-                  </p>
+                  <p className="mt-2 text-[11px] text-white/35">{t('talk.addTerminal')}</p>
                 ) : null}
               </div>
             ) : null}
 
-            <div className="shrink-0 rounded-t-lg border border-white/10 border-b-0 bg-neutral-950/90 px-4 pb-4 pt-3">
-              <h3 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-white/40">
-                Talk moves — tap to add
+            <div className="shrink-0 rounded-t-lg border border-white/10 border-b-0 px-3 sm:px-4 pb-3 sm:pb-4 pt-2.5 sm:pt-3" style={{ background: 'rgba(44,37,32,0.95)' }}>
+              <h3 className="mb-2 px-1 text-[10px] font-bold uppercase tracking-wider text-white/35">
+                {t('talk.tapToAdd')}
               </h3>
-              <div className="grid max-h-[7.5rem] grid-cols-2 gap-1.5 overflow-y-auto sm:grid-cols-4 lg:grid-cols-7">
+              <div className="grid max-h-[8rem] sm:max-h-[7.5rem] grid-cols-2 gap-1.5 overflow-y-auto sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
                 {availableMoves.map((move) => {
                   const isInChain = responseChain.some((c) => c.moveId === move.id);
                   const isTerminal = move.category === 'terminal';
@@ -395,17 +366,17 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                       onClick={() => addToChain(move.id)}
                       disabled={isInChain}
                       title={`${move.name}: ${move.purpose}`}
-                      className={`rounded-lg border px-2 py-1.5 text-left text-[11px] transition-colors ${
-                        isInChain
-                          ? 'cursor-not-allowed border-white/5 bg-white/[0.03] text-white/25'
-                          : isTerminal
-                            ? 'border-amber-500/40 bg-amber-900/20 text-amber-100 hover:border-amber-400/60'
-                            : 'border-white/10 bg-white/5 text-white/85 hover:border-white/30'
-                      }`}
+                      className="rounded-lg border px-2 py-2 sm:py-1.5 text-left text-[11px] transition-all duration-200 touch-target"
+                      style={{
+                        cursor: isInChain ? 'not-allowed' : 'pointer',
+                        borderColor: isInChain ? 'rgba(255,255,255,0.04)' : isTerminal ? 'rgba(212,149,43,0.35)' : 'rgba(255,255,255,0.08)',
+                        background: isInChain ? 'rgba(255,255,255,0.02)' : isTerminal ? 'rgba(212,149,43,0.1)' : 'rgba(255,255,255,0.04)',
+                        color: isInChain ? 'rgba(255,255,255,0.2)' : isTerminal ? '#f0d48a' : 'rgba(245,240,232,0.8)',
+                      }}
                     >
                       <span className="block truncate font-bold">{move.shortName}</span>
-                      <span className="block truncate text-[9px] text-white/45">
-                        {isTerminal ? 'End chain' : 'Add'}
+                      <span className="block truncate text-[9px]" style={{ color: isInChain ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.4)' }}>
+                        {isTerminal ? t('talk.endChain') : t('talk.add')}
                       </span>
                     </motion.button>
                   );
