@@ -1258,8 +1258,8 @@ const countingBlocks: ChoiceScenarioDefinition = {
       alternateTexts: [
         "You hold up three blocks in a row and ask the class to count them. Student A says, 'Three.'",
         "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'",
-        "You hold up 5 blocks and ask the class to count them. Student A says, 'Five.'",
-        "You arrange 7 blocks in a line and ask, 'How many do we have?' Student A says, 'Seven.'"
+        "You hold up three blocks and ask the class to count them. Student A says, 'Three.'",
+        "You arrange three blocks in a line and ask, 'How many do we have?' Student A says, 'Three.'"
       ],
       pressureCue: 'Pressure cue: the pupil gave a single-word answer, missing the opportunity to explain their counting strategy.',
       responseType: 'emergent-language',
