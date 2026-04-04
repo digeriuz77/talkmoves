@@ -2,6 +2,7 @@ import type { ChoiceScenarioDefinition } from './choice-scenarios';
 import { choiceScenarios } from './choice-scenarios';
 import type { TalkMoveScenarioDefinition } from './talk_moves';
 import { talkMoveScenarios } from './talk_moves';
+import { practiceScenarios } from './practice-scenarios';
 
 export type ChoiceGameEntry = {
   id: string;
@@ -38,16 +39,28 @@ const choiceEntries: ChoiceGameEntry[] = Object.values(choiceScenarios).map((sce
   scenario,
 }));
 
-const talkMoveEntries: TalkMoveGameEntry[] = Object.values(talkMoveScenarios).map((scenario) => ({
-  id: scenario.id,
-  engine: 'talk-moves',
-  title: scenario.title,
-  subtitle: scenario.subtitle,
-  description: scenario.description,
-  recommendedOrder: scenario.recommendedOrder,
-  focusAreas: scenario.focusAreas,
-  scenario,
-}));
+const talkMoveEntries: TalkMoveGameEntry[] = [
+  ...Object.values(talkMoveScenarios).map((scenario) => ({
+    id: scenario.id,
+    engine: 'talk-moves' as const,
+    title: scenario.title,
+    subtitle: scenario.subtitle,
+    description: scenario.description,
+    recommendedOrder: scenario.recommendedOrder,
+    focusAreas: scenario.focusAreas,
+    scenario,
+  })),
+  ...Object.values(practiceScenarios).map((scenario) => ({
+    id: scenario.id,
+    engine: 'talk-moves' as const,
+    title: scenario.title,
+    subtitle: scenario.subtitle,
+    description: scenario.description,
+    recommendedOrder: scenario.recommendedOrder,
+    focusAreas: scenario.focusAreas,
+    scenario,
+  })),
+];
 
 export const gameCatalog: GameCatalogEntry[] = [...choiceEntries, ...talkMoveEntries].sort(
   (left, right) => left.recommendedOrder - right.recommendedOrder,
