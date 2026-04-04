@@ -89,7 +89,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
   subtitle: 'Foundation Prototype',
   description:
     'Navigate an 8-turn science discussion and learn how productive teacher moves keep inquiry alive.',
-  recommendedOrder: 0,
+  recommendedOrder: 10,
   focusAreas: ['revoicing', 'wait time', 'reasoning', 'adding on'],
   reflectionPrompt:
     'When did you open the discussion up, and when did you accidentally collapse it back into answer-checking?',
@@ -210,7 +210,7 @@ const noHandsUp: ChoiceScenarioDefinition = {
   subtitle: 'Priority Level 1',
   description:
     'Practice resisting the one fast correct hand-up while Primary pupils build partial ideas in English.',
-  recommendedOrder: 1,
+  recommendedOrder: 4,
   focusAreas: ['equity', 'think time', 'participation'],
   reflectionPrompt:
     'Which choices widened access to the conversation, and which ones rewarded only speed, confidence, and the one pupil already ready in English?',
@@ -390,7 +390,7 @@ const thinkPairShare: ChoiceScenarioDefinition = {
   subtitle: 'Priority Level 2',
   description:
     'Practice sequencing silent think time, partner rehearsal, and share-out when most pupils need support to form the English.',
-  recommendedOrder: 2,
+  recommendedOrder: 5,
   focusAreas: ['think-pair-share', 'rehearsal', 'whole-class discussion'],
   reflectionPrompt:
     'Did your sequence help pupils rehearse an idea before public talk, or did it skip too quickly to a whole-class answer from the strongest speaker?',
@@ -696,7 +696,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
   subtitle: 'Priority Level 4',
   description:
     'Feel the difference between rescuing the silence and staying long enough for Primary pupils to build a partial answer.',
-  recommendedOrder: 4,
+  recommendedOrder: 7,
   focusAreas: ['wait time', 'silence', 'processing'],
   reflectionPrompt:
     'What became possible when you held the silence a little longer, and what disappeared when anxiety and time pressure made you fill it yourself?',
@@ -835,7 +835,7 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
   subtitle: 'Priority Level 5',
   description:
     'Choose who to invite next based on readiness, confidence, language support, and what the discussion needs.',
-  recommendedOrder: 5,
+  recommendedOrder: 8,
   focusAreas: ['targeted questioning', 'equity', 'student uptake'],
   reflectionPrompt:
     'Did your invitations distribute voice strategically, or did they default to the same confident pupils with the quickest English?',
@@ -966,7 +966,7 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
   subtitle: 'Multilingual Support',
   description:
     'Use Malay support deliberately so pupils can return to English with stronger reasoning, not less.',
-  recommendedOrder: 6,
+  recommendedOrder: 9,
   focusAreas: ['multilingual talk', 'code-switching', 'sentence stems'],
   reflectionPrompt:
     'Did you use the first language as a bridge back into academic English, or did it become an unplanned escape from thinking aloud?',
@@ -1108,7 +1108,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
   subtitle: 'Priority Level 7',
   description:
     'Practice launching inquiry with noticing, wondering, and productive uncertainty in a Primary classroom where pupils may only offer fragments at first.',
-  recommendedOrder: 7,
+  recommendedOrder: 6,
   focusAreas: ['curiosity', 'hooks', 'prediction'],
   reflectionPrompt:
     'Which opening invited real wondering, and which one merely disguised recall as inquiry while steering pupils back to teacher-answer mode?',
