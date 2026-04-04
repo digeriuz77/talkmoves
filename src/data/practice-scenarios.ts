@@ -59,7 +59,7 @@ const numberLineScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Reasoning with Evidence',
   description:
     'Students are placing numbers on a 0–100 number line. Build talk-move chains that help them clarify, justify, and revise their reasoning about where 63 belongs.',
-  recommendedOrder: 3,
+  recommendedOrder: 16,
   focusAreas: ['press for reasoning', 'revoicing', 'revising thinking'],
   reflectionPrompt:
     'Which moves helped students explain their counting strategy and catch their own errors?',
@@ -116,7 +116,7 @@ const mathStrategyScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Comparing Strategies',
   description:
     'Students are finding different ways to make 14 using 3, 4, and 7. One student gets tangled. Build chains that let peers correct, compare strategies, and agree with reasoning.',
-  recommendedOrder: 4,
+  recommendedOrder: 17,
   focusAreas: ['peer correction', 'adding on', 'agreeing with reasoning'],
   reflectionPrompt:
     'How did peer-to-peer correction compare to teacher-led correction? Which moves kept the student\'s dignity intact?',
@@ -173,7 +173,7 @@ const heavyLightScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Peer-to-Peer Talk',
   description:
     'Students are sorting objects as heavy or light based on a story. Build chains that redirect talk from teacher to peer, and press for text-based evidence.',
-  recommendedOrder: 5,
+  recommendedOrder: 12,
   focusAreas: ['peer-to-peer talk', 'evidence from text', 'redirecting to students'],
   reflectionPrompt:
     'How did you shift the talk from student-to-teacher to student-to-student? Which moves made that possible?',
@@ -229,7 +229,7 @@ const visualizingPoemScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Text-Based Imagery',
   description:
     'After listening to a poem with eyes closed, students share mental images. Build chains that connect visualization to textual evidence and invite gentle challenge.',
-  recommendedOrder: 6,
+  recommendedOrder: 13,
   focusAreas: ['visualization', 'text evidence', 'challenging thinking'],
   reflectionPrompt:
     'How did you help students distinguish between what the text says and what they imagined? Which moves supported critical reading?',
@@ -286,7 +286,7 @@ const forgottenShadowScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Partner Norms',
   description:
     'During turn-and-talks about shadows, a student forgets their partner\'s idea. Build chains that model problem-solving norms, partner re-explanation, and scientific vocabulary building.',
-  recommendedOrder: 7,
+  recommendedOrder: 15,
   focusAreas: ['partner norms', 'problem-solving', 'scientific vocabulary'],
   reflectionPrompt:
     'How did you handle a student who forgot? Did you model the norm or rescue? Which moves kept the student\'s dignity?',
@@ -349,7 +349,7 @@ const spiderScienceScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Fishbowl Discussion',
   description:
     'In a fishbowl circle with a microphone, students answer: How does a spider\'s body help it survive? Build chains that use sentence starters, synthesize ideas, and reach the big conclusion.',
-  recommendedOrder: 9,
+  recommendedOrder: 19,
   focusAreas: ['fishbowl discussion', 'sentence starters', 'synthesis'],
   reflectionPrompt:
     'How did the sentence starter "I agree with ___ because..." change the quality of student responses? Which moves led to synthesis?',
@@ -406,7 +406,7 @@ const numberHoopsScenario: TalkMoveScenarioDefinition = {
   subtitle: 'Practice — Physical Math',
   description:
     'Outside with hoops and numbers, a student gets stuck counting past 14. Build chains that model thinking strategies, invite direction changes, and celebrate self-monitoring.',
-  recommendedOrder: 10,
+  recommendedOrder: 18,
   focusAreas: ['modeling thinking', 'self-monitoring', 'physical math'],
   reflectionPrompt:
     'How did modeling your own stuck-ness help the student? Which moves encouraged the student to self-correct rather than wait for the answer?',

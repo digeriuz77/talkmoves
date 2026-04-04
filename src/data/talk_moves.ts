@@ -439,7 +439,7 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
     subtitle: 'Chain Builder Prototype',
     description:
       'Build sequences of talk moves that deepen scientific reasoning across an 8-turn inquiry.',
-    recommendedOrder: 2,
+    recommendedOrder: 11,
     focusAreas: ['sequencing', 'reasoning', 'scientific inquiry'],
     reflectionPrompt:
       'Which move combinations helped students reason together instead of waiting for you to finish the explanation?',
@@ -462,7 +462,7 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
     subtitle: 'Priority Level 8',
     description:
       'Use the talk-moves palette to turn pair rehearsal into accountable, student-to-student whole-class discussion.',
-    recommendedOrder: 8,
+    recommendedOrder: 14,
     focusAreas: ['share-out', 'partner reporting', 'uptake'],
     reflectionPrompt:
       'Did your public discussion sample pair thinking in a way that broadened participation and kept ideas moving between students?',
