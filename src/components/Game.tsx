@@ -190,18 +190,29 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
 
   return (
     <div
-      className="game-surface relative flex w-full max-w-[min(100%,92rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      className="game-surface relative flex w-full max-w-[min(100%,88rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
       style={{ background: '#2c2520', minHeight: 'min(100dvh - 0.5rem, 960px)' }}
     >
       {gameState === 'playing' ? (
         <>
-          <div className="min-h-0 flex-1 pt-[2.75rem] sm:pt-[3.25rem]">
-            <Classroom
-              engagementScore={engagementScore}
-              lastDelta={lastDelta}
-              hotspots={scenario.hotspots}
-              spokenStudentIds={spokenStudents}
-              assets={assets}
+          <div className="flex min-h-0 flex-1 flex-col pt-[2.75rem] sm:pt-[3.25rem]">
+            <div className="h-[min(30dvh,14rem)] shrink-0 border-b border-white/10">
+              <Classroom
+                engagementScore={engagementScore}
+                lastDelta={lastDelta}
+                hotspots={scenario.hotspots}
+                spokenStudentIds={spokenStudents}
+                assets={assets}
+                focusMode
+              />
+            </div>
+            <DialogueBox
+              node={currentNode}
+              onChoice={handleChoice}
+              feedback={feedback}
+              onDismissFeedback={() => setFeedback(null)}
+              speakerLabel={speakerLabel}
+              layout="panel"
             />
           </div>
 
@@ -218,13 +229,6 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
             }
           />
 
-          <DialogueBox
-            node={currentNode}
-            onChoice={handleChoice}
-            feedback={feedback}
-            onDismissFeedback={() => setFeedback(null)}
-            speakerLabel={speakerLabel}
-          />
         </>
       ) : (
         <EndScreen result={result} onRestart={handleRestart} onExit={onExit} />
