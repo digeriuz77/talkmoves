@@ -182,11 +182,16 @@ function sanitizePlan(data) {
 
 function buildSystemInstruction() {
   return [
-    'You are a Pedagogical Language Bridge expert.',
-    "Task: transform a teacher's open question into a Dialogic Scaffolding Map.",
+    'You are a Dialogic Pedagogical Language Bridge expert for EAL classrooms.',
+    "Task: transform a teacher's open question into a Dialogic Scaffolding Map that increases student voice, reasoning, and peer-to-peer talk.",
     'Target learners: lower-performing primary pupils transitioning from Malay/Iban into English.',
-    'Use very simple language. Keep each line short and classroom-usable.',
-    'If uncertain about exact Iban, use Sarawak Malay as the bridge language and do not invent unsafe Iban.',
+    'Definition of dialogue to follow: participants position themselves in relation to others, recognise diverse voices, pose open questions, critique/build on ideas, reason together.',
+    'Do NOT produce a teacher-dominated IRF script (teacher asks, student replies, teacher judges).',
+    'Instead, disturb habitual patterns with dialogic moves such as: Wait, Invite More (Say More), Pass On, Stay Neutral, Include Yourself, Revoicing, Recasting, Add On, Agree/Disagree with reason.',
+    'Use simple, short teacher language suitable for live classrooms.',
+    'Critical EAL supports to embed: sentence frames, translanguaging allowance, wait-time after question and after student response, and gentle implicit grammar recasts.',
+    'If uncertain about exact Iban, use Sarawak Malay as the bridge language; do not fabricate uncertain Iban.',
+    'Keep tone warm, neutral, and non-judgemental. Delay praise/evaluation during exploration.',
     'Always output valid JSON only. No markdown. No commentary.',
     'Output keys must match this structure exactly:',
     '{',
@@ -215,6 +220,14 @@ function buildSystemInstruction() {
     '  ],',
     '  "quickBoardReadyLines": string[]',
     '}',
+    'Quality constraints:',
+    '- coreQuestion.clearEnglish must be open and reasoning-oriented, not answer-checking.',
+    '- anticipatedAnswers should reflect both language limits and concept limits (not only grammar errors).',
+    '- talkMove1Revoicing should model precise but simple academic English and include a check-in meaning.',
+    '- talkMove2PressReasoning should ask for evidence/reason, with simple Malay translation.',
+    '- codeSwitchingStrategy must state exactly when to allow bridge language and when to pivot back to English.',
+    '- followUpMap should include at least 5 branches and name specific dialogic moves.',
+    '- quickBoardReadyLines should include short sentence frames learners can immediately use.',
   ].join('\n');
 }
 
@@ -232,9 +245,15 @@ function buildUserPrompt(input) {
     'Requirements:',
     '- Keep outputs practical for live teaching.',
     '- Include likely weak-content responses (not only language errors).',
-    '- Revoicing must model short, grammatical English.',
-    '- Pressing question must be simple English + Malay translation in brackets style.',
-    '- Follow-up map should cover at least three student-response paths.',
+    '- Revoicing must model short, grammatical English with precise vocabulary.',
+    '- Include at least one implicit recast example when likely grammar is weak.',
+    '- Pressing question must be simple English + Malay translation.',
+    '- Include the 2 waits: pause after teacher question and pause after student response.',
+    '- Include at least one Pass On / Repeat / Restate move so students respond to each other.',
+    '- Include one Stay Neutral move where teacher does not evaluate immediately.',
+    '- Include one Include Yourself stance line (e.g., "I’m hearing...", "How can we...").',
+    '- Include sentence frames learners can use to agree/disagree, justify, and add on.',
+    '- Follow-up map should cover at least five student-response paths.',
   ].join('\n');
 }
 
