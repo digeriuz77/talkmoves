@@ -286,7 +286,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
   return (
     <div
-      className="game-surface relative flex w-full max-w-[min(100%,92rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
+      className="game-surface relative flex w-full max-w-[min(100%,88rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
       style={{ background: '#2c2520', minHeight: 'min(100dvh - 0.5rem, 960px)' }}
     >
       {gameState === 'building' || gameState === 'reviewingTurn' ? (
@@ -311,13 +311,14 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
           <div className="flex min-h-0 flex-1 flex-col overflow-hidden pt-[2.85rem] sm:pt-[3.25rem]">
             <section
-              className="flex min-h-[10.5rem] max-h-[min(38dvh,20rem)] shrink-0 flex-col border-b border-white/10 bg-[#262019] px-3 py-3 sm:px-4 sm:py-3.5"
+              className="flex min-h-[9.5rem] max-h-[min(34dvh,17rem)] shrink-0 flex-col border-b border-white/10 bg-[#262019] px-3 py-3 sm:px-4 sm:py-3.5"
               aria-label={t('talk.studentTurn')}
             >
-              <p className="mb-2 shrink-0 text-[9px] font-bold uppercase tracking-[0.16em] text-amber-200/55">
-                {t('talk.studentTurn')}
-              </p>
-              <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
+              <div className="mx-auto w-full max-w-5xl min-h-0 flex-1">
+                <p className="mb-2 shrink-0 text-[9px] font-bold uppercase tracking-[0.16em] text-amber-200/55">
+                  {t('talk.studentTurn')}
+                </p>
+                <div className="min-h-0 flex-1 overflow-y-auto pr-0.5">
                 <motion.div
                   key={currentNode?.studentText}
                   initial={{ opacity: 0, y: 4 }}
@@ -334,7 +335,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                     </span>
                   </div>
                   <p
-                    className="mb-2 sm:mb-3 text-sm sm:text-base leading-relaxed text-white/90"
+                    className="mb-2 sm:mb-3 text-sm sm:text-[1.05rem] leading-relaxed text-white/95"
                     style={{ fontFamily: "'Lora', serif", wordBreak: 'break-word' }}
                   >
                     {currentNode?.studentText}
@@ -386,9 +387,11 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                   ) : null}
                 </motion.div>
               </div>
+              </div>
             </section>
 
             <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden px-3 pb-3 pt-2 sm:px-4">
+              <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col gap-2">
               <AnimatePresence mode="wait">
                 {feedback ? (
                   <div key={feedback.slice(0, 64)} className="shrink-0">
@@ -398,7 +401,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               </AnimatePresence>
 
               {responseChain.length > 0 ? (
-                <div className="flex max-h-[min(40dvh,18rem)] shrink-0 flex-col rounded-lg border border-white/10 p-3 sm:p-4" style={{ background: 'rgba(44,37,32,0.85)' }}>
+                <div className="flex max-h-[min(42dvh,19rem)] shrink-0 flex-col rounded-lg border border-white/10 p-3 sm:p-4" style={{ background: 'rgba(44,37,32,0.85)' }}>
                   <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-[10px] font-bold uppercase tracking-wider text-white/45">{t('talk.chain')}</h3>
                     <div className="flex items-center gap-2">
@@ -437,11 +440,11 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                             <p className="text-sm font-semibold leading-snug text-white/95">{item.label}</p>
                             {move ? (
                               <>
-                                <p className="mt-1 text-[11px] leading-snug text-white/55">
+                                <p className="mt-1 text-xs leading-snug text-white/60">
                                   <span className="font-bold text-white/40">{t('talk.movePurpose')}: </span>
                                   {move.purpose}
                                 </p>
-                                <p className="mt-1 text-[11px] leading-snug text-white/45">
+                                <p className="mt-1 text-xs leading-snug text-white/50">
                                   <span className="font-bold text-white/35">{t('talk.moveTip')}: </span>
                                   {move.researchTip}
                                 </p>
@@ -471,11 +474,11 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
               <div
                 className="flex min-h-0 flex-1 flex-col rounded-lg border border-white/10 bg-[rgba(44,37,32,0.92)] px-3 py-2.5 sm:px-4 sm:py-3"
               >
-                <h3 className="mb-2 shrink-0 px-0.5 text-[10px] font-bold uppercase tracking-wider text-white/40">
+                <h3 className="mb-2 shrink-0 px-0.5 text-[11px] font-bold uppercase tracking-wider text-white/45">
                   {t('talk.tapToAdd')}
                 </h3>
                 <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-                  <div className="grid grid-cols-2 gap-1.5 pb-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
+                  <div className="grid grid-cols-2 gap-2 pb-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5">
                     {availableMoves.map((move) => {
                       const isInChain = responseChain.some((c) => c.moveId === move.id);
                       const isTerminal = move.category === 'terminal';
@@ -487,7 +490,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                           onClick={() => addToChain(move.id)}
                           disabled={isInChain || gameState !== 'building'}
                           title={`${move.name}: ${move.purpose}`}
-                          className="rounded-lg border px-2 py-2 sm:py-1.5 text-left text-[11px] transition-all duration-200 touch-target"
+                          className="rounded-lg border px-2.5 py-2.5 text-left text-xs transition-all duration-200 touch-target"
                           style={{
                             cursor: isInChain ? 'not-allowed' : 'pointer',
                             borderColor: isInChain
@@ -509,7 +512,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                         >
                           <span className="block truncate font-bold">{move.shortName}</span>
                           <span
-                            className="block truncate text-[9px]"
+                            className="block truncate text-[10px]"
                             style={{ color: isInChain ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.4)' }}
                           >
                             {isTerminal ? t('talk.endChain') : t('talk.add')}
@@ -519,6 +522,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                     })}
                   </div>
                 </div>
+              </div>
               </div>
             </div>
           </div>

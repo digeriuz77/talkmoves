@@ -9,6 +9,7 @@ type ClassroomProps = {
   hotspots: ClassroomHotspot[];
   spokenStudentIds?: string[];
   assets?: AssetUrls;
+  focusMode?: boolean;
 };
 
 export default function Classroom({
@@ -16,12 +17,13 @@ export default function Classroom({
   hotspots,
   spokenStudentIds = [],
   assets,
+  focusMode = false,
 }: ClassroomProps) {
-  const beastOpacity = Math.max(0, (50 - engagementScore) / 50);
-  const transformerOpacity = Math.max(0, (engagementScore - 50) / 50);
+  const beastOpacity = Math.max(0, (50 - engagementScore) / 50) * (focusMode ? 0.45 : 1);
+  const transformerOpacity = Math.max(0, (engagementScore - 50) / 50) * (focusMode ? 0.45 : 1);
 
-  const isDisengaged = engagementScore < 30;
-  const isHighlyEngaged = engagementScore > 70;
+  const isDisengaged = !focusMode && engagementScore < 30;
+  const isHighlyEngaged = !focusMode && engagementScore > 70;
 
   const useNormalImage = assets?.classroom_normal?.trim();
   const useBeastImage = assets?.classroom_beasts?.trim();
@@ -140,6 +142,13 @@ export default function Classroom({
         animate={{ opacity: transformerOpacity }}
         transition={{ duration: 1 }}
       />
+
+      {focusMode ? (
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{ background: 'linear-gradient(0deg, rgba(44,37,32,0.2) 0%, rgba(44,37,32,0.15) 100%)' }}
+        />
+      ) : null}
 
       {/* Engagement particles — fewer on mobile, skipped on reduced motion */}
       {isHighlyEngaged && (

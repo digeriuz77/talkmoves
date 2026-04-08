@@ -25,6 +25,18 @@ const en: Record<string, string> = {
   'mode.aboutTitle': 'About This Training Build',
   'mode.aboutBody':
     "Based on research by Edwards-Groves, Chapin, O'Connor, and Alexander. These levels are designed to help teachers rehearse dialogic routines that keep English available for reasoning, even when lesson time is tight and the temptation is to take the one fast correct answer.",
+  'hub.tagline': 'Choose Experience',
+  'hub.title': 'What do you want to do?',
+  'hub.description':
+    'Choose scenario play for rehearsal, or build a custom talk-move plan for your own class context.',
+  'hub.playTitle': 'Play scenarios and test knowledge',
+  'hub.playBody':
+    'Run classroom scenarios and practise high-leverage talk moves under pressure.',
+  'hub.playCta': 'Open scenario library',
+  'hub.buildTitle': 'Build my own talk moves',
+  'hub.buildBody':
+    'Generate a tailored dialogic scaffolding map for your question, class profile, and language context.',
+  'hub.buildCta': 'Open builder',
 
   // GameCard
   'card.startLevel': 'Start level',
@@ -44,6 +56,12 @@ const en: Record<string, string> = {
   'header.outcomes': 'Outcomes',
   'header.classroomOutcomes': 'Classroom outcomes',
   'header.turn': 'Turn',
+  'guide.summary': 'Plan',
+  'guide.title': 'Talk Move Plan',
+  'guide.vocabulary': 'Key vocabulary',
+  'guide.anticipated': 'Likely student answers',
+  'guide.followUp': 'Follow-up path',
+  'guide.bridge': 'Language bridge',
 
   // DialogueBox
   'dialogue.context': 'Context',
@@ -52,6 +70,39 @@ const en: Record<string, string> = {
   'dialogue.responseType': 'Response type',
   'dialogue.tapForTip': 'Tap for coaching tip',
   'dialogue.speakingNow': 'Speaking now',
+  'builder.back': 'Back',
+  'builder.tagline': 'Classroom-Speed Planner',
+  'builder.title': 'Build My Own Talk Moves',
+  'builder.questionLabel': "Teacher's question",
+  'builder.questionPlaceholder':
+    'Example: Why do we need to clean our tools after using them?',
+  'builder.yearLevelLabel': 'Year level',
+  'builder.topicLabel': 'Topic or subject',
+  'builder.languageLabel': 'Dominant class language',
+  'builder.vocabularyLabel': 'Priority vocabulary (comma separated)',
+  'builder.classProfileLabel': 'Class profile',
+  'builder.generate': 'Generate plan',
+  'builder.generating': 'Generating...',
+  'builder.modelLabel': 'Model:',
+  'builder.cached': 'Cache hit',
+  'builder.fresh': 'Fresh response',
+  'builder.outputTitle': 'Dialogic Scaffolding Map',
+  'builder.downloadTxt': 'Download .txt',
+  'builder.bridgeColumn': 'Malay/Iban Bridge',
+  'builder.englishColumn': 'English Transition',
+  'builder.revoiceBridge': 'Revoicing (bridge language)',
+  'builder.revoiceEnglish': 'Revoicing (English)',
+  'builder.reasoningMalay': 'Press reasoning (Malay)',
+  'builder.reasoningEnglish': 'Press reasoning (English)',
+  'builder.anticipatedAnswers': 'Anticipated answers',
+  'builder.conceptGap': 'Concept gap',
+  'builder.codeswitch': 'Code-switching strategy',
+  'builder.targetVocab': 'Target vocabulary',
+  'builder.followUpMap': 'Follow-up map',
+  'builder.quickLines': 'Quick board-ready lines',
+  'builder.copy': 'Copy',
+  'builder.errors.questionRequired': 'Please enter a teacher question.',
+  'builder.errors.generateFailed': 'Could not generate the plan. Please try again.',
 
   // TalkMovesGame
   'talk.chain': 'Your chain',
@@ -209,6 +260,18 @@ const ms: Record<string, string> = {
   'mode.aboutTitle': 'Tentang Binaan Latihan Ini',
   'mode.aboutBody':
     "Berdasarkan penyelidikan oleh Edwards-Groves, Chapin, O'Connor, dan Alexander. Tahap-tahap ini direka untuk membantu guru melatih rutin dialogik yang mengekalkan Inggeris tersedia untuk penaakulan, walaupun masa pengajaran terhad dan godaan untuk mengambil satu jawapan pantas yang betul.",
+  'hub.tagline': 'Pilih Pengalaman',
+  'hub.title': 'Apa yang anda mahu buat?',
+  'hub.description':
+    'Pilih permainan senario untuk latihan, atau bina pelan langkah perbincangan tersuai ikut konteks kelas anda.',
+  'hub.playTitle': 'Main senario dan uji pengetahuan',
+  'hub.playBody':
+    'Jalankan senario bilik kelas dan latih langkah perbincangan berimpak tinggi di bawah tekanan.',
+  'hub.playCta': 'Buka senarai senario',
+  'hub.buildTitle': 'Bina langkah perbincangan saya',
+  'hub.buildBody':
+    'Jana peta sokongan dialogik tersuai untuk soalan, profil kelas, dan konteks bahasa anda.',
+  'hub.buildCta': 'Buka pembina',
 
   // GameCard
   'card.startLevel': 'Mula tahap',
@@ -228,6 +291,12 @@ const ms: Record<string, string> = {
   'header.outcomes': 'Hasil',
   'header.classroomOutcomes': 'Hasil bilik kelas',
   'header.turn': 'Giliran',
+  'guide.summary': 'Pelan',
+  'guide.title': 'Pelan Langkah Perbincangan',
+  'guide.vocabulary': 'Kosa kata utama',
+  'guide.anticipated': 'Jangkaan jawapan pelajar',
+  'guide.followUp': 'Laluan soalan susulan',
+  'guide.bridge': 'Jambatan bahasa',
 
   // DialogueBox
   'dialogue.context': 'Konteks',
@@ -236,6 +305,39 @@ const ms: Record<string, string> = {
   'dialogue.responseType': 'Jenis respons',
   'dialogue.tapForTip': 'Ketik untuk petua',
   'dialogue.speakingNow': 'Sedang bercakap',
+  'builder.back': 'Kembali',
+  'builder.tagline': 'Perancang Pantas Kelas',
+  'builder.title': 'Bina Langkah Perbincangan Saya',
+  'builder.questionLabel': 'Soalan guru',
+  'builder.questionPlaceholder':
+    'Contoh: Kenapa kita perlu membersihkan alat selepas menggunakannya?',
+  'builder.yearLevelLabel': 'Tahap tahun',
+  'builder.topicLabel': 'Topik atau subjek',
+  'builder.languageLabel': 'Bahasa dominan kelas',
+  'builder.vocabularyLabel': 'Kosa kata keutamaan (dipisah koma)',
+  'builder.classProfileLabel': 'Profil kelas',
+  'builder.generate': 'Jana pelan',
+  'builder.generating': 'Menjana...',
+  'builder.modelLabel': 'Model:',
+  'builder.cached': 'Dari cache',
+  'builder.fresh': 'Respons baharu',
+  'builder.outputTitle': 'Peta Sokongan Dialogik',
+  'builder.downloadTxt': 'Muat turun .txt',
+  'builder.bridgeColumn': 'Jambatan BM/Iban',
+  'builder.englishColumn': 'Peralihan Inggeris',
+  'builder.revoiceBridge': 'Revoicing (bahasa jambatan)',
+  'builder.revoiceEnglish': 'Revoicing (Inggeris)',
+  'builder.reasoningMalay': 'Tekan penaakulan (BM)',
+  'builder.reasoningEnglish': 'Tekan penaakulan (Inggeris)',
+  'builder.anticipatedAnswers': 'Jangkaan jawapan',
+  'builder.conceptGap': 'Jurang konsep',
+  'builder.codeswitch': 'Strategi tukar kod',
+  'builder.targetVocab': 'Kosa kata sasaran',
+  'builder.followUpMap': 'Peta soalan susulan',
+  'builder.quickLines': 'Ayat ringkas untuk papan',
+  'builder.copy': 'Salin',
+  'builder.errors.questionRequired': 'Sila isi soalan guru.',
+  'builder.errors.generateFailed': 'Pelan tidak dapat dijana. Sila cuba lagi.',
 
   // TalkMovesGame
   'talk.chain': 'Rantaian anda',

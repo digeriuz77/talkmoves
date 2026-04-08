@@ -14,32 +14,54 @@ export type ClassroomHotspot = {
 
 export type ChoiceMove = {
   text: string;
+  textMs?: string;
   nextNode: string;
   tip?: string;
+  tipMs?: string;
   moveType: string;
   metricsDelta: MetricDelta;
 };
 
 export type ChoiceNode = {
   text: string;
+  textMs?: string;
   alternateTexts?: string[];
+  alternateTextsMs?: string[];
   pressureCue?: string;
+  pressureCueMs?: string;
   alternatePressureCues?: string[];
+  alternatePressureCuesMs?: string[];
   responseType?: StudentResponseType;
   speakerId?: string;
   speakerName?: string;
   choices: ChoiceMove[];
 };
 
+export type ChoiceTeacherGuide = {
+  keyVocabulary?: string[];
+  keyVocabularyMs?: string[];
+  anticipatedAnswers?: string[];
+  anticipatedAnswersMs?: string[];
+  followUpChain?: string[];
+  followUpChainMs?: string[];
+  bridgePrompt?: string;
+  bridgePromptMs?: string;
+};
+
 export type ChoiceScenarioDefinition = {
   id: string;
   title: string;
+  titleMs?: string;
   subtitle: string;
+  subtitleMs?: string;
   description: string;
+  descriptionMs?: string;
   recommendedOrder: number;
   focusAreas: string[];
   reflectionPrompt: string;
+  reflectionPromptMs?: string;
   reflectionContext?: ReflectionContext;
+  teacherGuide?: ChoiceTeacherGuide;
   recommendedMoves: string[];
   startNodeId: string;
   passThreshold: number;
@@ -1236,13 +1258,45 @@ const curiosityHooks: ChoiceScenarioDefinition = {
 const countingBlocks: ChoiceScenarioDefinition = {
   id: 'counting-blocks',
   title: 'Counting Blocks',
+  titleMs: 'Mengira Blok',
   subtitle: 'Priority Level 0',
+  subtitleMs: 'Tahap Keutamaan 0',
   description:
-    'Practice extending single-word responses into mathematical explanations with Primary pupils exploring basic counting.',
+    'Practice moving from one-word answers to short math explanations.',
+  descriptionMs:
+    'Latih cara bawa jawapan satu perkataan kepada penerangan matematik yang ringkas.',
   recommendedOrder: 0,
   focusAreas: ['counting', 'mathematical reasoning', 'language development'],
   reflectionPrompt:
-    'How did you help pupils move beyond just stating a number to explaining their mathematical thinking?',
+    'How did you help pupils explain how they counted, not only give the number?',
+  reflectionPromptMs:
+    'Bagaimana anda bantu pelajar terangkan cara mereka mengira, bukan hanya sebut nombor?',
+  teacherGuide: {
+    keyVocabulary: ['count', 'how many', 'altogether', 'because'],
+    keyVocabularyMs: ['kira', 'berapa', 'semua sekali', 'kerana'],
+    anticipatedAnswers: [
+      'Three.',
+      'I counted one, two, three.',
+      'Two and one make three.',
+    ],
+    anticipatedAnswersMs: [
+      'Tiga.',
+      'Saya kira satu, dua, tiga.',
+      'Dua dan satu jadi tiga.',
+    ],
+    followUpChain: [
+      'What did you count first?',
+      'Show with blocks or fingers.',
+      'Say a full sentence: "There are three because..."',
+    ],
+    followUpChainMs: [
+      'Apa yang kamu kira dahulu?',
+      'Tunjuk guna blok atau jari.',
+      'Cakap ayat penuh: "Ada tiga kerana..."',
+    ],
+    bridgePrompt: 'Start in Malay if needed, then ask for one English sentence.',
+    bridgePromptMs: 'Mula dalam BM jika perlu, kemudian minta satu ayat Inggeris.',
+  },
   recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
   startNodeId: 'start_node',
   passThreshold: 65,
@@ -1254,126 +1308,175 @@ const countingBlocks: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show a pile of blocks and ask, 'How many blocks are there?' Student A says, 'Three.' How do you respond?",
+      text: "You show 3 blocks. You ask, 'How many blocks?' Student A says, 'Three.' What do you do next?",
+      textMs:
+        "Anda tunjuk 3 blok. Anda tanya, 'Berapa blok?' Pelajar A jawab, 'Tiga.' Apa anda buat seterusnya?",
       alternateTexts: [
-        "You hold up three blocks in a row and ask the class to count them. Student A says, 'Three.'",
-        "You arrange three blocks in a small pile and ask, 'How many do we have?' Student A says, 'Three.'",
-        "You hold up three blocks and ask the class to count them. Student A says, 'Three.'",
-        "You arrange three blocks in a line and ask, 'How many do we have?' Student A says, 'Three.'"
+        "You place 3 blocks on the table. Student A says, 'Three.'",
+        "You ask, 'How many?' Student A says, 'Three.'",
       ],
-      pressureCue: 'Pressure cue: the pupil gave a single-word answer, missing the opportunity to explain their counting strategy.',
+      alternateTextsMs: [
+        "Anda letak 3 blok di meja. Pelajar A jawab, 'Tiga.'",
+        "Anda tanya, 'Berapa?' Pelajar A jawab, 'Tiga.'",
+      ],
+      pressureCue:
+        'Pressure cue: one-word answer. Keep the idea open and ask for method.',
+      pressureCueMs:
+        'Isyarat tekanan: jawapan satu perkataan. Kekalkan idea dan minta cara mengira.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about how they counted)",
+          text: '[WAIT TIME] (Wait 5 seconds. Let Student A think.)',
+          textMs: '[WAIT TIME] (Tunggu 5 saat. Biar Pelajar A berfikir.)',
           nextNode: 'turn_2',
           moveType: 'Wait Time',
-          tip: 'Strong move. Waiting gives the pupil time to formulate a more complete explanation.',
+          tip: 'Good move. Wait time helps the pupil build a full sentence.',
+          tipMs: 'Langkah baik. Masa menunggu bantu pelajar bina ayat penuh.',
           metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
         },
         {
-          text: "[SAY MORE] 'That's an interesting answer, Student A. Can you tell me how you knew it was three?'",
+          text: "[SAY MORE] 'How did you count? Show me.'",
+          textMs: "[SAY MORE] 'Macam mana kamu kira? Tunjuk cikgu.'",
           nextNode: 'turn_2',
           moveType: 'Say More',
-          tip: 'Excellent! Asking for explanation pushes the pupil to articulate their thinking process.',
+          tip: 'Excellent. This asks for reasoning, not just recall.',
+          tipMs: 'Cemerlang. Ini minta penaakulan, bukan hafalan sahaja.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you looked at the blocks and decided there were three of them?'",
+          text: "[REVOICING] 'You counted one by one and got three, right?'",
+          textMs: "[REVOICING] 'Kamu kira satu demi satu dan dapat tiga, betul?'",
           nextNode: 'turn_2',
           moveType: 'Revoicing',
-          tip: 'Good! Revoicing confirms you heard correctly while inviting elaboration.',
+          tip: 'Good. Revoicing confirms meaning and supports language.',
+          tipMs: 'Baik. Revoicing sahkan maksud dan sokong bahasa.',
           metricsDelta: { participation: 12, reasoning: 8, ownership: 8 },
         },
         {
-          text: "[EVALUATION] 'Correct! Three blocks. Who can show me another way to make three?'",
+          text: "[EVALUATION] 'Correct. Next question.'",
+          textMs: "[EVALUATION] 'Betul. Soalan seterusnya.'",
           nextNode: 'turn_2',
           moveType: 'Evaluation',
-          tip: 'Accepting the answer stops the thinking process. Try asking for explanation instead.',
+          tip: 'This closes talk too fast.',
+          tipMs: 'Ini menutup perbincangan terlalu cepat.',
           metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
         }
       ]
     },
     turn_2: {
-      text: "Student A says, 'I counted them: one, two, three.' How do you build on this explanation?",
+      text: "Student A says, 'I touched each block: one, two, three.' What do you do now?",
+      textMs:
+        "Pelajar A cakap, 'Saya sentuh setiap blok: satu, dua, tiga.' Apa anda buat sekarang?",
       alternateTexts: [
-        "Student A says, 'I saw two and one more make three.'",
-        "Student A says, 'I pointed to each one as I counted.'"
+        "Student A says, 'I pointed and counted.'",
+        "Student A says, 'I counted each one once.'",
       ],
-      pressureCue: 'Pressure cue: the pupil has explained their strategy but kept it very brief.',
+      alternateTextsMs: [
+        "Pelajar A cakap, 'Saya tunjuk dan kira.'",
+        "Pelajar A cakap, 'Saya kira setiap satu sekali.'",
+      ],
+      pressureCue:
+        'Pressure cue: strategy is visible, but language is still short.',
+      pressureCueMs:
+        'Isyarat tekanan: strategi sudah jelas, tapi bahasa masih pendek.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[ADD ON] 'Who can show us a different way to count these blocks?'",
+          text: "[ADD ON] 'Who did it a different way?'",
+          textMs: "[ADD ON] 'Siapa buat cara lain?'",
           nextNode: 'turn_3',
           moveType: 'Add On',
-          tip: 'Perfect! Inviting different approaches builds mathematical flexibility.',
+          tip: 'Strong. This opens more voices and methods.',
+          tipMs: 'Bagus. Ini buka lebih banyak suara dan kaedah.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 8 },
         },
         {
-          text: "[SAY MORE] 'Can you tell me more about how you kept track while counting?'",
+          text: "[SAY MORE] 'What did you count first?'",
+          textMs: "[SAY MORE] 'Apa yang kamu kira dahulu?'",
           nextNode: 'turn_3',
           moveType: 'Say More',
-          tip: 'Great! Pushing for details helps pupils refine their counting strategies.',
+          tip: 'Great. Short prompt, clear thinking target.',
+          tipMs: 'Hebat. Soalan ringkas, sasaran pemikiran jelas.',
           metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you used one-to-one touching to make sure you counted each block once?'",
+          text: "[REVOICING] 'You used one-to-one counting: each block once.'",
+          textMs: "[REVOICING] 'Kamu guna kira satu-ke-satu: setiap blok sekali.'",
           nextNode: 'turn_3',
           moveType: 'Revoicing',
-          tip: 'Good! Using mathematical vocabulary helps pupils connect actions to concepts.',
+          tip: 'Good vocabulary bridge from action to concept.',
+          tipMs: 'Jambatan kosa kata yang baik daripada tindakan ke konsep.',
           metricsDelta: { participation: 10, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'That\'s right. Let\'s try a harder number.'",
+          text: "[EVALUATION] 'Good. Let us move on.'",
+          textMs: "[EVALUATION] 'Bagus. Kita teruskan.'",
           nextNode: 'turn_3',
           moveType: 'Evaluation',
-          tip: 'Moving on too quickly misses the chance to deepen understanding of the current concept.',
+          tip: 'Too quick. You skip useful explanation time.',
+          tipMs: 'Terlalu cepat. Anda terlepas masa penerangan penting.',
           metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
         }
       ]
     },
     turn_3: {
-      text: "Student B says, 'I can make three with two and one.' How do you connect this to the original counting?",
+      text: "Student B says, 'Two and one make three.' How do you connect this idea?",
+      textMs:
+        "Pelajar B cakap, 'Dua dan satu jadi tiga.' Bagaimana anda sambung idea ini?",
       alternateTexts: [
-        "Student B says, 'Three is the same as two plus one.'",
-        "Student B says, 'If I take away one, I have two left.'"
+        "Student B says, 'Three is 2 + 1.'",
+        "Student B says, 'I can split three into two and one.'",
       ],
-      pressureCue: 'Pressure cue: the pupil is making connections between different representations of the same number.',
+      alternateTextsMs: [
+        "Pelajar B cakap, 'Tiga ialah 2 + 1.'",
+        "Pelajar B cakap, 'Saya boleh pecah tiga jadi dua dan satu.'",
+      ],
+      pressureCue:
+        'Pressure cue: pupil is connecting counting and number composition.',
+      pressureCueMs:
+        'Isyarat tekanan: pelajar sedang sambung kiraan dengan gabungan nombor.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
       speakerName: 'Student B',
       choices: [
         {
-          text: "[ADD ON] 'Who can show us how two and one makes three with the blocks?'",
+          text: "[ADD ON] 'Who can prove 2 + 1 with blocks?'",
+          textMs: "[ADD ON] 'Siapa boleh buktikan 2 + 1 guna blok?'",
           nextNode: 'end_game',
           moveType: 'Add On',
-          tip: 'Excellent! Having pupils demonstrate connections strengthens understanding for everyone.',
+          tip: 'Excellent. Public demonstration builds shared understanding.',
+          tipMs: 'Cemerlang. Tunjuk depan kelas bina kefahaman bersama.',
           metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REASONING] 'How does knowing two and one make three help us with other numbers?'",
+          text: "[REASONING] 'How can this help with 4 or 5?'",
+          textMs: "[REASONING] 'Macam mana ini bantu untuk 4 atau 5?'",
           nextNode: 'end_game',
           moveType: 'Reasoning',
-          tip: 'Great! Asking for broader implications helps pupils see patterns in mathematics.',
+          tip: 'Great extension. It asks for transfer to new numbers.',
+          tipMs: 'Sambungan yang bagus. Ini minta pindahan ke nombor baru.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
         },
         {
-          text: "[REVOICING] 'So you\'re saying that three can be broken into a two and a one?'",
+          text: "[REVOICING] 'So three can be split into two and one.'",
+          textMs: "[REVOICING] 'Jadi tiga boleh dipecah kepada dua dan satu.'",
           nextNode: 'end_game',
           moveType: 'Revoicing',
-          tip: 'Good! Revoicing with mathematical language helps solidify the concept.',
+          tip: 'Useful language model, but add one follow-up why/question.',
+          tipMs: 'Model bahasa berguna, tapi tambah satu soalan susulan.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'Exactly! Three is two plus one. Good job.'",
+          text: "[EVALUATION] 'Yes, correct.'",
+          textMs: "[EVALUATION] 'Ya, betul.'",
           nextNode: 'end_game',
           moveType: 'Evaluation',
-          tip: 'While positive, this misses the opportunity to have pupils explain their reasoning.',
+          tip: 'Affirmation only. Reasoning chance is missed.',
+          tipMs: 'Setuju sahaja. Peluang penaakulan terlepas.',
           metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
         }
       ]
@@ -1384,13 +1487,45 @@ const countingBlocks: ChoiceScenarioDefinition = {
 const shapesSorting: ChoiceScenarioDefinition = {
   id: 'shapes-sorting',
   title: 'Sorting Shapes',
+  titleMs: 'Mengelas Bentuk',
   subtitle: 'Priority Level 1',
+  subtitleMs: 'Tahap Keutamaan 1',
   description:
-    'Practice developing mathematical language as Primary pupils describe and sort basic shapes.',
+    'Practice simple compare language while pupils classify shapes.',
+  descriptionMs:
+    'Latih bahasa perbandingan mudah semasa pelajar mengelas bentuk.',
   recommendedOrder: 1,
   focusAreas: ['shape recognition', 'mathematical language', 'classification'],
   reflectionPrompt:
-    'How did you help pupils move beyond naming shapes to describing their properties?',
+    'How did you move pupils from naming to explaining properties?',
+  reflectionPromptMs:
+    'Bagaimana anda bantu pelajar daripada menamakan bentuk kepada menerangkan sifat?',
+  teacherGuide: {
+    keyVocabulary: ['shape', 'side', 'corner', 'same', 'different'],
+    keyVocabularyMs: ['bentuk', 'sisi', 'sudut', 'sama', 'berbeza'],
+    anticipatedAnswers: [
+      'Triangle.',
+      'It has three sides.',
+      'Square has four equal sides.',
+    ],
+    anticipatedAnswersMs: [
+      'Segi tiga.',
+      'Ia ada tiga sisi.',
+      'Segi empat sama ada empat sisi sama panjang.',
+    ],
+    followUpChain: [
+      'What do you notice first?',
+      'How many sides? How many corners?',
+      'Say the full sentence with math words.',
+    ],
+    followUpChainMs: [
+      'Apa kamu nampak dulu?',
+      'Berapa sisi? Berapa sudut?',
+      'Cakap ayat penuh guna perkataan matematik.',
+    ],
+    bridgePrompt: 'Accept Malay idea first, then revoice in English.',
+    bridgePromptMs: 'Terima idea BM dahulu, kemudian suarakan semula dalam Inggeris.',
+  },
   recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
   startNodeId: 'start_node',
   passThreshold: 65,
@@ -1402,128 +1537,175 @@ const shapesSorting: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show a triangle and ask, 'What shape is this?' Student A says, 'Triangle.' How do you respond?",
+      text: "You show a triangle. You ask, 'What shape is this?' Student A says, 'Triangle.'",
+      textMs:
+        "Anda tunjuk segi tiga. Anda tanya, 'Ini bentuk apa?' Pelajar A jawab, 'Segi tiga.'",
       alternateTexts: [
-        "You hold up a different triangle and ask, 'What shape is this?' Student A says, 'Triangle.'",
-        "You point to a triangle on the poster and ask, 'What do we call this shape?' Student A says, 'Triangle.'",
-        "You hold up a square and ask the class to name it. Student A says, 'Square.'",
-        "You show a circle and ask, 'What do we call this shape?' Student A says, 'Circle.'"
+        "You point to a shape on the board. Student A names it.",
+        "You hold a shape card. Student A gives the name only.",
       ],
-      pressureCue: 'Pressure cue: the pupil gave the correct shape name but didn\'t describe its properties.',
+      alternateTextsMs: [
+        'Anda tunjuk bentuk pada papan. Pelajar A sebut nama bentuk sahaja.',
+        'Anda pegang kad bentuk. Pelajar A beri nama sahaja.',
+      ],
+      pressureCue:
+        'Pressure cue: correct label, but no properties yet.',
+      pressureCueMs:
+        'Isyarat tekanan: label betul, tetapi sifat belum dijelaskan.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about what makes this shape special)",
+          text: '[WAIT TIME] (Wait. Let Student A look carefully.)',
+          textMs: '[WAIT TIME] (Tunggu. Biar Pelajar A lihat betul-betul.)',
           nextNode: 'turn_2',
           moveType: 'Wait Time',
-          tip: 'Strong move. Waiting gives the pupil time to observe and describe shape properties.',
+          tip: 'Good. Observation time improves answer quality.',
+          tipMs: 'Baik. Masa memerhati tingkatkan kualiti jawapan.',
           metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
         },
         {
-          text: "[SAY MORE] 'That\'s right! What makes this shape a triangle? What do you notice about it?'",
+          text: "[SAY MORE] 'How do you know it is a triangle?'",
+          textMs: "[SAY MORE] 'Macam mana kamu tahu ini segi tiga?'",
           nextNode: 'turn_2',
           moveType: 'Say More',
-          tip: 'Excellent! Asking about properties pushes pupils to look beyond the name.',
+          tip: 'Excellent. Direct and easy follow-up.',
+          tipMs: 'Cemerlang. Soalan susulan yang terus dan mudah.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you\'re saying this is a triangle because it has three sides and three corners?'",
+          text: "[REVOICING] 'You mean: triangle has three sides and three corners?'",
+          textMs: "[REVOICING] 'Maksud kamu: segi tiga ada tiga sisi dan tiga sudut?'",
           nextNode: 'turn_2',
           moveType: 'Revoicing',
-          tip: 'Good! Connecting the name to properties helps build deeper understanding.',
+          tip: 'Good language bridge. Keep pupil ownership by checking back.',
+          tipMs: 'Jambatan bahasa yang baik. Kekalkan pemilikan pelajar dengan semak semula.',
           metricsDelta: { participation: 12, reasoning: 12, ownership: 8 },
         },
         {
-          text: "[EVALUATION] 'Correct! It\'s a triangle. Let\'s look at another shape.'",
+          text: "[EVALUATION] 'Correct. Next shape.'",
+          textMs: "[EVALUATION] 'Betul. Bentuk seterusnya.'",
           nextNode: 'turn_2',
           moveType: 'Evaluation',
-          tip: 'Accepting the answer stops the thinking process. Try asking about properties instead.',
+          tip: 'You lose the chance to build vocabulary.',
+          tipMs: 'Anda hilang peluang untuk bina kosa kata.',
           metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
         }
       ]
     },
     turn_2: {
-      text: "Student A says, 'It has three points and three lines.' How do you build on this description?",
+      text: "Student A says, 'It has three lines and three points.' What next?",
+      textMs:
+        "Pelajar A cakap, 'Ia ada tiga garis dan tiga bucu.' Langkah seterusnya?",
       alternateTexts: [
-        "Student A says, 'It has three sides and three corners.'",
-        "Student A says, 'It\'s pointy and has straight edges.'"
+        "Student A says, 'Three sides, three corners.'",
+        "Student A says, 'Pointy shape with straight lines.'",
       ],
-      pressureCue: 'Pressure cue: the pupil has described properties but used informal language.',
+      alternateTextsMs: [
+        "Pelajar A cakap, 'Tiga sisi, tiga sudut.'",
+        "Pelajar A cakap, 'Bentuk tajam dengan garis lurus.'",
+      ],
+      pressureCue:
+        'Pressure cue: useful idea, informal wording.',
+      pressureCueMs:
+        'Isyarat tekanan: idea baik, tetapi bahasa masih tidak formal.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[ADD ON] 'Who can use our math words to describe what Student A noticed?'",
+          text: "[ADD ON] 'Who can restate this using math words?'",
+          textMs: "[ADD ON] 'Siapa boleh sebut semula guna perkataan matematik?'",
           nextNode: 'turn_3',
           moveType: 'Add On',
-          tip: 'Perfect! Connecting informal observations to mathematical vocabulary builds precision.',
+          tip: 'Excellent for shared academic vocabulary.',
+          tipMs: 'Cemerlang untuk kosa kata akademik bersama.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[SAY MORE] 'Can you tell me more about these \"points\" and \"lines\" you see?'",
+          text: "[SAY MORE] 'Can you point to one side and one corner?'",
+          textMs: "[SAY MORE] 'Boleh tunjuk satu sisi dan satu sudut?'",
           nextNode: 'turn_3',
           moveType: 'Say More',
-          tip: 'Great! Pushing for clarification helps pupils refine their observations.',
+          tip: 'Good. Concrete pointing supports weaker language learners.',
+          tipMs: 'Baik. Tunjuk secara konkrit bantu pelajar bahasa lemah.',
           metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you noticed that a triangle has three straight sides and three corners where the sides meet?'",
+          text: "[REVOICING] 'You noticed three straight sides and three corners.'",
+          textMs: "[REVOICING] 'Kamu perasan ada tiga sisi lurus dan tiga sudut.'",
           nextNode: 'turn_3',
           moveType: 'Revoicing',
-          tip: 'Good! Using precise mathematical language helps pupils communicate clearly.',
+          tip: 'Strong model. Add a check: "Did I say your idea correctly?"',
+          tipMs: 'Model kuat. Tambah semakan: "Betul tak maksud kamu?"',
           metricsDelta: { participation: 10, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'That\'s right! Those are the sides and corners. Let\'s try another shape.'",
+          text: "[EVALUATION] 'Yes, good. Next.'",
+          textMs: "[EVALUATION] 'Ya, bagus. Seterusnya.'",
           nextNode: 'turn_3',
           moveType: 'Evaluation',
-          tip: 'Moving on too quickly misses the chance to solidify the mathematical language.',
+          tip: 'This accepts but does not deepen.',
+          tipMs: 'Ini menerima jawapan tetapi tidak memperdalamkan idea.',
           metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
         }
       ]
     },
     turn_3: {
-      text: "Student B says, 'This square has four sides that are the same length.' How do you connect different shapes?",
+      text: "Student B says, 'A square has four equal sides.' How do you connect shapes?",
+      textMs:
+        "Pelajar B cakap, 'Segi empat sama ada empat sisi sama panjang.' Bagaimana anda sambungkan bentuk?",
       alternateTexts: [
-        "Student B says, 'A square has four corners, not three like a triangle.'",
-        "Student B says, 'This shape has more sides than the triangle we looked at.'",
-        "Student B says, 'A rectangle has two long sides and two short sides.'",
-        "Student B says, 'A circle is round all the way around.'"
+        "Student B says, 'Square has four corners, triangle has three.'",
+        "Student B says, 'Different shapes have different sides.'",
       ],
-      pressureCue: 'Pressure cue: the pupil is noticing differences between shapes, a key classification skill.',
+      alternateTextsMs: [
+        "Pelajar B cakap, 'Segi empat sama ada empat sudut, segi tiga ada tiga.'",
+        "Pelajar B cakap, 'Bentuk berbeza ada sisi berbeza.'",
+      ],
+      pressureCue:
+        'Pressure cue: student is classifying by properties.',
+      pressureCueMs:
+        'Isyarat tekanan: pelajar sedang mengelas berdasarkan sifat.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
       speakerName: 'Student B',
       choices: [
         {
-          text: "[ADD ON] 'Who can tell us how this shape is different from the triangle we just looked at?'",
+          text: "[ADD ON] 'Who can compare square and triangle in one sentence?'",
+          textMs: "[ADD ON] 'Siapa boleh bandingkan segi empat sama dan segi tiga dalam satu ayat?'",
           nextNode: 'end_game',
           moveType: 'Add On',
-          tip: 'Excellent! Comparing shapes helps pupils notice important similarities and differences.',
+          tip: 'Excellent compare-language practice.',
+          tipMs: 'Cemerlang untuk latihan bahasa perbandingan.',
           metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REASONING] 'How does knowing what makes a triangle special help us understand other shapes?'",
+          text: "[REASONING] 'Why is side-count useful when we sort shapes?'",
+          textMs: "[REASONING] 'Kenapa kiraan sisi penting bila kita mengelas bentuk?'",
           nextNode: 'end_game',
           moveType: 'Reasoning',
-          tip: 'Great! Asking for connections helps pupils see shape families and patterns.',
+          tip: 'Great. This links observation to rule.',
+          tipMs: 'Hebat. Ini sambung pemerhatian kepada peraturan.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
         },
         {
-          text: "[REVOICING] 'So you\'re saying that while both shapes have sides, the triangle has three and the square has four?'",
+          text: "[REVOICING] 'Both have sides; triangle has 3, square has 4.'",
+          textMs: "[REVOICING] 'Kedua-duanya ada sisi; segi tiga ada 3, segi empat sama ada 4.'",
           nextNode: 'end_game',
           moveType: 'Revoicing',
-          tip: 'Good! Using comparative language helps pupils classify shapes by their properties.',
+          tip: 'Clear model. Ask one pupil to repeat in own words.',
+          tipMs: 'Model jelas. Minta seorang pelajar ulang dengan ayat sendiri.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'Exactly! Different shapes have different numbers of sides. Well done.'",
+          text: "[EVALUATION] 'Correct. Well done.'",
+          textMs: "[EVALUATION] 'Betul. Bagus.'",
           nextNode: 'end_game',
           moveType: 'Evaluation',
-          tip: 'While positive, this misses the opportunity to have pupils explain their comparative reasoning.',
+          tip: 'Positive, but no extension.',
+          tipMs: 'Positif, tetapi tiada sambungan idea.',
           metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
         }
       ]
@@ -1534,13 +1716,45 @@ const shapesSorting: ChoiceScenarioDefinition = {
 const simpleAddition: ChoiceScenarioDefinition = {
   id: 'simple-addition',
   title: 'Adding Objects',
+  titleMs: 'Tambah Objek',
   subtitle: 'Priority Level 2',
+  subtitleMs: 'Tahap Keutamaan 2',
   description:
-    'Practice extending counting responses into addition explanations with Primary pupils combining small groups.',
+    'Practice simple addition talk: combine two groups and explain why.',
+  descriptionMs:
+    'Latih perbincangan tambah mudah: gabung dua kumpulan dan terangkan sebab.',
   recommendedOrder: 2,
   focusAreas: ['addition', 'mathematical reasoning', 'language development'],
   reflectionPrompt:
-    'How did you help pupils move beyond counting totals to explaining how they combined groups?',
+    'How did you prompt pupils to explain the method, not only the total?',
+  reflectionPromptMs:
+    'Bagaimana anda minta pelajar terangkan kaedah, bukan hanya jumlah?',
+  teacherGuide: {
+    keyVocabulary: ['add', 'altogether', 'group', 'start with', 'count on'],
+    keyVocabularyMs: ['tambah', 'semua sekali', 'kumpulan', 'mula dengan', 'sambung kira'],
+    anticipatedAnswers: [
+      'Five.',
+      'I started with two, then counted three more.',
+      'Three plus two is also five.',
+    ],
+    anticipatedAnswersMs: [
+      'Lima.',
+      'Saya mula dengan dua, kemudian kira tiga lagi.',
+      'Tiga tambah dua juga lima.',
+    ],
+    followUpChain: [
+      'What number did you start with?',
+      'What did you add next?',
+      'Say the full sentence: "I got five because..."',
+    ],
+    followUpChainMs: [
+      'Nombor mana kamu mula dahulu?',
+      'Lepas itu kamu tambah apa?',
+      'Cakap ayat penuh: "Saya dapat lima kerana..."',
+    ],
+    bridgePrompt: 'Use BM for idea, then revoice in simple English.',
+    bridgePromptMs: 'Guna BM untuk idea, kemudian suarakan semula dalam Inggeris mudah.',
+  },
   recommendedMoves: ['Wait Time', 'Say More', 'Revoicing', 'Add On'],
   startNodeId: 'start_node',
   passThreshold: 65,
@@ -1552,124 +1766,175 @@ const simpleAddition: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show 2 blocks and 3 blocks separately, then ask, 'How many blocks altogether?' Student A says, 'Five.' How do you respond?",
+      text: "You show 2 blocks and 3 blocks. You ask, 'How many altogether?' Student A says, 'Five.'",
+      textMs:
+        "Anda tunjuk 2 blok dan 3 blok. Anda tanya, 'Berapa semua sekali?' Pelajar A jawab, 'Lima.'",
       alternateTexts: [
-        "You show 1 block and 4 blocks, then ask, 'How many do we have in total?' Student A says, 'Five.'",
-        "You show 3 blocks and 2 blocks, then ask, 'How many blocks when we put them together?' Student A says, 'Five.'"
+        "You show 1 and 4 blocks. Student A says, 'Five.'",
+        "You show 3 and 2 blocks. Student A says, 'Five.'",
       ],
-      pressureCue: 'Pressure cue: the pupil gave the total but didn\'t explain how they combined the two groups.',
+      alternateTextsMs: [
+        "Anda tunjuk 1 dan 4 blok. Pelajar A jawab, 'Lima.'",
+        "Anda tunjuk 3 dan 2 blok. Pelajar A jawab, 'Lima.'",
+      ],
+      pressureCue:
+        'Pressure cue: total is correct, strategy is hidden.',
+      pressureCueMs:
+        'Isyarat tekanan: jumlah betul, tetapi strategi masih tersembunyi.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[WAIT TIME] (Wait quietly, giving Student A time to think about how they combined the groups)",
+          text: '[WAIT TIME] (Wait. Give thinking time.)',
+          textMs: '[WAIT TIME] (Tunggu. Beri masa berfikir.)',
           nextNode: 'turn_2',
           moveType: 'Wait Time',
-          tip: 'Strong move. Waiting gives the pupil time to formulate an explanation of their addition strategy.',
+          tip: 'Good pause. It lowers language pressure.',
+          tipMs: 'Jeda yang baik. Ini kurangkan tekanan bahasa.',
           metricsDelta: { participation: 14, reasoning: 10, ownership: 12 },
         },
         {
-          text: "[SAY MORE] 'That\'s an interesting answer, Student A. Can you tell me how you knew it was five altogether?'",
+          text: "[SAY MORE] 'How did you get five?'",
+          textMs: "[SAY MORE] 'Macam mana kamu dapat lima?'",
           nextNode: 'turn_2',
           moveType: 'Say More',
-          tip: 'Excellent! Asking for explanation pushes the pupil to articulate their addition process.',
+          tip: 'Excellent simple prompt for reasoning.',
+          tipMs: 'Cemerlang. Soalan ringkas untuk penaakulan.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you looked at both groups and decided there were five blocks in total?'",
+          text: "[REVOICING] 'You combined both groups and got five, right?'",
+          textMs: "[REVOICING] 'Kamu gabung dua kumpulan dan dapat lima, betul?'",
           nextNode: 'turn_2',
           moveType: 'Revoicing',
-          tip: 'Good! Revoicing confirms you heard correctly while inviting elaboration.',
+          tip: 'Useful bridge, but add one follow-up question.',
+          tipMs: 'Jambatan berguna, tapi tambah satu soalan susulan.',
           metricsDelta: { participation: 12, reasoning: 8, ownership: 8 },
         },
         {
-          text: "[EVALUATION] 'Correct! Five blocks altogether. Who can show us a different way to make five?'",
+          text: "[EVALUATION] 'Correct. Next one.'",
+          textMs: "[EVALUATION] 'Betul. Seterusnya.'",
           nextNode: 'turn_2',
           moveType: 'Evaluation',
-          tip: 'Accepting the answer stops the thinking process. Try asking for explanation instead.',
+          tip: 'Fast closure. Reasoning is not surfaced.',
+          tipMs: 'Penutupan cepat. Penaakulan tidak ditonjolkan.',
           metricsDelta: { participation: -6, reasoning: -8, ownership: -6 },
         }
       ]
     },
     turn_2: {
-      text: "Student A says, 'I counted the first group: one, two. Then I kept going: three, four, five.' How do you build on this explanation?",
+      text: "Student A says, 'I started at two, then counted three more: three, four, five.'",
+      textMs:
+        "Pelajar A cakap, 'Saya mula dari dua, kemudian kira tiga lagi: tiga, empat, lima.'",
       alternateTexts: [
-        "Student A says, 'I saw two blocks and then added three more.'",
-        "Student A says, 'I know two and three make five from my number facts.'"
+        "Student A says, 'Two plus three is five.'",
+        "Student A says, 'I counted on from two.'",
       ],
-      pressureCue: 'Pressure cue: the pupil has explained their strategy but kept it very brief.',
+      alternateTextsMs: [
+        "Pelajar A cakap, 'Dua tambah tiga jadi lima.'",
+        "Pelajar A cakap, 'Saya sambung kira dari dua.'",
+      ],
+      pressureCue:
+        'Pressure cue: strategy appears; make it visible to the class.',
+      pressureCueMs:
+        'Isyarat tekanan: strategi sudah muncul; jadikan ia jelas untuk kelas.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
       speakerName: 'Student A',
       choices: [
         {
-          text: "[ADD ON] 'Who can show us a different way to count these blocks to find the total?'",
+          text: "[ADD ON] 'Who can solve it a different way?'",
+          textMs: "[ADD ON] 'Siapa boleh selesaikan dengan cara lain?'",
           nextNode: 'turn_3',
           moveType: 'Add On',
-          tip: 'Perfect! Inviting different approaches builds flexibility in addition strategies.',
+          tip: 'Great for flexible strategy talk.',
+          tipMs: 'Bagus untuk perbincangan strategi yang fleksibel.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 8 },
         },
         {
-          text: "[SAY MORE] 'Can you tell me more about how you kept track when you started counting the second group?'",
+          text: "[SAY MORE] 'What did you do after you reached two?'",
+          textMs: "[SAY MORE] 'Apa kamu buat selepas sampai dua?'",
           nextNode: 'turn_3',
           moveType: 'Say More',
-          tip: 'Great! Pushing for details helps pupils refine their addition strategies.',
+          tip: 'Strong follow-up. Sequence language becomes clearer.',
+          tipMs: 'Soalan susulan yang kuat. Urutan bahasa jadi lebih jelas.',
           metricsDelta: { participation: 8, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REVOICING] 'So you used counting on, starting with two and then counting three more?'",
+          text: "[REVOICING] 'You used counting on: start at 2, add 3.'",
+          textMs: "[REVOICING] 'Kamu guna sambung kira: mula 2, tambah 3.'",
           nextNode: 'turn_3',
           moveType: 'Revoicing',
-          tip: 'Good! Using mathematical vocabulary helps pupils connect actions to concepts.',
+          tip: 'Good model. Keep it short and precise.',
+          tipMs: 'Model yang baik. Kekalkan ringkas dan tepat.',
           metricsDelta: { participation: 10, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'That\'s right. Let\'s try a different combination.'",
+          text: "[EVALUATION] 'Yes, that is right.'",
+          textMs: "[EVALUATION] 'Ya, itu betul.'",
           nextNode: 'turn_3',
           moveType: 'Evaluation',
-          tip: 'Moving on too quickly misses the chance to deepen understanding of addition strategies.',
+          tip: 'No invitation for others to reason.',
+          tipMs: 'Tiada jemputan untuk pelajar lain menaakul.',
           metricsDelta: { participation: -6, reasoning: -6, ownership: -8 },
         }
       ]
     },
     turn_3: {
-      text: "Student B says, 'I know that three and two make five because it\'s the same as two and three.' How do you respond to this idea?",
+      text: "Student B says, '3 + 2 is also 5. Order does not change the total.'",
+      textMs:
+        "Pelajar B cakap, '3 + 2 juga 5. Susunan tidak ubah jumlah.'",
       alternateTexts: [
-        "Student B says, 'If I switch the groups, I still get five. It doesn\'t matter which comes first.'",
-        "Student B says, 'Five can be made with two and three or three and two.'"
+        "Student B says, 'If I switch the groups, I still get five.'",
+        "Student B says, 'Two plus three and three plus two are the same.'",
       ],
-      pressureCue: 'Pressure cue: the pupil is noticing the commutative property of addition, an important mathematical concept.',
+      alternateTextsMs: [
+        "Pelajar B cakap, 'Kalau saya tukar kumpulan, jawapan tetap lima.'",
+        "Pelajar B cakap, 'Dua tambah tiga dan tiga tambah dua adalah sama.'",
+      ],
+      pressureCue:
+        'Pressure cue: important property noticed. Build explanation from pupil.',
+      pressureCueMs:
+        'Isyarat tekanan: sifat penting telah dikesan. Bina penerangan daripada pelajar.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
       speakerName: 'Student B',
       choices: [
         {
-          text: "[ADD ON] 'Who can show us with the blocks that three and two is the same as two and three?'",
+          text: "[ADD ON] 'Who can prove this with blocks?'",
+          textMs: "[ADD ON] 'Siapa boleh buktikan ini dengan blok?'",
           nextNode: 'end_game',
           moveType: 'Add On',
-          tip: 'Excellent! Having pupils demonstrate properties helps everyone see mathematical truths.',
+          tip: 'Excellent. Evidence before answer-checking.',
+          tipMs: 'Cemerlang. Bukti didahulukan sebelum semak jawapan.',
           metricsDelta: { participation: 14, reasoning: 12, ownership: 10 },
         },
         {
-          text: "[REASONING] 'How does knowing that order doesn\'t matter help us with other addition problems?'",
+          text: "[REASONING] 'Why is this useful for harder sums?'",
+          textMs: "[REASONING] 'Kenapa ini berguna untuk tambah yang lebih sukar?'",
           nextNode: 'end_game',
           moveType: 'Reasoning',
-          tip: 'Great! Asking for broader implications helps pupils see patterns in mathematics.',
+          tip: 'Great transfer prompt.',
+          tipMs: 'Soalan pindahan yang hebat.',
           metricsDelta: { participation: 10, reasoning: 14, ownership: 8 },
         },
         {
-          text: "[REVOICING] 'So you\'re saying that whether we count two then three or three then two, we still get five?'",
+          text: "[REVOICING] 'So 2 + 3 and 3 + 2 both give 5.'",
+          textMs: "[REVOICING] 'Jadi 2 + 3 dan 3 + 2 kedua-duanya beri 5.'",
           nextNode: 'end_game',
           moveType: 'Revoicing',
-          tip: 'Good! Revoicing with mathematical language helps solidify the concept.',
+          tip: 'Clear and accurate. Add one pupil voice next.',
+          tipMs: 'Jelas dan tepat. Tambah satu suara pelajar selepas ini.',
           metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[EVALUATION] 'Exactly! Three and two is the same as two and three. Good noticing!'",
+          text: "[EVALUATION] 'Correct. Good noticing.'",
+          textMs: "[EVALUATION] 'Betul. Bagus perhatiannya.'",
           nextNode: 'end_game',
           moveType: 'Evaluation',
-          tip: 'While positive, this misses the opportunity to have pupils explain their reasoning about the property.',
+          tip: 'Positive but still teacher-owned ending.',
+          tipMs: 'Positif tetapi penutup masih dimiliki guru.',
           metricsDelta: { participation: -4, reasoning: -6, ownership: -6 },
         }
       ]
