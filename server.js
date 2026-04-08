@@ -11,11 +11,11 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const PRO_MODEL_NAME = process.env.PRO_MODEL_NAME || 'gemini-2.5-pro';
-const FLASH_MODEL_NAME = process.env.FLASH_MODEL_NAME || 'gemini-2.0-flash-lite';
-const PRO_MODEL_LIMIT = Number(process.env.PRO_MODEL_LIMIT || 1000);
-const PRO_MODEL_SWITCH_THRESHOLD = Number(process.env.PRO_MODEL_SWITCH_THRESHOLD || 950);
-const FLASH_MODEL_LIMIT = Number(process.env.FLASH_MODEL_LIMIT || 150000);
+const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
+const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
+const PRIMARY_MODEL_LIMIT = 1000;
+const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
+const FALLBACK_MODEL_LIMIT = 150000;
 
 const DATA_DIR = path.join(__dirname, '.kilo');
 const COUNTERS_PATH = path.join(DATA_DIR, 'model-usage-counters.json');
@@ -346,15 +346,16 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
           fromCache: true,
           modelUsed: cached.modelUsed || 'cache',
           counters,
-          mode: counters.proCalls >= PRO_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
+          mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
         },
       });
       return;
     }
 
-    const canUsePro = counters.proCalls < PRO_MODEL_SWITCH_THRESHOLD && counters.proCalls < PRO_MODEL_LIMIT;
-    const canUseFlash = counters.flashCalls < FLASH_MODEL_LIMIT;
-    if (!canUsePro && !canUseFlash) {
+    const canUsePrimary =
+      counters.proCalls < PRIMARY_MODEL_SWITCH_THRESHOLD && counters.proCalls < PRIMARY_MODEL_LIMIT;
+    const canUseFallback = counters.flashCalls < FALLBACK_MODEL_LIMIT;
+    if (!canUsePrimary && !canUseFallback) {
       res.status(429).json({ error: 'Daily model limits reached. Please try again tomorrow (UTC).' });
       return;
     }
@@ -362,19 +363,19 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
     const systemInstruction = buildSystemInstruction();
     const userPrompt = buildUserPrompt(input);
 
-    let modelUsed = canUsePro ? PRO_MODEL_NAME : FLASH_MODEL_NAME;
+    let modelUsed = canUsePrimary ? PRIMARY_MODEL_NAME : FALLBACK_MODEL_NAME;
     let plan;
 
     try {
       plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt });
     } catch (primaryError) {
-      const fallbackAllowed = modelUsed === PRO_MODEL_NAME && canUseFlash;
+      const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
       if (!fallbackAllowed) throw primaryError;
-      modelUsed = FLASH_MODEL_NAME;
+      modelUsed = FALLBACK_MODEL_NAME;
       plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt });
     }
 
-    if (modelUsed === PRO_MODEL_NAME) counters.proCalls += 1;
+    if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
     else counters.flashCalls += 1;
 
     writeJson(COUNTERS_PATH, counters);
@@ -393,7 +394,7 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
         fromCache: false,
         modelUsed,
         counters,
-        mode: modelUsed === PRO_MODEL_NAME ? 'high-quality' : 'high-speed',
+        mode: modelUsed === PRIMARY_MODEL_NAME ? 'high-quality' : 'high-speed',
       },
     });
   } catch (error) {
