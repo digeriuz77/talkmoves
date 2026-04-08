@@ -4,6 +4,7 @@ import DialogueBox from './DialogueBox';
 import EndScreen, { type ChoiceGameResult } from './EndScreen';
 import GameSessionHeader from './GameSessionHeader';
 import GameLangSegment from './GameLangSegment';
+import ChoiceTeacherGuide from './ChoiceTeacherGuide';
 import type { AssetUrls } from './AssetLoader';
 import type { ChoiceMove, ChoiceNode, ChoiceScenarioDefinition } from '../data/choice-scenarios';
 import {
@@ -46,15 +47,45 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
   const [playthroughSeed, setPlaythroughSeed] = useState<number>(0);
   const [responseTypesSeen, setResponseTypesSeen] = useState<StudentResponseType[]>([]);
 
+  const pickLocalized = <T,>(enValue: T, msValue?: T): T =>
+    lang === 'ms' ? (msValue ?? enValue) : enValue;
+
+  const localizedScenarioMeta = useMemo(
+    () => ({
+      title: pickLocalized(scenario.title, scenario.titleMs),
+      subtitle: pickLocalized(scenario.subtitle, scenario.subtitleMs),
+      description: pickLocalized(scenario.description, scenario.descriptionMs),
+      reflectionPrompt: pickLocalized(scenario.reflectionPrompt, scenario.reflectionPromptMs),
+    }),
+    [lang, scenario.description, scenario.descriptionMs, scenario.reflectionPrompt, scenario.reflectionPromptMs, scenario.subtitle, scenario.subtitleMs, scenario.title, scenario.titleMs],
+  );
+
   const currentNode = useMemo(() => {
     const node = scenario.dialogueTree[currentNodeId];
-    const resolved = resolveScenarioNode(node, currentNodeId, playthroughSeed);
+    const resolved = resolveScenarioNode(
+      {
+        text: pickLocalized(node.text, node.textMs),
+        alternateTexts: pickLocalized(node.alternateTexts, node.alternateTextsMs),
+        pressureCue: pickLocalized(node.pressureCue, node.pressureCueMs),
+        alternatePressureCues: pickLocalized(
+          node.alternatePressureCues,
+          node.alternatePressureCuesMs,
+        ),
+      },
+      currentNodeId,
+      playthroughSeed,
+    );
     return {
       ...node,
       text: resolved.text,
       pressureCue: resolved.pressureCue,
+      choices: node.choices.map((choice) => ({
+        ...choice,
+        text: pickLocalized(choice.text, choice.textMs),
+        tip: pickLocalized(choice.tip, choice.tipMs),
+      })),
     };
-  }, [currentNodeId, playthroughSeed, scenario.dialogueTree]);
+  }, [currentNodeId, lang, playthroughSeed, scenario.dialogueTree]);
   const engagementScore = calculateCompositeScore(metrics);
 
   const speakerLabel = useMemo(() => {
@@ -72,17 +103,17 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
   const result: ChoiceGameResult = useMemo(
     () => ({
       variant: 'choice',
-      title: scenario.title,
+      title: localizedScenarioMeta.title,
       outcome: gameState === 'win' ? 'win' : 'loss',
       finalScore: engagementScore,
       passThreshold: scenario.passThreshold,
       metrics,
-      reflectionPrompt: scenario.reflectionPrompt,
+      reflectionPrompt: localizedScenarioMeta.reflectionPrompt,
       historyCounts: summarizeLabels(moveHistory.map((entry) => entry.moveType)),
       advice: adviceTranslated,
       reflection: createReflectionSummary(
         {
-          title: scenario.title,
+          title: localizedScenarioMeta.title,
           outcome: gameState === 'win' ? 'win' : 'loss',
           finalScore: engagementScore,
           passThreshold: scenario.passThreshold,
@@ -103,8 +134,8 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
       responseTypesSeen,
       scenario.passThreshold,
       scenario.reflectionContext,
-      scenario.reflectionPrompt,
-      scenario.title,
+      localizedScenarioMeta.reflectionPrompt,
+      localizedScenarioMeta.title,
       lang,
     ],
   );
@@ -176,12 +207,15 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
 
           <GameSessionHeader
             onExit={onExit}
-            subtitle={scenario.subtitle}
-            title={scenario.title}
-            description={scenario.description}
+            subtitle={localizedScenarioMeta.subtitle}
+            title={localizedScenarioMeta.title}
+            description={localizedScenarioMeta.description}
             engagementScore={engagementScore}
             metrics={metrics}
             langSlot={<GameLangSegment />}
+            rightSlot={
+              scenario.teacherGuide ? <ChoiceTeacherGuide guide={scenario.teacherGuide} lang={lang} /> : undefined
+            }
           />
 
           <DialogueBox

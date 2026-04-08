@@ -7,9 +7,10 @@ import { Fragment, useEffect, useState } from 'react';
 import { motion } from 'motion/react';
 import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
+import TalkMoveBuilder from './components/TalkMoveBuilder';
 import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
-import { Sparkles, Layers, ArrowRight, BookOpen, Languages } from 'lucide-react';
+import { Sparkles, Layers, ArrowRight, BookOpen, Languages, Bot, Gamepad2 } from 'lucide-react';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
 import {
   getLevelStatus,
@@ -22,6 +23,7 @@ const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
   const [pastLanding, setPastLanding] = useState(false);
+  const [appMode, setAppMode] = useState<'menu' | 'play' | 'build'>('menu');
   const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
   const selectedGame = gameCatalog.find((game) => game.id === selectedGameId) ?? null;
@@ -58,8 +60,16 @@ export default function App() {
     <div
       className={`flex min-h-screen items-center justify-center bg-parchment font-body text-ink ${selectedGame ? 'p-1 sm:p-2' : 'p-3 sm:p-4'}`}
     >
-      {!selectedGame ? (
-        <ModeSelect onSelect={setSelectedGameId} levelProgress={levelProgress} />
+      {!selectedGame && appMode === 'menu' ? (
+        <ModeHub onPlay={() => setAppMode('play')} onBuild={() => setAppMode('build')} />
+      ) : !selectedGame && appMode === 'build' ? (
+        <TalkMoveBuilder onBack={() => setAppMode('menu')} />
+      ) : !selectedGame ? (
+        <ModeSelect
+          onSelect={setSelectedGameId}
+          levelProgress={levelProgress}
+          onBack={() => setAppMode('menu')}
+        />
       ) : selectedGame.engine === 'choice' ? (
         <Game
           assets={DEFAULT_ASSETS}
@@ -77,6 +87,64 @@ export default function App() {
       )}
       {!selectedGame ? <LangToggle lang={lang} setLang={setLang} t={t} /> : null}
     </div>
+  );
+}
+
+function ModeHub({ onPlay, onBuild }: { onPlay: () => void; onBuild: () => void }) {
+  const { t } = useLang();
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35 }}
+      className="w-full max-w-4xl px-4 sm:px-6"
+    >
+      <div className="mb-6 sm:mb-8 text-center">
+        <p className="label-section mb-2">{t('hub.tagline')}</p>
+        <h1 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
+          {t('hub.title')}
+        </h1>
+        <p className="text-body mx-auto max-w-2xl">{t('hub.description')}</p>
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={onPlay}
+          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
+            <Gamepad2 className="h-5 w-5 text-ink-muted" />
+          </div>
+          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
+            {t('hub.playTitle')}
+          </h2>
+          <p className="mb-3 text-sm leading-relaxed text-ink-soft">{t('hub.playBody')}</p>
+          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
+            {t('hub.playCta')}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={onBuild}
+          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
+            <Bot className="h-5 w-5 text-ink-muted" />
+          </div>
+          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
+            {t('hub.buildTitle')}
+          </h2>
+          <p className="mb-3 text-sm leading-relaxed text-ink-soft">{t('hub.buildBody')}</p>
+          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
+            {t('hub.buildCta')}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
+        </button>
+      </div>
+    </motion.div>
   );
 }
 
@@ -125,9 +193,11 @@ function LangToggle({
 function ModeSelect({
   onSelect,
   levelProgress,
+  onBack,
 }: {
   onSelect: (gameId: string) => void;
   levelProgress: LevelProgressMap;
+  onBack: () => void;
 }) {
   const { t } = useLang();
 
@@ -138,6 +208,16 @@ function ModeSelect({
       transition={{ duration: 0.5 }}
       className="w-full max-w-6xl px-4 sm:px-6"
     >
+      <div className="mb-4 flex justify-start">
+        <button
+          type="button"
+          onClick={onBack}
+          className="inline-flex items-center gap-2 rounded-lg border border-ink/15 bg-parchment-light px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-parchment touch-target"
+        >
+          {t('builder.back')}
+        </button>
+      </div>
+
       <div className="text-center mb-6 sm:mb-10 md:mb-12">
         <motion.div
           initial={{ scaleX: 0 }}
@@ -230,9 +310,19 @@ function GameCard({
   onSelect: (gameId: string) => void;
   progress: ReturnType<typeof getLevelStatus>;
 }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const isTalkMoves = game.engine === 'talk-moves';
   const Icon = isTalkMoves ? Sparkles : Layers;
+  const title =
+    game.engine === 'choice' && lang === 'ms' ? game.scenario.titleMs ?? game.title : game.title;
+  const subtitle =
+    game.engine === 'choice' && lang === 'ms'
+      ? game.scenario.subtitleMs ?? game.subtitle
+      : game.subtitle;
+  const description =
+    game.engine === 'choice' && lang === 'ms'
+      ? game.scenario.descriptionMs ?? game.description
+      : game.description;
 
   return (
     <motion.button
@@ -247,7 +337,7 @@ function GameCard({
       </div>
 
       <div className="mb-2 sm:mb-3 flex items-center justify-between gap-2">
-        <div className="label-section">{game.subtitle}</div>
+        <div className="label-section">{subtitle}</div>
         <div
           className={
             progress.statusKey === 'completed'
@@ -265,10 +355,10 @@ function GameCard({
         className="heading-editorial mb-2 sm:mb-2.5"
         style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
       >
-        {game.title}
+        {title}
       </h2>
 
-      <p className="mb-3 sm:mb-4 text-sm leading-relaxed text-ink-soft">{game.description}</p>
+      <p className="mb-3 sm:mb-4 text-sm leading-relaxed text-ink-soft">{description}</p>
 
       <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5">
         {game.focusAreas.slice(0, 3).map((area) => (
