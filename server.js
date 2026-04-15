@@ -226,7 +226,7 @@ function buildSystemInstruction() {
     '      "responseBranches": [',
     '        {',
     '          "gapType": "vocabulary" | "reasoning" | "misconception" | "confidence",',
-    '          "interpretation": string,',',
+    '          "interpretation": string,',
     '          "nextQuestion": string',
     '        }',
     '      ]',

@@ -41,6 +41,11 @@ type BuilderPlan = {
   quickBoardReadyLines: string[];
 };
 
+type BuilderInput = {
+  subject: string;
+  dominantLanguage: string;
+};
+
 type BuilderMeta = {
   fromCache: boolean;
   modelUsed: string;
@@ -78,7 +83,6 @@ function buildDownloadText({
   plan: BuilderPlan;
   meta: BuilderMeta | null;
 }): string {
- const { question, yearLevel, topic, subject, dominantLanguage, classProfile, vocabulary, plan, meta } = input;
   const lines: string[] = [];
   lines.push('DIALOGIC SCAFFOLDING MAP');
   lines.push('========================');
@@ -142,14 +146,17 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const [topic, setTopic] = useState('science');
   const [subject, setSubject] = useState('science');
   const [dominantLanguage, setDominantLanguage] = useState('english');
-const [classProfile, setClassProfile] = useState(
+  const [classProfile, setClassProfile] = useState(
     'Year 1 class. Mostly english speakers. Concept knowledge is often weak and responses are very short.',
   );
   const [vocabularyText, setVocabularyText] = useState('texture, material, production');
+  const [builderInput, setBuilderInput] = useState<BuilderInput>({
+    subject: 'science',
+    dominantLanguage: 'english',
+  });
   const [plan, setPlan] = useState<BuilderPlan | null>(null);
-  const [meta, setMeta] = useState<BuilderMeta | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const vocabulary = useMemo(
     () =>
@@ -173,15 +180,15 @@ const [classProfile, setClassProfile] = useState(
       const response = await fetch('/api/talk-move-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-body: JSON.stringify({
-           question,
-           yearLevel,
-           topic,
-           subject,
-           dominantLanguage,
-           classProfile,
-           vocabulary,
-         }),
+        body: JSON.stringify({
+          question,
+          yearLevel,
+          topic,
+          subject: builderInput.subject,
+          dominantLanguage: builderInput.dominantLanguage,
+          classProfile,
+          vocabulary,
+        }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
@@ -202,7 +209,8 @@ body: JSON.stringify({
       question,
       yearLevel,
       topic,
-      dominantLanguage,
+      subject: builderInput.subject,
+      dominantLanguage: builderInput.dominantLanguage,
       classProfile,
       vocabulary,
       plan,
@@ -263,50 +271,57 @@ body: JSON.stringify({
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('builder.languageLabel')}
             </span>
-<div className="grid grid-cols-2 gap-4">
-      <div>
-        <label className="block text-sm font-medium text-ink mb-2">Subject</label>
-        <select
-          value={subject}
-          onChange={(event) => setSubject(event.target.value)}
-          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-        >
-          {subjects.map((subjectOption) => (
-            <option key={subjectOption} value={subjectOption}>
-              {subjectOption.charAt(0).toUpperCase() + subjectOption.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div>
-        <label className="block text-sm font-medium text-ink mb-2">Year Level</label>
-        <select
-          value={yearLevel}
-          onChange={(event) => setYearLevel(event.target.value)}
-          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-        >
-          {yearLevels.map((yearLevelOption) => (
-            <option key={yearLevelOption} value={yearLevelOption}>
-              Year {yearLevelOption}
-            </option>
-          ))}
-        </select>
-      </div>
-      <div className="col-span-2">
-        <label className="block text-sm font-medium text-ink mb-2">Language</label>
-        <select
-          value={dominantLanguage}
-          onChange={(event) => setDominantLanguage(event.target.value)}
-          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-        >
-          {languages.map((languageOption) => (
-            <option key={languageOption} value={languageOption}>
-              {languageOption.charAt(0).toUpperCase() + languageOption.slice(1)}
-            </option>
-          ))}
-        </select>
-      </div>
-    </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-ink mb-2">Subject</label>
+                <select
+                  value={builderInput.subject}
+                  onChange={(event) =>
+                    setBuilderInput((prev) => ({ ...prev, subject: event.target.value }))
+                  }
+                  className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+                >
+                  {subjects.map((subjectOption) => (
+                    <option key={subjectOption} value={subjectOption}>
+                      {subjectOption.charAt(0).toUpperCase() + subjectOption.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-ink mb-2">Year Level</label>
+                <select
+                  value={yearLevel}
+                  onChange={(event) => setYearLevel(event.target.value)}
+                  className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+                >
+                  {yearLevels.map((yearLevelOption) => (
+                    <option key={yearLevelOption} value={yearLevelOption}>
+                      Year {yearLevelOption}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="col-span-2">
+                <label className="block text-sm font-medium text-ink mb-2">Language</label>
+                <select
+                  value={builderInput.dominantLanguage}
+                  onChange={(event) =>
+                    setBuilderInput((prev) => ({
+                      ...prev,
+                      dominantLanguage: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+                >
+                  {languages.map((languageOption) => (
+                    <option key={languageOption} value={languageOption}>
+                      {languageOption.charAt(0).toUpperCase() + languageOption.slice(1)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </label>
 
           <Field
