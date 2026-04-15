@@ -291,11 +291,19 @@ async function callGemini({ model, systemInstruction, userPrompt }) {
       parts: [{ text: systemInstruction }],
     },
     contents: [
-        {
-          'gapType': 'vocabulary' | 'reasoning' | 'misconception' | 'confidence',
-          'interpretation': string,
-          'nextQuestion': string
-        }
+      {
+        role: 'user',
+        parts: [{ text: userPrompt }],
+      },
+    ],
+  };
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  const body = await response.text();
 
   const text = extractCandidateText(body);
   const parsed = safeParseJson(text);
