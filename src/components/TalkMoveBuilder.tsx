@@ -3,6 +3,11 @@ import { motion } from 'motion/react';
 import { ArrowLeft, Copy, Download, LoaderCircle } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 
+// Standardized dropdown values
+const subjects = ['science', 'maths', 'english', 'design', 'it'];
+const yearLevels = Array.from({ length: 6 }, (_, i) => (i + 1).toString());
+const languages = ['english', 'malay', 'iban'];
+
 type BuilderPlan = {
   coreQuestion: {
     clearEnglish: string;
@@ -52,24 +57,35 @@ async function copyText(value: string) {
   await navigator.clipboard.writeText(value);
 }
 
-function buildDownloadText(input: {
+function buildDownloadText({
+  question,
+  yearLevel,
+  topic,
+  subject,
+  dominantLanguage,
+  classProfile,
+  vocabulary,
+  plan,
+  meta,
+}: {
   question: string;
   yearLevel: string;
   topic: string;
+  subject: string;
   dominantLanguage: string;
   classProfile: string;
   vocabulary: string[];
   plan: BuilderPlan;
   meta: BuilderMeta | null;
 }): string {
-  const { question, yearLevel, topic, dominantLanguage, classProfile, vocabulary, plan, meta } = input;
+ const { question, yearLevel, topic, subject, dominantLanguage, classProfile, vocabulary, plan, meta } = input;
   const lines: string[] = [];
-
   lines.push('DIALOGIC SCAFFOLDING MAP');
   lines.push('========================');
   lines.push(`Question: ${question}`);
   lines.push(`Year Level: ${yearLevel}`);
   lines.push(`Topic: ${topic}`);
+  lines.push(`Subject: ${subject}`);
   lines.push(`Dominant Language: ${dominantLanguage}`);
   lines.push(`Class Profile: ${classProfile}`);
   lines.push(`Priority Vocabulary: ${vocabulary.join(', ') || 'N/A'}`);
@@ -122,11 +138,12 @@ function buildDownloadText(input: {
 export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const { t } = useLang();
   const [question, setQuestion] = useState('');
-  const [yearLevel, setYearLevel] = useState('Year 2');
-  const [topic, setTopic] = useState('Science');
-  const [dominantLanguage, setDominantLanguage] = useState('Iban');
-  const [classProfile, setClassProfile] = useState(
-    'Year 2 class. Mostly Iban speakers. Concept knowledge is often weak and responses are very short.',
+  const [yearLevel, setYearLevel] = useState('1');
+  const [topic, setTopic] = useState('science');
+  const [subject, setSubject] = useState('science');
+  const [dominantLanguage, setDominantLanguage] = useState('english');
+const [classProfile, setClassProfile] = useState(
+    'Year 1 class. Mostly english speakers. Concept knowledge is often weak and responses are very short.',
   );
   const [vocabularyText, setVocabularyText] = useState('texture, material, production');
   const [plan, setPlan] = useState<BuilderPlan | null>(null);
@@ -156,14 +173,15 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
       const response = await fetch('/api/talk-move-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question,
-          yearLevel,
-          topic,
-          dominantLanguage,
-          classProfile,
-          vocabulary,
-        }),
+body: JSON.stringify({
+           question,
+           yearLevel,
+           topic,
+           subject,
+           dominantLanguage,
+           classProfile,
+           vocabulary,
+         }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
@@ -245,15 +263,50 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('builder.languageLabel')}
             </span>
-            <select
-              value={dominantLanguage}
-              onChange={(event) => setDominantLanguage(event.target.value)}
-              className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-            >
-              <option value="Iban">Iban</option>
-              <option value="Malay">Malay</option>
-              <option value="Mixed Iban and Malay">Mixed Iban and Malay</option>
-            </select>
+<div className="grid grid-cols-2 gap-4">
+      <div>
+        <label className="block text-sm font-medium text-ink mb-2">Subject</label>
+        <select
+          value={subject}
+          onChange={(event) => setSubject(event.target.value)}
+          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+        >
+          {subjects.map((subjectOption) => (
+            <option key={subjectOption} value={subjectOption}>
+              {subjectOption.charAt(0).toUpperCase() + subjectOption.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label className="block text-sm font-medium text-ink mb-2">Year Level</label>
+        <select
+          value={yearLevel}
+          onChange={(event) => setYearLevel(event.target.value)}
+          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+        >
+          {yearLevels.map((yearLevelOption) => (
+            <option key={yearLevelOption} value={yearLevelOption}>
+              Year {yearLevelOption}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="col-span-2">
+        <label className="block text-sm font-medium text-ink mb-2">Language</label>
+        <select
+          value={dominantLanguage}
+          onChange={(event) => setDominantLanguage(event.target.value)}
+          className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
+        >
+          {languages.map((languageOption) => (
+            <option key={languageOption} value={languageOption}>
+              {languageOption.charAt(0).toUpperCase() + languageOption.slice(1)}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
           </label>
 
           <Field

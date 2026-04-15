@@ -218,7 +218,30 @@ function buildSystemInstruction() {
     '      "nextQuestionMalay": string',
     '    }',
     '  ],',
-    '  "quickBoardReadyLines": string[]',
+    '  "quickBoardReadyLines": string[],',
+    '  "assessmentForLearning": {',
+    '    "hingeQuestion": {',
+    '      "questionEnglish": string,',
+    '      "questionMalay": string,',
+    '      "responseBranches": [',
+    '        {',
+    '          "gapType": "vocabulary" | "reasoning" | "misconception" | "confidence",',
+    '          "interpretation": string,',',
+    '          "nextQuestion": string',
+    '        }',
+    '      ]',
+    '    },',
+    '    "diagnosticReadingGuide": string,',
+    '    "adaptiveActivities": [',
+    '      {',
+    '        "gapType": "vocabulary" | "reasoning" | "misconception" | "confidence",',
+    '        "teacherInstruction": string,',
+    '        "studentTask": string,',
+    '        "sentenceFrame": string',
+    '      }',
+    '    ],',
+    '    "reconvergenceMove": string',
+    '  }',
     '}',
     'Quality constraints:',
     '- coreQuestion.clearEnglish must be open and reasoning-oriented, not answer-checking.',
@@ -228,6 +251,10 @@ function buildSystemInstruction() {
     '- codeSwitchingStrategy must state exactly when to allow bridge language and when to pivot back to English.',
     '- followUpMap should include at least 5 branches and name specific dialogic moves.',
     '- quickBoardReadyLines should include short sentence frames learners can immediately use.',
+    '- hinge question must include explicit gap-type labeling in response branches.',
+    '- diagnostic reading guide must distinguish class-level patterns from individual errors.',
+    '- adaptive activities must work without printed materials in 5-8 minutes.',
+    '- all teacher instructions must have Malay/Iban bridge versions.',
   ].join('\n');
 }
 
@@ -269,29 +296,14 @@ async function callGemini({ model, systemInstruction, userPrompt }) {
         parts: [{ text: userPrompt }],
       },
     ],
-    generationConfig: {
-      responseMimeType: 'application/json',
-      temperature: 0.35,
-      topP: 0.9,
-    },
   };
 
   const response = await fetch(url, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
-
-  const body = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const message = body?.error?.message || `Gemini request failed (${response.status})`;
-    const error = new Error(message);
-    error.status = response.status;
-    throw error;
-  }
+  const body = await response.text();
 
   const text = extractCandidateText(body);
   const parsed = safeParseJson(text);
