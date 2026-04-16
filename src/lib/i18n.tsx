@@ -103,6 +103,15 @@ const en: Record<string, string> = {
   'builder.copy': 'Copy',
   'builder.errors.questionRequired': 'Please enter a teacher question.',
   'builder.errors.generateFailed': 'Could not generate the plan. Please try again.',
+  'builder.afl.title': 'Assessment for Learning',
+  'builder.afl.hingeQuestion': 'Hinge Question',
+  'builder.afl.diagnosticGuide': 'Diagnostic Reading Guide',
+  'builder.afl.adaptiveActivities': 'Adaptive Activities',
+  'builder.afl.reconvergence': 'Reconvergence Move',
+  'builder.afl.gap.vocabulary': 'Vocabulary',
+  'builder.afl.gap.reasoning': 'Reasoning',
+  'builder.afl.gap.misconception': 'Misconception',
+  'builder.afl.gap.confidence': 'Confidence',
 
   // TalkMovesGame
   'talk.chain': 'Your chain',
@@ -338,6 +347,15 @@ const ms: Record<string, string> = {
   'builder.copy': 'Salin',
   'builder.errors.questionRequired': 'Sila isi soalan guru.',
   'builder.errors.generateFailed': 'Pelan tidak dapat dijana. Sila cuba lagi.',
+  'builder.afl.title': 'Penilaian untuk Pembelajaran',
+  'builder.afl.hingeQuestion': 'Soalan Engsel',
+  'builder.afl.diagnosticGuide': 'Panduan Bacaan Diagnostik',
+  'builder.afl.adaptiveActivities': 'Aktiviti Adaptif',
+  'builder.afl.reconvergence': 'Langkah Penyatuan Semula',
+  'builder.afl.gap.vocabulary': 'Kosa Kata',
+  'builder.afl.gap.reasoning': 'Penaakulan',
+  'builder.afl.gap.misconception': 'Salah Faham',
+  'builder.afl.gap.confidence': 'Keyakinan',
 
   // TalkMovesGame
   'talk.chain': 'Rantaian anda',

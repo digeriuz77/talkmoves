@@ -39,6 +39,25 @@ type BuilderPlan = {
     nextQuestionMalay: string;
   }>;
   quickBoardReadyLines: string[];
+  assessmentForLearning?: {
+    hingeQuestion: {
+      questionEnglish: string;
+      questionMalay: string;
+      responseBranches: Array<{
+        gapType: 'vocabulary' | 'reasoning' | 'misconception' | 'confidence';
+        interpretation: string;
+        nextQuestion: string;
+      }>;
+    };
+    diagnosticReadingGuide: string;
+    adaptiveActivities: Array<{
+      gapType: 'vocabulary' | 'reasoning' | 'misconception' | 'confidence';
+      teacherInstruction: string;
+      studentTask: string;
+      sentenceFrame: string;
+    }>;
+    reconvergenceMove: string;
+  };
 };
 
 type BuilderInput = {
@@ -129,6 +148,28 @@ function buildDownloadText({
   lines.push('QUICK BOARD-READY LINES');
   plan.quickBoardReadyLines.forEach((line) => lines.push(`- ${line}`));
   lines.push('');
+  if (plan.assessmentForLearning) {
+    const afl = plan.assessmentForLearning;
+    lines.push('ASSESSMENT FOR LEARNING');
+    lines.push('─ Hinge Question');
+    lines.push(`  EN: ${afl.hingeQuestion.questionEnglish}`);
+    lines.push(`  MS: ${afl.hingeQuestion.questionMalay}`);
+    afl.hingeQuestion.responseBranches.forEach((b) => {
+      lines.push(`  [${b.gapType.toUpperCase()}] ${b.interpretation}`);
+      lines.push(`  → ${b.nextQuestion}`);
+    });
+    lines.push('─ Diagnostic Reading Guide');
+    lines.push(`  ${afl.diagnosticReadingGuide}`);
+    lines.push('─ Adaptive Activities');
+    afl.adaptiveActivities.forEach((a) => {
+      lines.push(`  [${a.gapType.toUpperCase()}] ${a.teacherInstruction}`);
+      lines.push(`  Task: ${a.studentTask}`);
+      if (a.sentenceFrame) lines.push(`  Frame: "${a.sentenceFrame}"`);
+    });
+    lines.push('─ Reconvergence Move');
+    lines.push(`  ${afl.reconvergenceMove}`);
+    lines.push('');
+  }
   lines.push(`Model used: ${meta?.modelUsed || 'unknown'}`);
   lines.push(`Generated mode: ${meta?.mode || 'unknown'}`);
   lines.push(`Cache hit: ${meta?.fromCache ? 'yes' : 'no'}`);
@@ -465,6 +506,95 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
               ))}
             </ul>
           </section>
+
+          {plan.assessmentForLearning ? (
+            <section className="card-warm mt-3 sm:mt-4 p-4 sm:p-5">
+              <p className="label-section mb-3">{t('builder.afl.title')}</p>
+
+              {/* Hinge Question */}
+              <div className="mb-4">
+                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                  {t('builder.afl.hingeQuestion')}
+                </p>
+                <div className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2 mb-2">
+                  <p className="text-sm text-ink">{plan.assessmentForLearning.hingeQuestion.questionEnglish}</p>
+                  {plan.assessmentForLearning.hingeQuestion.questionMalay ? (
+                    <p className="mt-1 text-xs text-ink-muted italic">
+                      {plan.assessmentForLearning.hingeQuestion.questionMalay}
+                    </p>
+                  ) : null}
+                </div>
+                <div className="space-y-2">
+                  {plan.assessmentForLearning.hingeQuestion.responseBranches.map((branch, idx) => (
+                    <div
+                      key={`branch-${idx}`}
+                      className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2"
+                    >
+                      <GapTypeBadge type={branch.gapType} t={t} />
+                      <p className="mt-1 text-sm text-ink-soft">{branch.interpretation}</p>
+                      {branch.nextQuestion ? (
+                        <p className="mt-1 text-xs text-ink-muted">
+                          → {branch.nextQuestion}
+                        </p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Diagnostic Reading Guide */}
+              {plan.assessmentForLearning.diagnosticReadingGuide ? (
+                <div className="mb-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    {t('builder.afl.diagnosticGuide')}
+                  </p>
+                  <p className="text-sm text-ink-soft rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
+                    {plan.assessmentForLearning.diagnosticReadingGuide}
+                  </p>
+                </div>
+              ) : null}
+
+              {/* Adaptive Activities */}
+              {plan.assessmentForLearning.adaptiveActivities.length > 0 ? (
+                <div className="mb-4">
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    {t('builder.afl.adaptiveActivities')}
+                  </p>
+                  <div className="space-y-2">
+                    {plan.assessmentForLearning.adaptiveActivities.map((activity, idx) => (
+                      <div
+                        key={`activity-${idx}`}
+                        className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2"
+                      >
+                        <GapTypeBadge type={activity.gapType} t={t} />
+                        <p className="mt-1 text-sm font-medium text-ink">{activity.teacherInstruction}</p>
+                        {activity.studentTask ? (
+                          <p className="mt-1 text-sm text-ink-soft">{activity.studentTask}</p>
+                        ) : null}
+                        {activity.sentenceFrame ? (
+                          <p className="mt-1 text-xs italic text-ink-muted">
+                            "{activity.sentenceFrame}"
+                          </p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+
+              {/* Reconvergence Move */}
+              {plan.assessmentForLearning.reconvergenceMove ? (
+                <div>
+                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                    {t('builder.afl.reconvergence')}
+                  </p>
+                  <p className="text-sm text-ink-soft rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
+                    {plan.assessmentForLearning.reconvergenceMove}
+                  </p>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
         </motion.div>
       ) : null}
     </motion.div>
@@ -491,6 +621,24 @@ function Field({
         className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
       />
     </label>
+  );
+}
+
+const GAP_TYPE_STYLES: Record<string, string> = {
+  vocabulary: 'border-sky-200 bg-sky-50 text-sky-700',
+  reasoning: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  misconception: 'border-amber-200 bg-amber-50 text-amber-700',
+  confidence: 'border-violet-200 bg-violet-50 text-violet-700',
+};
+
+function GapTypeBadge({ type, t }: { type: string; t: (key: string) => string }) {
+  const style = GAP_TYPE_STYLES[type] || GAP_TYPE_STYLES.vocabulary;
+  return (
+    <span
+      className={`inline-block rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${style}`}
+    >
+      {t(`builder.afl.gap.${type}`)}
+    </span>
   );
 }
 
