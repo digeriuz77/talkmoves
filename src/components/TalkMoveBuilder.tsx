@@ -4,8 +4,8 @@ import { ArrowLeft, Copy, Download, LoaderCircle, Printer } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 
 // Standardized dropdown values
-const subjects = ['science', 'maths', 'english', 'design', 'it'];
-const yearLevels = Array.from({ length: 6 }, (_, i) => (i + 1).toString());
+const subjects = ['science', 'maths', 'english', 'malay', 'social studies', 'design', 'it'];
+const yearLevels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
 const languages = ['english', 'malay', 'iban'];
 
 type BuilderPlan = {
@@ -107,7 +107,7 @@ function buildDownloadText({
   lines.push(`Year Level: ${yearLevel}`);
   lines.push(`Subject: ${subject}`);
   lines.push(`Dominant Language: ${dominantLanguage}`);
-  lines.push(`Class Profile: ${classProfile}`);
+  lines.push(`Context: ${classProfile}`);
   lines.push(`Priority Vocabulary: ${vocabulary.join(', ') || 'N/A'}`);
   lines.push('');
   lines.push('CORE QUESTION');
@@ -314,7 +314,12 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
                 >
                   {subjects.map((subjectOption) => (
                     <option key={subjectOption} value={subjectOption}>
-                      {subjectOption.charAt(0).toUpperCase() + subjectOption.slice(1)}
+                      {subjectOption === 'it'
+                        ? 'IT'
+                        : subjectOption
+                            .split(' ')
+                            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                            .join(' ')}
                     </option>
                   ))}
                 </select>
