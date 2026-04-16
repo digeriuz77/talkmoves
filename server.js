@@ -266,8 +266,7 @@ function buildUserPrompt(input) {
   return [
     `Teacher Question: ${normalizeText(input.question)}`,
     `Year Level: ${normalizeText(input.yearLevel) || 'Year 2'}`,
-    `Topic/Subject: ${normalizeText(input.topic) || 'General classroom discussion'}`,
-    `Subject: ${normalizeText(input.subject) || normalizeText(input.topic) || 'General'}`,
+    `Subject: ${normalizeText(input.subject) || 'General'}`,
     `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
     `Class Profile: ${normalizeText(input.classProfile) || 'Lower-performing pupils; language and concept support needed.'}`,
     `Priority Vocabulary: ${safeVocabulary.join(', ') || 'Use topic-specific assessment vocabulary.'}`,
