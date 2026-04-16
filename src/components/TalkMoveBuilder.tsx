@@ -155,6 +155,7 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
     dominantLanguage: 'english',
   });
   const [plan, setPlan] = useState<BuilderPlan | null>(null);
+  const [meta, setMeta] = useState<BuilderMeta | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
