@@ -11,9 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const PRIMARY_MODEL_NAME = 'gemma-4-31b';
+const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
 const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
-const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b';
+const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b-it';
 const PRIMARY_MODEL_LIMIT = 1000;
 const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
 const FALLBACK_MODEL_LIMIT = 150000;
@@ -266,8 +266,7 @@ function buildUserPrompt(input) {
   return [
     `Teacher Question: ${normalizeText(input.question)}`,
     `Year Level: ${normalizeText(input.yearLevel) || 'Year 2'}`,
-    `Topic/Subject: ${normalizeText(input.topic) || 'General classroom discussion'}`,
-    `Subject: ${normalizeText(input.subject) || normalizeText(input.topic) || 'General'}`,
+    `Subject: ${normalizeText(input.subject) || 'General'}`,
     `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
     `Class Profile: ${normalizeText(input.classProfile) || 'Lower-performing pupils; language and concept support needed.'}`,
     `Priority Vocabulary: ${safeVocabulary.join(', ') || 'Use topic-specific assessment vocabulary.'}`,

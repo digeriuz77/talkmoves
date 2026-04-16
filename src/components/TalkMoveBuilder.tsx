@@ -65,7 +65,6 @@ async function copyText(value: string) {
 function buildDownloadText({
   question,
   yearLevel,
-  topic,
   subject,
   dominantLanguage,
   classProfile,
@@ -75,7 +74,6 @@ function buildDownloadText({
 }: {
   question: string;
   yearLevel: string;
-  topic: string;
   subject: string;
   dominantLanguage: string;
   classProfile: string;
@@ -88,7 +86,6 @@ function buildDownloadText({
   lines.push('========================');
   lines.push(`Question: ${question}`);
   lines.push(`Year Level: ${yearLevel}`);
-  lines.push(`Topic: ${topic}`);
   lines.push(`Subject: ${subject}`);
   lines.push(`Dominant Language: ${dominantLanguage}`);
   lines.push(`Class Profile: ${classProfile}`);
@@ -143,7 +140,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const { t } = useLang();
   const [question, setQuestion] = useState('');
   const [yearLevel, setYearLevel] = useState('1');
-  const [topic, setTopic] = useState('science');
   const [subject, setSubject] = useState('science');
   const [dominantLanguage, setDominantLanguage] = useState('english');
   const [classProfile, setClassProfile] = useState('');
@@ -211,7 +207,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
         body: JSON.stringify({
           question,
           yearLevel,
-          topic,
           subject: builderInput.subject,
           dominantLanguage: builderInput.dominantLanguage,
           classProfile,
@@ -236,7 +231,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
     const text = buildDownloadText({
       question,
       yearLevel,
-      topic,
       subject: builderInput.subject,
       dominantLanguage: builderInput.dominantLanguage,
       classProfile,
@@ -291,8 +285,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
               placeholder={t('builder.questionPlaceholder')}
             />
           </label>
-
-          <Field label={t('builder.topicLabel')} value={topic} onChange={setTopic} />
 
           <label>
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
