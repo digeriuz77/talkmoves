@@ -1,4 +1,4 @@
-import { FormEvent, useMemo, useState, useEffect, useCallback } from 'react';
+import { FormEvent, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Copy, Download, LoaderCircle } from 'lucide-react';
 import { useLang } from '../lib/i18n';
@@ -143,7 +143,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const [subject, setSubject] = useState('science');
   const [dominantLanguage, setDominantLanguage] = useState('english');
   const [classProfile, setClassProfile] = useState('');
-  const [profileLoading, setProfileLoading] = useState(false);
   const [vocabularyText, setVocabularyText] = useState('texture, material, production');
   const [builderInput, setBuilderInput] = useState<BuilderInput>({
     subject: 'science',
@@ -162,34 +161,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
         .filter(Boolean),
     [vocabularyText],
   );
-
-  const fetchClassProfile = useCallback(async () => {
-    setProfileLoading(true);
-    try {
-      const response = await fetch('/api/generate-class-profile', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          subject: builderInput.subject,
-          yearLevel,
-          dominantLanguage: builderInput.dominantLanguage,
-        }),
-      });
-      const payload = await response.json().catch(() => null);
-      if (response.ok && payload?.profile) {
-        setClassProfile(payload.profile);
-      }
-    } catch {
-      // silent — user can still type manually
-    } finally {
-      setProfileLoading(false);
-    }
-  }, [builderInput.subject, yearLevel, builderInput.dominantLanguage]);
-
-  useEffect(() => {
-    const timer = setTimeout(fetchClassProfile, 600);
-    return () => clearTimeout(timer);
-  }, [fetchClassProfile]);
 
   const handleGenerate = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -352,7 +323,6 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
           <label className="md:col-span-2">
             <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
               {t('builder.classProfileLabel')}
-              {profileLoading ? <LoaderCircle className="ml-2 inline h-3 w-3 animate-spin text-ink-muted" /> : null}
             </span>
             <textarea
               value={classProfile}
