@@ -11,9 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const PRIMARY_MODEL_NAME = 'gemma-4-31b';
+const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
 const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
-const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b';
+const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b-it';
 const PRIMARY_MODEL_LIMIT = 1000;
 const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
 const FALLBACK_MODEL_LIMIT = 150000;
