@@ -11,8 +11,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
+const PRIMARY_MODEL_NAME = 'gemma-4-31b';
 const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
+const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b';
 const PRIMARY_MODEL_LIMIT = 1000;
 const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
 const FALLBACK_MODEL_LIMIT = 150000;
@@ -266,6 +267,7 @@ function buildUserPrompt(input) {
     `Teacher Question: ${normalizeText(input.question)}`,
     `Year Level: ${normalizeText(input.yearLevel) || 'Year 2'}`,
     `Topic/Subject: ${normalizeText(input.topic) || 'General classroom discussion'}`,
+    `Subject: ${normalizeText(input.subject) || normalizeText(input.topic) || 'General'}`,
     `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
     `Class Profile: ${normalizeText(input.classProfile) || 'Lower-performing pupils; language and concept support needed.'}`,
     `Priority Vocabulary: ${safeVocabulary.join(', ') || 'Use topic-specific assessment vocabulary.'}`,
@@ -348,6 +350,58 @@ app.post('/api/save-image', express.json({ limit: '50mb' }), (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
+  }
+});
+
+app.post('/api/generate-class-profile', express.json({ limit: '1mb' }), async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) {
+      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+      return;
+    }
+
+    const { subject, yearLevel, dominantLanguage } = req.body || {};
+    if (!subject || !yearLevel || !dominantLanguage) {
+      res.status(400).json({ error: 'subject, yearLevel, and dominantLanguage are required.' });
+      return;
+    }
+
+    const systemInstruction = [
+      'You write concise class profiles for EAL primary teachers in Sarawak, Malaysia.',
+      'Always output exactly one sentence. No JSON. No markdown. No quotes. No commentary.',
+      'Describe typical language mix, concept-knowledge level, and response style for the class.',
+      'Keep it under 30 words.',
+    ].join('\n');
+
+    const userPrompt = [
+      `Subject: ${normalizeText(subject)}`,
+      `Year Level: ${normalizeText(yearLevel)}`,
+      `Most common class language: ${normalizeText(dominantLanguage)}`,
+      'Write a one-sentence class profile.',
+    ].join('\n');
+
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(PROFILE_MODEL_NAME)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
+    const payload = {
+      systemInstruction: { parts: [{ text: systemInstruction }] },
+      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+    };
+
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.text();
+    const profile = extractCandidateText(body).replace(/^["']|["']$/g, '').trim();
+
+    if (!profile) {
+      res.status(502).json({ error: 'Profile model returned empty response.' });
+      return;
+    }
+
+    res.json({ profile });
+  } catch (error) {
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
   }
 });
 
