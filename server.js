@@ -3,6 +3,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import crypto from 'crypto';
+import { GoogleGenAI } from '@google/genai';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -13,7 +14,6 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
 const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
 const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
-const PROFILE_MODEL_NAME = 'gemma-4-26b-a4b-it';
 const PRIMARY_MODEL_LIMIT = 1000;
 const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
 const FALLBACK_MODEL_LIMIT = 150000;
@@ -93,15 +93,6 @@ function pruneCache(cache) {
   return Object.fromEntries(kept);
 }
 
-function extractCandidateText(payload) {
-  const parts = payload?.candidates?.[0]?.content?.parts;
-  if (!Array.isArray(parts)) return '';
-  return parts
-    .map((part) => (typeof part?.text === 'string' ? part.text : ''))
-    .join('')
-    .trim();
-}
-
 function safeParseJson(raw) {
   if (!raw) return null;
   try {
@@ -178,6 +169,38 @@ function sanitizePlan(data) {
       )
       .slice(0, 6),
     quickBoardReadyLines: asStringArray(plan.quickBoardReadyLines).slice(0, 8),
+    assessmentForLearning: (function () {
+      const afl =
+        plan.assessmentForLearning && typeof plan.assessmentForLearning === 'object'
+          ? plan.assessmentForLearning
+          : {};
+      const hinge =
+        afl.hingeQuestion && typeof afl.hingeQuestion === 'object' ? afl.hingeQuestion : {};
+      const validGapTypes = ['vocabulary', 'reasoning', 'misconception', 'confidence'];
+      return {
+        hingeQuestion: {
+          questionEnglish: normalizeText(hinge.questionEnglish),
+          questionMalay: normalizeText(hinge.questionMalay),
+          responseBranches: (Array.isArray(hinge.responseBranches) ? hinge.responseBranches : [])
+            .map((b) => ({
+              gapType: validGapTypes.includes(b?.gapType) ? b.gapType : 'vocabulary',
+              interpretation: normalizeText(b?.interpretation),
+              nextQuestion: normalizeText(b?.nextQuestion),
+            }))
+            .filter((b) => b.interpretation || b.nextQuestion),
+        },
+        diagnosticReadingGuide: normalizeText(afl.diagnosticReadingGuide),
+        adaptiveActivities: (Array.isArray(afl.adaptiveActivities) ? afl.adaptiveActivities : [])
+          .map((a) => ({
+            gapType: validGapTypes.includes(a?.gapType) ? a.gapType : 'vocabulary',
+            teacherInstruction: normalizeText(a?.teacherInstruction),
+            studentTask: normalizeText(a?.studentTask),
+            sentenceFrame: normalizeText(a?.sentenceFrame),
+          }))
+          .filter((a) => a.teacherInstruction || a.studentTask),
+        reconvergenceMove: normalizeText(afl.reconvergenceMove),
+      };
+    })(),
   };
 }
 
@@ -286,27 +309,13 @@ function buildUserPrompt(input) {
 }
 
 async function callGemini({ model, systemInstruction, userPrompt }) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-  const payload = {
-    systemInstruction: {
-      parts: [{ text: systemInstruction }],
-    },
-    contents: [
-      {
-        role: 'user',
-        parts: [{ text: userPrompt }],
-      },
-    ],
-  };
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const response = await ai.models.generateContent({
+    model,
+    contents: userPrompt,
+    config: { systemInstruction },
   });
-  const body = await response.text();
-
-  const text = extractCandidateText(body);
+  const text = response.text;
   const parsed = safeParseJson(text);
   if (!parsed) {
     throw new Error('Model did not return valid JSON.');
@@ -349,58 +358,6 @@ app.post('/api/save-image', express.json({ limit: '50mb' }), (req, res) => {
     res.json({ success: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
-  }
-});
-
-app.post('/api/generate-class-profile', express.json({ limit: '1mb' }), async (req, res) => {
-  try {
-    if (!GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
-      return;
-    }
-
-    const { subject, yearLevel, dominantLanguage } = req.body || {};
-    if (!subject || !yearLevel || !dominantLanguage) {
-      res.status(400).json({ error: 'subject, yearLevel, and dominantLanguage are required.' });
-      return;
-    }
-
-    const systemInstruction = [
-      'You write concise class profiles for EAL primary teachers in Sarawak, Malaysia.',
-      'Always output exactly one sentence. No JSON. No markdown. No quotes. No commentary.',
-      'Describe typical language mix, concept-knowledge level, and response style for the class.',
-      'Keep it under 30 words.',
-    ].join('\n');
-
-    const userPrompt = [
-      `Subject: ${normalizeText(subject)}`,
-      `Year Level: ${normalizeText(yearLevel)}`,
-      `Most common class language: ${normalizeText(dominantLanguage)}`,
-      'Write a one-sentence class profile.',
-    ].join('\n');
-
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(PROFILE_MODEL_NAME)}:generateContent?key=${encodeURIComponent(GEMINI_API_KEY)}`;
-    const payload = {
-      systemInstruction: { parts: [{ text: systemInstruction }] },
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-    };
-
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const body = await response.text();
-    const profile = extractCandidateText(body).replace(/^["']|["']$/g, '').trim();
-
-    if (!profile) {
-      res.status(502).json({ error: 'Profile model returned empty response.' });
-      return;
-    }
-
-    res.json({ profile });
-  } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
   }
 });
 
