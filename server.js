@@ -66,19 +66,55 @@ function normalizeText(value) {
     .replace(/\s+/g, ' ');
 }
 
-function createCacheKey(input) {
-  const normalized = {
-    question: normalizeText(input.question).toLowerCase(),
-    yearLevel: normalizeText(input.yearLevel).toLowerCase(),
-    topic: normalizeText(input.topic).toLowerCase(),
-    dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
-    classProfile: normalizeText(input.classProfile).toLowerCase(),
-    vocabulary: Array.isArray(input.vocabulary)
-      ? input.vocabulary.map((v) => normalizeText(v).toLowerCase()).filter(Boolean).sort()
-      : [],
-  };
-  return crypto.createHash('sha256').update(JSON.stringify(normalized)).digest('hex');
+function createCacheKey(kind, normalized) {
+  return crypto
+    .createHash('sha256')
+    .update(JSON.stringify({ kind, normalized }))
+    .digest('hex');
 }
+
+const TALK_MOVES_PATH = path.join(__dirname, 'talk_moves.json');
+const talkMovesData = readJson(TALK_MOVES_PATH, null);
+
+function buildTalkMovePalette() {
+  const quick = Array.isArray(talkMovesData?.quick_reference_table)
+    ? talkMovesData.quick_reference_table
+    : [];
+  const detailById = new Map(
+    (Array.isArray(talkMovesData?.teacher_talk_moves) ? talkMovesData.teacher_talk_moves : []).map(
+      (move) => [move.id, move],
+    ),
+  );
+  const teacherMoves = quick
+    .filter((move) => move.teacher_cue)
+    .map((move) => {
+      const detail = detailById.get(move.id);
+      const purpose = detail?.purpose ? ` Purpose: ${normalizeText(detail.purpose).slice(0, 140)}` : '';
+      return `- ${move.id} ${move.name} | Cue: "${move.teacher_cue}"${purpose}`;
+    });
+  const studentMoves = quick
+    .filter((move) => move.student_cue)
+    .map((move) => `- ${move.id} ${move.name} | Student frame: "${move.student_cue}"`);
+  return [
+    'TEACHER TALK MOVE PALETTE (the only talk move IDs you may reference):',
+    ...teacherMoves,
+    'STUDENT TALK MOVE FRAMES (use as sentence-frame targets so STUDENTS do the linguistic heavy lifting):',
+    ...studentMoves,
+  ].join('\n');
+}
+
+const TALK_MOVE_PALETTE = buildTalkMovePalette();
+
+const BILINGUAL_INTENT_INSTRUCTIONS = [
+  'The teacher may write in English, Bahasa Melayu, Sarawak Malay, or Iban (often informally or mixed). Understand all of them.',
+  'Silently detect the input language AND the underlying coaching need behind the words:',
+  '- "pacing" = lesson timing trouble (running out of time, rushing, dead air, activities dragging).',
+  '- "control" = classroom management trouble (noise, off-task pupils, silence as resistance, losing the room).',
+  '- "scaffolding" = language/quality-talk trouble (pupils cannot say it in English, one-word answers, teacher doing all the talking).',
+  'Context: Sarawak primary classrooms; pupils are EAL learners with weak English whose home languages are Iban and Sarawak Malay.',
+  'Prime directive: move the teacher AWAY from teacher-talk-heavy IRF patterns. Every suggestion must transfer linguistic work to pupils through the palette moves and student sentence frames.',
+  'If uncertain about exact Iban wording, use Sarawak Malay as the bridge language; never fabricate uncertain Iban.',
+].join('\n');
 
 function pruneCache(cache) {
   const now = Date.now();
@@ -207,6 +243,9 @@ function sanitizePlan(data) {
 function buildSystemInstruction() {
   return [
     'You are a Dialogic Pedagogical Language Bridge expert for EAL classrooms.',
+    BILINGUAL_INTENT_INSTRUCTIONS,
+    TALK_MOVE_PALETTE,
+    'When you name a teacher move anywhere in the output, reference its palette ID and name (e.g., "TM-T03 Revoicing").',
     "Task: transform a teacher's open question into a Dialogic Scaffolding Map that increases student voice, reasoning, and peer-to-peer talk.",
     'Target learners: lower-performing primary pupils transitioning from Malay/Iban into English.',
     'Definition of dialogue to follow: participants position themselves in relation to others, recognise diverse voices, pose open questions, critique/build on ideas, reason together.',
@@ -308,7 +347,301 @@ function buildUserPrompt(input) {
   ].join('\n');
 }
 
-async function callGemini({ model, systemInstruction, userPrompt }) {
+const VALID_NEED_CATEGORIES = ['pacing', 'control', 'scaffolding', 'mixed'];
+
+function normalizeNeedCategory(value) {
+  const v = normalizeText(value).toLowerCase();
+  return VALID_NEED_CATEGORIES.includes(v) ? v : 'mixed';
+}
+
+function sanitizeLessonCoach(data) {
+  const out = data && typeof data === 'object' ? data : {};
+  const pacing = out.pacingCoach && typeof out.pacingCoach === 'object' ? out.pacingCoach : {};
+  const bridge = out.languageBridge && typeof out.languageBridge === 'object' ? out.languageBridge : {};
+  const quickSheet = bridge.quickSheet && typeof bridge.quickSheet === 'object' ? bridge.quickSheet : {};
+  const hinge = out.instructionalHinge && typeof out.instructionalHinge === 'object' ? out.instructionalHinge : {};
+
+  return {
+    planSummary: normalizeText(out.planSummary),
+    detectedConcern: {
+      category: normalizeNeedCategory(out?.detectedConcern?.category),
+      rationale: normalizeText(out?.detectedConcern?.rationale),
+    },
+    riskMoments: (Array.isArray(out.riskMoments) ? out.riskMoments : [])
+      .map((m) => ({
+        momentLabel: normalizeText(m?.momentLabel),
+        lessonPhase: normalizeText(m?.lessonPhase),
+        whyRisky: normalizeText(m?.whyRisky),
+        talkMoveId: normalizeText(m?.talkMoveId),
+        talkMoveName: normalizeText(m?.talkMoveName),
+        teacherScriptEnglish: normalizeText(m?.teacherScriptEnglish),
+        teacherScriptBridge: normalizeText(m?.teacherScriptBridge),
+        sentenceFrames: asStringArray(m?.sentenceFrames).slice(0, 3),
+      }))
+      .filter((m) => m.momentLabel || m.whyRisky)
+      .slice(0, 6),
+    pacingCoach: {
+      teacherTalkZones: (Array.isArray(pacing.teacherTalkZones) ? pacing.teacherTalkZones : [])
+        .map((z) => ({
+          zone: normalizeText(z?.zone),
+          signal: normalizeText(z?.signal),
+          hardBreakMoveId: normalizeText(z?.hardBreakMoveId),
+          hardBreakMoveName: normalizeText(z?.hardBreakMoveName),
+          script: normalizeText(z?.script),
+        }))
+        .filter((z) => z.zone || z.script)
+        .slice(0, 5),
+      talkRatioTip: normalizeText(pacing.talkRatioTip),
+    },
+    languageBridge: {
+      cognates: (Array.isArray(bridge.cognates) ? bridge.cognates : [])
+        .map((c) => ({
+          english: normalizeText(c?.english),
+          malay: normalizeText(c?.malay),
+          note: normalizeText(c?.note),
+        }))
+        .filter((c) => c.english && c.malay)
+        .slice(0, 10),
+      quickSheet: {
+        targetQuestionEnglish: normalizeText(quickSheet.targetQuestionEnglish),
+        lowStakesEntryBridge: normalizeText(quickSheet.lowStakesEntryBridge),
+        sentenceFrames: asStringArray(quickSheet.sentenceFrames).slice(0, 3),
+      },
+    },
+    instructionalHinge: {
+      hingeQuestionEnglish: normalizeText(hinge.hingeQuestionEnglish),
+      hingeQuestionBridge: normalizeText(hinge.hingeQuestionBridge),
+      gamePlan: (Array.isArray(hinge.gamePlan) ? hinge.gamePlan : [])
+        .map((g) => ({
+          ifStudentSays: normalizeText(g?.ifStudentSays),
+          language: normalizeText(g?.language),
+          useMoveId: normalizeText(g?.useMoveId),
+          useMoveName: normalizeText(g?.useMoveName),
+          teacherResponse: normalizeText(g?.teacherResponse),
+        }))
+        .filter((g) => g.ifStudentSays || g.teacherResponse)
+        .slice(0, 6),
+    },
+    agencyShift: asStringArray(out.agencyShift).slice(0, 5),
+  };
+}
+
+function sanitizeLiveCoach(data) {
+  const out = data && typeof data === 'object' ? data : {};
+  const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
+  const micro = out.microAdaptation && typeof out.microAdaptation === 'object' ? out.microAdaptation : {};
+  const step1 = micro.step1TalkMove && typeof micro.step1TalkMove === 'object' ? micro.step1TalkMove : {};
+  const step2 = micro.step2SentenceFrames && typeof micro.step2SentenceFrames === 'object' ? micro.step2SentenceFrames : {};
+  const step3 = micro.step3PhrasingTip && typeof micro.step3PhrasingTip === 'object' ? micro.step3PhrasingTip : {};
+
+  return {
+    readBack: {
+      detectedLanguage: normalizeText(readBack.detectedLanguage),
+      needCategory: normalizeNeedCategory(readBack.needCategory),
+      summaryEnglish: normalizeText(readBack.summaryEnglish),
+      summaryBridge: normalizeText(readBack.summaryBridge),
+    },
+    microAdaptation: {
+      step1TalkMove: {
+        talkMoveId: normalizeText(step1.talkMoveId),
+        talkMoveName: normalizeText(step1.talkMoveName),
+        why: normalizeText(step1.why),
+        sayNowEnglish: normalizeText(step1.sayNowEnglish),
+        sayNowBridge: normalizeText(step1.sayNowBridge),
+      },
+      step2SentenceFrames: {
+        boardTitle: normalizeText(step2.boardTitle),
+        frames: asStringArray(step2.frames).slice(0, 3),
+      },
+      step3PhrasingTip: {
+        tipMalay: normalizeText(step3.tipMalay),
+        tipIban: normalizeText(step3.tipIban),
+        whenToUse: normalizeText(step3.whenToUse),
+      },
+    },
+    regainFocusLine: normalizeText(out.regainFocusLine),
+    ifItFails: normalizeText(out.ifItFails),
+  };
+}
+
+const VALID_PRIMER_GAMES = ['bingo', 'flyswatter', 'hotseat'];
+
+function sanitizePrimer(data) {
+  const out = data && typeof data === 'object' ? data : {};
+  const transition = out.transition && typeof out.transition === 'object' ? out.transition : {};
+
+  return {
+    games: (Array.isArray(out.games) ? out.games : [])
+      .map((g) => ({
+        gameId: VALID_PRIMER_GAMES.includes(normalizeText(g?.gameId).toLowerCase())
+          ? normalizeText(g?.gameId).toLowerCase()
+          : '',
+        name: normalizeText(g?.name),
+        setupEnglish: normalizeText(g?.setupEnglish),
+        setupBridge: normalizeText(g?.setupBridge),
+        controlBenefit: normalizeText(g?.controlBenefit),
+      }))
+      .filter((g) => g.gameId && g.setupEnglish)
+      .slice(0, 3),
+    wordCards: (Array.isArray(out.wordCards) ? out.wordCards : [])
+      .map((w) => ({
+        word: normalizeText(w?.word),
+        kidDefinition: normalizeText(w?.kidDefinition),
+        clue: normalizeText(w?.clue),
+        bridgeWord: normalizeText(w?.bridgeWord),
+        isCognate: Boolean(w?.isCognate),
+        cognateNote: normalizeText(w?.cognateNote),
+      }))
+      .filter((w) => w.word)
+      .slice(0, 6),
+    gridWords: asStringArray(out.gridWords)
+      .map((w) => w.toLowerCase())
+      .slice(0, 12),
+    localHook: normalizeText(out.localHook),
+    transition: {
+      talkMoveId: normalizeText(transition.talkMoveId),
+      talkMoveName: normalizeText(transition.talkMoveName),
+      teacherLineEnglish: normalizeText(transition.teacherLineEnglish),
+      teacherLineBridge: normalizeText(transition.teacherLineBridge),
+      sentenceFrames: asStringArray(transition.sentenceFrames).slice(0, 3),
+    },
+  };
+}
+
+function buildPrimerSystemInstruction() {
+  return [
+    'You are a 5-minute "pocket coach" for a Sarawak primary teacher. The teacher gives you ONLY a handful of vocabulary words for today. There is no lesson plan. Speed and simplicity matter.',
+    BILINGUAL_INTENT_INSTRUCTIONS,
+    TALK_MOVE_PALETTE,
+    'Produce a Vocab Game Primer with exactly these parts:',
+    '1. games: exactly 3 game options, one per gameId:',
+    '   - "bingo": pupils get a 3x3 word grid; teacher calls CLUES (never the word itself); pupils mark the matching word.',
+    '   - "flyswatter": words written large on the board; two pupils race to swat the word matching the clue.',
+    '   - "hotseat": one pupil sits facing away from the board; the class describes the word in simple English so the pupil can guess it.',
+    '   For each game give a setup script the teacher can say verbatim (setupEnglish, max 2 short sentences), the same in Sarawak Malay/Iban (setupBridge), and controlBenefit: one short clause on why this game channels energy and restores classroom control.',
+    '2. wordCards: one card per input word with: kidDefinition (simple English, 12 words max, suitable for the year level), clue (one caller line for the games that does NOT contain the word or its root), bridgeWord (Malay translation, or Iban if fully confident), isCognate (true only for genuine English-Malay cognates/loanwords like "informasi/information"), cognateNote (short, why the pair helps, empty if not a cognate).',
+    '3. gridWords: 9 to 12 lowercase words for bingo grids: ALL input words plus simple related words pupils at this level already know. No phrases longer than 2 words.',
+    '4. localHook: ONE sentence connecting the word set to everyday Sarawak life (market, river, longhouse, kampung, weather, food) the teacher can use as the opener.',
+    '5. transition: the MANDATORY game-to-reasoning bridge. After the game, the teacher must convert play into dialogic talk: pick ONE palette talk move (e.g., TM-T07 Repeating or TM-T04 Say More), give teacherLineEnglish (e.g., "Now that we have played with the words, who can put \'habitat\' into their own words?"), teacherLineBridge (Malay/Iban), and up to 3 pupil sentence frames so PUPILS do the talking.',
+    'Keep every string short; this is read on a phone while pupils enter the room.',
+    'Always output valid JSON only. No markdown. Keys exactly:',
+    '{',
+    '  "games": [ { "gameId": "bingo" | "flyswatter" | "hotseat", "name": string, "setupEnglish": string, "setupBridge": string, "controlBenefit": string } ],',
+    '  "wordCards": [ { "word": string, "kidDefinition": string, "clue": string, "bridgeWord": string, "isCognate": boolean, "cognateNote": string } ],',
+    '  "gridWords": string[],',
+    '  "localHook": string,',
+    '  "transition": { "talkMoveId": string, "talkMoveName": string, "teacherLineEnglish": string, "teacherLineBridge": string, "sentenceFrames": string[] }',
+    '}',
+  ].join('\n');
+}
+
+function buildPrimerUserPrompt(input, words) {
+  return [
+    `Today's vocabulary words: ${words.join(', ')}`,
+    `Year Level: ${normalizeText(input.yearLevel) || 'Year 4'}`,
+    `Subject: ${normalizeText(input.subject) || 'General'}`,
+    `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
+    'Return the Vocab Game Primer JSON now.',
+  ].join('\n');
+}
+
+function buildLessonCoachSystemInstruction() {
+  return [
+    'You are an instructional coach who INTERROGATES primary lesson plans for EAL risk. You never merely summarise.',
+    BILINGUAL_INTENT_INSTRUCTIONS,
+    TALK_MOVE_PALETTE,
+    'Your job, in order:',
+    '1. Read the lesson plan and find the HIGH-RISK MOMENTS where pupils with weak English will go silent, copy without understanding, or switch off (dense teacher explanation, abstract vocabulary, "discuss" with no scaffold, reading-heavy tasks, question sequences pitched above pupil English level).',
+    '2. PACING COACH: flag "Teacher-Talk Overload" zones, stretches where the teacher talks for more than roughly 3-4 minutes without pupil talk. For each zone prescribe a hard break using TM-T01 Wait Time or TM-T02 Turn and Talk with an exact script.',
+    '3. LANGUAGE BRIDGE: list English-Malay cognates from this lesson\'s vocabulary (e.g., "informasi/information") as bridges, and build one Quick-Sheet: the target question in English, a low-stakes entry question in Sarawak Malay/Iban, and exactly 3 sentence frames pupils can use to answer in complete (simple) English.',
+    '4. INSTRUCTIONAL HINGE: one hinge question with an if/then game plan, e.g., "If the pupil answers X in Malay, use TM-T03 Revoicing to confirm in English. If the pupil answers Y in English, use TM-T04 Say More to push for evidence."',
+    '5. AGENCY SHIFT: short tips that cut teacher talk and force pupils to do the linguistic work.',
+    'Every teacher script must exist in BOTH simple English and a Malay/Iban bridge version.',
+    'Always output valid JSON only. No markdown. No commentary. Keys exactly:',
+    '{',
+    '  "planSummary": string,',
+    '  "detectedConcern": { "category": "pacing" | "control" | "scaffolding" | "mixed", "rationale": string },',
+    '  "riskMoments": [',
+    '    { "momentLabel": string, "lessonPhase": string, "whyRisky": string, "talkMoveId": string, "talkMoveName": string, "teacherScriptEnglish": string, "teacherScriptBridge": string, "sentenceFrames": string[] }',
+    '  ],',
+    '  "pacingCoach": {',
+    '    "teacherTalkZones": [ { "zone": string, "signal": string, "hardBreakMoveId": string, "hardBreakMoveName": string, "script": string } ],',
+    '    "talkRatioTip": string',
+    '  },',
+    '  "languageBridge": {',
+    '    "cognates": [ { "english": string, "malay": string, "note": string } ],',
+    '    "quickSheet": { "targetQuestionEnglish": string, "lowStakesEntryBridge": string, "sentenceFrames": string[] }',
+    '  },',
+    '  "instructionalHinge": {',
+    '    "hingeQuestionEnglish": string,',
+    '    "hingeQuestionBridge": string,',
+    '    "gamePlan": [ { "ifStudentSays": string, "language": string, "useMoveId": string, "useMoveName": string, "teacherResponse": string } ]',
+    '  },',
+    '  "agencyShift": string[]',
+    '}',
+    'Quality constraints:',
+    '- Provide 3 to 6 riskMoments anchored to concrete lines or phases of the plan (quote or paraphrase the plan so the teacher recognises the spot).',
+    '- planSummary is ONE sentence; spend your tokens on risks and moves, not summary.',
+    '- Cognates must be real Malay loanwords/cognates; if the lesson offers none, bridge through the closest everyday Malay word and say so in "note".',
+    '- sentenceFrames must be short enough to write on a board in 10 seconds.',
+    '- gamePlan needs at least one branch for a Malay/Iban answer and one for a simple-English answer.',
+  ].join('\n');
+}
+
+function buildLessonCoachUserPrompt(input, lessonText) {
+  return [
+    `Year Level: ${normalizeText(input.yearLevel) || 'Year 4'}`,
+    `Subject: ${normalizeText(input.subject) || 'General'}`,
+    `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
+    `Teacher's stated concern (may be empty, may be in EN/MS/Iban): ${normalizeText(input.focusConcern) || 'None stated; infer from the plan.'}`,
+    'LESSON PLAN TEXT:',
+    '"""',
+    lessonText,
+    '"""',
+    'Interrogate this plan as instructed and return the JSON game plan.',
+  ].join('\n');
+}
+
+function buildLiveCoachSystemInstruction() {
+  return [
+    'You are an in-the-moment classroom coach. A teacher is mid-lesson and has 30 seconds to read your answer. Be immediate, concrete, and calm.',
+    BILINGUAL_INTENT_INSTRUCTIONS,
+    TALK_MOVE_PALETTE,
+    'The teacher gives a quick, rough, possibly informal observation (any of the three languages). You must:',
+    '1. Read back the need: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood.',
+    '2. Return ONE 3-step Micro-Adaptation:',
+    '   - Step 1: ONE palette talk move to deploy right now, with the exact line to say in simple English AND in Malay/Iban bridge.',
+    '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
+    '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
+    '3. Add one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
+    'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
+    'Keep every string short. No paragraphs. This is read while standing in front of children.',
+    'Always output valid JSON only. No markdown. Keys exactly:',
+    '{',
+    '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
+    '  "microAdaptation": {',
+    '    "step1TalkMove": { "talkMoveId": string, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
+    '    "step2SentenceFrames": { "boardTitle": string, "frames": string[] },',
+    '    "step3PhrasingTip": { "tipMalay": string, "tipIban": string, "whenToUse": string }',
+    '  },',
+    '  "regainFocusLine": string,',
+    '  "ifItFails": string',
+    '}',
+    'If you are not confident in Iban wording, leave "tipIban" as an empty string rather than guessing.',
+  ].join('\n');
+}
+
+function buildLiveCoachUserPrompt(input) {
+  return [
+    `Live observation from the teacher: ${normalizeText(input.observation)}`,
+    `Year Level: ${normalizeText(input.yearLevel) || 'Unknown'}`,
+    `Subject: ${normalizeText(input.subject) || 'Unknown'}`,
+    `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
+    'Return the 3-step Micro-Adaptation JSON now.',
+  ].join('\n');
+}
+
+async function callGemini({ model, systemInstruction, userPrompt, sanitize }) {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
   const response = await ai.models.generateContent({
     model,
@@ -320,7 +653,79 @@ async function callGemini({ model, systemInstruction, userPrompt }) {
   if (!parsed) {
     throw new Error('Model did not return valid JSON.');
   }
-  return sanitizePlan(parsed);
+  return sanitize(parsed);
+}
+
+class CoachError extends Error {
+  constructor(status, message) {
+    super(message);
+    this.status = status;
+  }
+}
+
+async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, sanitize }) {
+  counters = normalizeCounters(counters);
+
+  const cached = planCache[cacheKey];
+  if (cached?.plan) {
+    return {
+      plan: cached.plan,
+      meta: {
+        fromCache: true,
+        modelUsed: cached.modelUsed || 'cache',
+        counters,
+        mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
+      },
+    };
+  }
+
+  const canUsePrimary =
+    counters.proCalls < PRIMARY_MODEL_SWITCH_THRESHOLD && counters.proCalls < PRIMARY_MODEL_LIMIT;
+  const canUseFallback = counters.flashCalls < FALLBACK_MODEL_LIMIT;
+  if (!canUsePrimary && !canUseFallback) {
+    throw new CoachError(429, 'Daily model limits reached. Please try again tomorrow (UTC).');
+  }
+
+  let modelUsed = canUsePrimary ? PRIMARY_MODEL_NAME : FALLBACK_MODEL_NAME;
+  let plan;
+
+  try {
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+  } catch (primaryError) {
+    const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
+    if (!fallbackAllowed) throw primaryError;
+    modelUsed = FALLBACK_MODEL_NAME;
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+  }
+
+  if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
+  else counters.flashCalls += 1;
+  writeJson(COUNTERS_PATH, counters);
+
+  planCache[cacheKey] = { createdAt: Date.now(), modelUsed, plan };
+  planCache = pruneCache(planCache);
+  writeJson(CACHE_PATH, planCache);
+
+  return {
+    plan,
+    meta: {
+      fromCache: false,
+      modelUsed,
+      counters,
+      mode: modelUsed === PRIMARY_MODEL_NAME ? 'high-quality' : 'high-speed',
+    },
+  };
+}
+
+async function extractLessonText(input) {
+  const pasted = String(input.lessonPlanText || '').trim();
+  if (pasted) return pasted;
+  const pdfBase64 = String(input.pdfBase64 || '').trim();
+  if (!pdfBase64) return '';
+  const { default: pdfParse } = await import('pdf-parse/lib/pdf-parse.js');
+  const buffer = Buffer.from(pdfBase64, 'base64');
+  const result = await pdfParse(buffer);
+  return String(result.text || '').trim();
 }
 
 let counters = normalizeCounters(readJson(COUNTERS_PATH, { date: getUtcDateKey(), proCalls: 0, flashCalls: 0 }));
@@ -376,70 +781,146 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
       return;
     }
 
-    counters = normalizeCounters(counters);
-
-    const cacheKey = createCacheKey(input);
-    const cached = planCache[cacheKey];
-    if (cached?.plan) {
-      res.json({
-        plan: cached.plan,
-        meta: {
-          fromCache: true,
-          modelUsed: cached.modelUsed || 'cache',
-          counters,
-          mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
-        },
-      });
-      return;
-    }
-
-    const canUsePrimary =
-      counters.proCalls < PRIMARY_MODEL_SWITCH_THRESHOLD && counters.proCalls < PRIMARY_MODEL_LIMIT;
-    const canUseFallback = counters.flashCalls < FALLBACK_MODEL_LIMIT;
-    if (!canUsePrimary && !canUseFallback) {
-      res.status(429).json({ error: 'Daily model limits reached. Please try again tomorrow (UTC).' });
-      return;
-    }
-
-    const systemInstruction = buildSystemInstruction();
-    const userPrompt = buildUserPrompt(input);
-
-    let modelUsed = canUsePrimary ? PRIMARY_MODEL_NAME : FALLBACK_MODEL_NAME;
-    let plan;
-
-    try {
-      plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt });
-    } catch (primaryError) {
-      const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
-      if (!fallbackAllowed) throw primaryError;
-      modelUsed = FALLBACK_MODEL_NAME;
-      plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt });
-    }
-
-    if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
-    else counters.flashCalls += 1;
-
-    writeJson(COUNTERS_PATH, counters);
-
-    planCache[cacheKey] = {
-      createdAt: Date.now(),
-      modelUsed,
-      plan,
-    };
-    planCache = pruneCache(planCache);
-    writeJson(CACHE_PATH, planCache);
-
-    res.json({
-      plan,
-      meta: {
-        fromCache: false,
-        modelUsed,
-        counters,
-        mode: modelUsed === PRIMARY_MODEL_NAME ? 'high-quality' : 'high-speed',
-      },
+    const cacheKey = createCacheKey('plan', {
+      question: question.toLowerCase(),
+      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
+      subject: normalizeText(input.subject).toLowerCase(),
+      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
+      classProfile: normalizeText(input.classProfile).toLowerCase(),
+      vocabulary: Array.isArray(input.vocabulary)
+        ? input.vocabulary.map((v) => normalizeText(v).toLowerCase()).filter(Boolean).sort()
+        : [],
     });
+
+    const result = await generateCoachResponse({
+      cacheKey,
+      systemInstruction: buildSystemInstruction(),
+      userPrompt: buildUserPrompt(input),
+      sanitize: sanitizePlan,
+    });
+    res.json(result);
   } catch (error) {
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
+    const status = error instanceof CoachError ? error.status : 500;
+    res.status(status).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
+  }
+});
+
+app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) {
+      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+      return;
+    }
+
+    const input = req.body || {};
+    let lessonText;
+    try {
+      lessonText = await extractLessonText(input);
+    } catch {
+      res.status(400).json({ error: 'Could not read the PDF. Please paste the lesson text instead.' });
+      return;
+    }
+    if (!lessonText) {
+      res.status(400).json({ error: 'Lesson plan text is required (paste it or upload a file).' });
+      return;
+    }
+    const MAX_LESSON_CHARS = 16000;
+    if (lessonText.length > MAX_LESSON_CHARS) {
+      lessonText = lessonText.slice(0, MAX_LESSON_CHARS);
+    }
+
+    const cacheKey = createCacheKey('lesson-coach', {
+      lessonText: lessonText.toLowerCase(),
+      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
+      subject: normalizeText(input.subject).toLowerCase(),
+      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
+      focusConcern: normalizeText(input.focusConcern).toLowerCase(),
+    });
+
+    const result = await generateCoachResponse({
+      cacheKey,
+      systemInstruction: buildLessonCoachSystemInstruction(),
+      userPrompt: buildLessonCoachUserPrompt(input, lessonText),
+      sanitize: sanitizeLessonCoach,
+    });
+    res.json(result);
+  } catch (error) {
+    const status = error instanceof CoachError ? error.status : 500;
+    res.status(status).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
+  }
+});
+
+app.post('/api/live-coach', express.json({ limit: '1mb' }), async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) {
+      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+      return;
+    }
+
+    const input = req.body || {};
+    const observation = normalizeText(input.observation);
+    if (!observation) {
+      res.status(400).json({ error: 'A quick observation is required.' });
+      return;
+    }
+
+    const cacheKey = createCacheKey('live-coach', {
+      observation: observation.toLowerCase(),
+      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
+      subject: normalizeText(input.subject).toLowerCase(),
+      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
+    });
+
+    const result = await generateCoachResponse({
+      cacheKey,
+      systemInstruction: buildLiveCoachSystemInstruction(),
+      userPrompt: buildLiveCoachUserPrompt(input),
+      sanitize: sanitizeLiveCoach,
+    });
+    res.json(result);
+  } catch (error) {
+    const status = error instanceof CoachError ? error.status : 500;
+    res.status(status).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
+  }
+});
+
+app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
+  try {
+    if (!GEMINI_API_KEY) {
+      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+      return;
+    }
+
+    const input = req.body || {};
+    const seen = new Set();
+    const words = (Array.isArray(input.words) ? input.words : [])
+      .map((w) => normalizeText(w).toLowerCase())
+      .filter((w) => w && w.length <= 40)
+      .filter((w) => (seen.has(w) ? false : (seen.add(w), true)))
+      .slice(0, 6);
+
+    if (words.length < 2) {
+      res.status(400).json({ error: 'Give me at least 2 vocabulary words.' });
+      return;
+    }
+
+    const cacheKey = createCacheKey('primer', {
+      words: [...words].sort(),
+      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
+      subject: normalizeText(input.subject).toLowerCase(),
+      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
+    });
+
+    const result = await generateCoachResponse({
+      cacheKey,
+      systemInstruction: buildPrimerSystemInstruction(),
+      userPrompt: buildPrimerUserPrompt(input, words),
+      sanitize: sanitizePrimer,
+    });
+    res.json(result);
+  } catch (error) {
+    const status = error instanceof CoachError ? error.status : 500;
+    res.status(status).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
   }
 });
 

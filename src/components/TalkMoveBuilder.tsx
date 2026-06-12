@@ -1,7 +1,12 @@
-import { FormEvent, useMemo, useState } from 'react';
+import { FormEvent, useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'motion/react';
-import { ArrowLeft, Copy, Download, LoaderCircle, Printer } from 'lucide-react';
+import { ArrowLeft, Copy, Dices, Download, FileSearch, LoaderCircle, MessageSquareText, Printer, Zap } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import LessonCoach from './LessonCoach';
+import LiveCoach from './LiveCoach';
+import Primer from './Primer';
+
+type CoachMode = 'primer' | 'plan' | 'lesson' | 'live';
 
 // Standardized dropdown values
 const subjects = ['science', 'maths', 'english', 'malay', 'social studies', 'design', 'it'];
@@ -179,6 +184,7 @@ function buildDownloadText({
 
 export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const { t } = useLang();
+  const [mode, setMode] = useState<CoachMode>('primer');
   const [question, setQuestion] = useState('');
   const [yearLevel, setYearLevel] = useState('1');
   const [subject, setSubject] = useState('science');
@@ -284,6 +290,42 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
         </div>
       </div>
 
+      <div className="mb-4 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4 print:hidden" role="tablist" aria-label={t('coach.tabsAria')}>
+        <ModeTab
+          active={mode === 'primer'}
+          onClick={() => setMode('primer')}
+          icon={<Dices className="h-4 w-4" />}
+          title={t('coach.tab.primer')}
+          subtitle={t('coach.tab.primerHint')}
+        />
+        <ModeTab
+          active={mode === 'plan'}
+          onClick={() => setMode('plan')}
+          icon={<MessageSquareText className="h-4 w-4" />}
+          title={t('coach.tab.plan')}
+          subtitle={t('coach.tab.planHint')}
+        />
+        <ModeTab
+          active={mode === 'lesson'}
+          onClick={() => setMode('lesson')}
+          icon={<FileSearch className="h-4 w-4" />}
+          title={t('coach.tab.lesson')}
+          subtitle={t('coach.tab.lessonHint')}
+        />
+        <ModeTab
+          active={mode === 'live'}
+          onClick={() => setMode('live')}
+          icon={<Zap className="h-4 w-4" />}
+          title={t('coach.tab.live')}
+          subtitle={t('coach.tab.liveHint')}
+        />
+      </div>
+
+      {mode === 'primer' ? <Primer /> : null}
+      {mode === 'lesson' ? <LessonCoach /> : null}
+      {mode === 'live' ? <LiveCoach /> : null}
+
+      <div className={mode === 'plan' ? '' : 'hidden'}>
       <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
         <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
           <label className="md:col-span-2">
@@ -612,7 +654,42 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
           ) : null}
         </motion.div>
       ) : null}
+      </div>
     </motion.div>
+  );
+}
+
+function ModeTab({
+  active,
+  onClick,
+  icon,
+  title,
+  subtitle,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`rounded-xl border-2 px-3 py-2.5 text-left transition-colors touch-target ${
+        active
+          ? 'border-terracotta/50 bg-terracotta/10'
+          : 'border-ink/10 bg-parchment-light hover:bg-parchment'
+      }`}
+    >
+      <span className={`flex items-center gap-2 text-sm font-bold ${active ? 'text-terracotta' : 'text-ink'}`}>
+        {icon}
+        {title}
+      </span>
+      <span className="mt-0.5 block text-xs text-ink-muted">{subtitle}</span>
+    </button>
   );
 }
 

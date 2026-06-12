@@ -1,0 +1,124 @@
+#Adaptive Practices for EAL classrooms
+
+To help EAL (English as an Additional Language) students navigate complex English language textbooks in subjects like Science, Maths, or Social Studies, novice teachers should apply a combination of **proactive macro-adaptations** (planning before the lesson) and **reactive micro-adaptations** (in-the-moment support). 
+
+The core mindset shift for novice teachers is to separate the *cognitive challenge* of the subject from the *linguistic barrier* of the textbook. The goal is to keep expectations high by teaching the same ambitious subject concepts, but to temporarily lower the language barrier using flexible scaffolds.
+
+Here is the best approach for novice teachers to take, structured chronologically:
+
+### 1. Proactive Macro-Adaptations (Before the Lesson)
+Before opening the textbook, teachers must anticipate the specific linguistic barriers within the text, such as complex sentence structures, abstract concepts, or domain-specific vocabulary. 
+*   **Pre-teach Essential Vocabulary:** Teachers should identify and explicitly teach key vocabulary or facts before the lesson begins. For example, giving EAL students access to new terms on a Friday before a new Geography or History topic starts on Monday provides them with essential processing time.
+*   **Deconstruct Subject-Specific Language:** Novice teachers must recognize that everyday English words often have specific, abstract meanings in academic subjects (e.g., "table" in Maths, "party" or "state" in History, or "mouth of the river" in Geography), which can cause significant confusion for EAL learners.
+*   **Adapt the Material:** Rather than permanently dropping EAL students to a lower ability group or giving them a fundamentally easier task, teachers can improve the accessibility of the textbook. This might involve using AI or assistive technology to adjust a reading passage to remove unnecessarily tricky words, or using translation tools to support comprehension. 
+*   **Supply Background Knowledge:** Before reading the text, teachers can use pictures or videos to contextualize the upcoming information, helping EAL students anchor the new English terms to concrete concepts.
+
+### 2. Live Scaffolding and Micro-Adaptations (During the Lesson)
+While the students are interacting with the textbook, the teacher should act as a "learning detective," using formative assessment to see who is struggling to decode the language and injecting temporary support.
+*   **Visual and Concrete Supports:** Textbooks can be overwhelming. Teachers can support comprehension by pairing textbook reading with visual aids, such as topical word banks equipped with picture cards that learners can point to when explaining scientific processes. In Maths, concrete resources (like Dienes blocks or counters) can help learners physically "see" the problem written in the text. 
+*   **Sentence Stems and Speaking Frames:** If an EAL student is struggling to answer a textbook question, providing a structured speaking or writing frame (e.g., "This source tells me...", "The sources are different because...") focuses their attention on the key information rather than the mechanics of English grammar.
+*   **Strategic Peer Support:** Teachers can strategically pair EAL students with able peers who can help decode challenging language in subjects like Maths or Science. 
+*   **Embrace Native Language Use:** For students who are still struggling, teachers can allow the brief use of their native language or translation apps to clarify complex instructions or ideas, while maintaining an overall focus on target language immersion.
+
+### 3. Fading Support (The Goal of Independence)
+A crucial part of adaptive teaching for EAL students is ensuring that scaffolds are temporary. 
+*   **Gradual Removal:** Novice teachers must learn to systematically fade their support. An EAL student might need heavy use of sentence stems and translated vocabulary lists at the beginning of their language journey, but as they develop richer English skills, these scaffolds must be reduced or removed entirely so the student does not become dependent on them. 
+
+Ultimately, the best approach is to view the EAL student's struggle with the textbook as a temporary barrier to be bridged with targeted, removable tools, rather than a permanent deficit in their subject ability.
+
+###
+
+In the context of adaptive teaching, the core difference between macro and micro adaptations lies in their **timing, scale, and execution**. 
+
+**Macro-adaptations occur before the lesson during the proactive planning phase**. 
+*   They involve **large-scale adjustments to instructional design based on formal assessments, prior data, and the teacher's experience**. 
+*   During this stage, **teachers anticipate potential barriers to learning and plan how to address them** by selecting appropriate materials, breaking down content, and designing inclusive tasks. 
+*   On a broader structural level, macro-adaptations can also refer to planning specific programs or targeted learning goals for distinct cohorts, such as gifted education pathways or specialized curriculum planning for students with English as an Additional Language (EAL).
+
+**Micro-adaptations occur during the live lesson on a moment-to-moment basis**. 
+*   These are **short-term, immediate adjustments executed in response to how students are interacting with the lesson**. 
+*   By using continuous formative assessment—such as targeted questioning, mini-whiteboards, or checking for understanding—**the teacher actively monitors the room and makes real-time instructional shifts to respond to students' immediate needs**. 
+*   These live adaptations might include deploying a temporary scaffold, offering a new analogy, enriching the classroom discourse, or altering the pace of the lesson before student confusion turns into disengagement. 
+
+**In short, macro-adaptation is the proactive, pre-planned design of the learning environment, while micro-adaptation is the reactive, real-time scaffolding injected into the lesson as it unfolds**.
+
+###
+#Adapting the text-book for EAL
+
+To adapt an English textbook for EAL learners with weak English, a teacher must actively manage the cognitive load. A textbook written entirely in English—even simple English—presents a high **intrinsic load** (the difficulty of learning new content while processing a new language) and a high **extraneous load** (the unnecessary mental effort caused by dense text or confusing layouts). 
+
+To ameliorate this cognitive load, teachers should step away from having students simply read the textbook and instead apply the following targeted strategies:
+
+**1. Extract and "Chunk" the Core Knowledge**
+*   **Focus on the Core:** Instead of teaching every detail on a textbook page, identify just the **"four chunks of knowledge"** that are essential for students to remember by the end of the lesson. 
+*   **Chunk the Sequence:** Break the textbook's complex tasks or long passages down into smaller, clear, and logical steps to prevent students from feeling overwhelmed.
+
+**2. Declutter and Signal**
+*   **Remove Extraneous Details:** Textbooks often contain extra text, sidebars, or unrelated pictures that can overload a small working memory. Teachers should **declutter the material** by presenting only the current task or example, removing unneeded text or "noise".
+*   **Use Explicit Signalling:** Help students navigate the necessary text by using **visual cues such as arrows, boxes, color highlights, or bold text**. This directs their attention exactly to the key information, reducing the mental load of scanning a busy page.
+
+**3. Apply Dual Coding to Bypass Reading**
+*   **Pair Words with Images:** To bridge language gaps, apply "dual coding" by **pairing every key word or concept with a simple image, symbol, or gesture**. For instance, instead of relying on a textbook paragraph to explain fractions, draw a shaded pizza next to the word "½" to utilize visual memory and reduce the burden on reading comprehension. 
+*   **Use Real Objects:** Whenever possible, use concrete objects or pictures before writing or speaking (e.g., bringing in real leaves for a science lesson) to cut down on language needs.
+
+**4. Scaffold Language Output**
+*   **Provide Sentence Frames:** When asking questions based on the textbook, give students scaffolded tools like **sentence frames** (e.g., "The plant has ____" or "First we do ____, then ____"). This allows students to focus their productive mental effort (germane load) on the concept, rather than struggling to build an English sentence from scratch. 
+*   **Leverage Home Languages:** Encourage the use of **bilingual word banks** and allow students to translate key textbook terms into their home language. Pointing out **cognates** (words that are similar across languages) also builds on prior knowledge and drastically reduces the language load.
+
+**5. Model Rather Than Read**
+*   **Use Worked Examples:** Instead of asking students to figure out a procedure by reading the textbook's instructions, use explicit **teacher modelling and fully solved worked examples**. Show the solution step-by-step on the board while "thinking aloud" in very simple English so they have a clear mental model to follow. 
+
+**6. Offer "Voice and Choice"**
+*   **Alternative Assessments:** Do not just ask students to repeat or copy the textbook. Allow them to **demonstrate their understanding in different ways**, such as through a poster, a drawing on the board, or an oral presentation. 
+*   **Think-Pair-Share:** Allow learners to discuss the material with a peer—potentially in their first language—before sharing with the class, which reduces the cognitive and emotional load of performing.
+
+For English as an Additional Language (EAL) learners, even simple tasks carry a high **intrinsic load** (the inherent difficulty of the task) because students are trying to process a new academic concept while simultaneously learning a new language. 
+
+Sentence frames, such as providing starters like "The plant has ____" or "First we do ____, then ____," help manage this load by offering **scaffolded language support**. By supplying the structural outline of a response, sentence frames ensure that students do not have to struggle with building a complete English sentence from scratch. 
+
+This direct support helps in two main ways:
+*   **It focuses mental effort on the concept:** By removing the heavy language burden, sentence frames allow students to channel their mental energy purely into understanding and expressing the core academic concept, rather than getting stuck on language mechanics.
+*   **It prevents learners from feeling overwhelmed:** Scaffolding the lesson with tools like sentence frames keeps the intrinsic load appropriate to the student's level, building on what they already know without overwhelming their working memory.
+**Intrinsic load** refers to the inherent difficulty of a new task. Teacher modelling reduces this load by guiding students through a clear process, removing the mental burden of having to figure out how to complete a task on their own.
+
+According to the sources, teacher modelling effectively lowers intrinsic load in the following ways:
+*   **Providing a "Mental Model of Excellence":** Explicit modelling at the very beginning of new learning shows students exactly what they are working toward, giving them a clear goal and standard to follow.
+*   **Using Step-by-Step Examples:** By demonstrating a fully solved, step-by-step procedure before ever asking students to try the task themselves, teachers eliminate the extra mental effort that would be spent trying to invent or guess the procedure from scratch.
+*   **"Thinking Aloud":** When teachers verbally model their internal thought process (for example, saying, "First I draw the water cycle diagram. I write 'water' next to the picture..."), it helps learners understand the reasoning behind each action and clearly links the teacher's words to their physical actions.
+
+By scaffolding the lesson through these deliberate steps, teachers keep the intrinsic load manageable and prevent students—especially beginners in English—from feeling confused or overwhelmed.
+
+###
+#Dialogic Moves for the class
+
+**The Starter/Hook: Eliciting Ideas and Setting the Climate**
+In a dialogic classroom, the starter is not about testing recall or getting a fast "right" answer, but rather about activating thinking and creating a "safe space" for diverse perspectives. 
+
+*   **Authentic Questioning:** Instead of initiating with closed "test" questions, the teacher opens with an **authentic question** (e.g., "Why?", "How?", or "What if?") to which they might not have a predetermined answer, signaling a genuine interest in student ideas. 
+*   **Thinking Time and Pair Talk:** The teacher poses the hook and deliberately utilizes **Wait Time 1** (pausing after the question). To engage quieter students and EAL/ESL learners, the teacher might ask students to discuss their initial, tentative thoughts in pairs. 
+*   **Wait Time 2 and Staying Neutral:** As students share their initial thoughts with the whole class, the teacher uses **Wait Time 2** (pausing after a student speaks) to encourage elaboration and spontaneity. By employing the **Stay Neutral** move (responding with "Hmm" or "Interesting" instead of immediate praise or correction), the teacher establishes from the start that students are working for collective inquiry, not just teacher approval.
+
+**The Main Lesson: Interrogating the Textbook**
+Traditional textbook use often reinforces an Initiation-Response-Evaluation (IRE) cycle, positioning the text and the teacher as the "sole legitimate sources of knowledge" where the student's job is simply to recite what they have read. Dialogic practice transforms the textbook into a resource to be analyzed, debated, and built upon.
+
+*   **Seeking Evidence and Reasoning:** As students read, the teacher uses **Extending moves** to push for deeper reasoning. If a student shares a fact from the text, the teacher asks, "Why do you think the author claims that?" or "What is your evidence?". This shifts the focus from simply reporting someone else's thinking to requiring the students to think for themselves.
+*   **Passing On and Decentralising the Teacher:** To ensure the ground rules of attentive listening are upheld, the teacher uses the **Pass On** move. After one student interprets a passage, the teacher might ask, "Who agrees or disagrees with what James just said, and why?" or "Can someone put that idea into their own words?". This requires students to position themselves in relation to alternative viewpoints and engage with each other's ideas directly.
+*   **Collaborative Knowledge Building:** Students might work in small, student-led groups to explore the text. Here, the focus is on **exploratory talk**—where tentative ideas are respected, challenges are justified, and students try to reach a consensus or clarify disagreements before progressing.
+
+**The Plenary: Cumulation and Purposeful Consolidation**
+While dialogic teaching values open-ended exploration, it must ultimately be **purposeful** and structured with specific learning goals in view. The plenary is where the most demanding dialogic principle—**cumulation**—takes center stage.
+
+*   **Chaining Contributions:** The teacher guides the class to tie the various threads of the lesson together. Instead of simply summarizing the textbook, the teacher acts as a facilitator to **chain the students' individual contributions** into a coherent line of academic understanding. 
+*   **Including Yourself:** The teacher adopts a collaborative stance using the **Include Yourself** move. By asking, "How can **we** pull these different ideas together?" or "Am I right in thinking that **we** mean...?", the teacher positions the learning as a joint enterprise and helps expedite the "handover" of the targeted concepts.
+*   **Metacognitive Reflection:** Finally, the plenary can involve students reflecting on the dialogue itself. The teacher might ask students to evaluate how their pair talk helped them understand a difficult concept in the text, reinforcing the ground rules and making the power of their collaborative thinking visible.
+
+###
+Dialogic talk helps bridge vocabulary gaps for English as an Additional Language (EAL) students primarily by shifting the classroom's focus away from "correct" language forms and toward the **co-construction of meaning**. This approach provides linguistic and cognitive support in several specific ways:
+
+*   **Prioritizing Reasoning Over Perfection:** Because dialogic teaching values collaborative knowledge building and reasoning more than perfectly accurate expression, EAL students are able to actively engage with complex academic concepts alongside their peers, regardless of their initial vocabulary levels. 
+*   **Reducing "Language Policing":** Dialogic environments reject the overt correction of spoken language—which can inhibit dialogue—and instead treat language variation as a valuable resource to be exploited for interaction. 
+*   **Creating Psychological Safety:** By establishing a "safe space," dialogic teaching encourages students to elaborate on their thinking using whatever language they find most comfortable, whether that involves local dialects, hesitations, or half-formed statements. This environment reduces the fear of embarrassment that frequently hinders EAL students from speaking.
+*   **Transferring Oral Gains to Written Literacy:** As EAL students participate in these supportive, talk-rich environments, teachers report significant improvements in both their vocabulary and discussion skills. Crucially, research indicates that these verbal and vocabulary gains often **transfer directly to written work**, helping EAL students bridge the gap between their oral and written literacy.
+
+###
+
