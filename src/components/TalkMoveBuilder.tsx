@@ -2,6 +2,8 @@ import { FormEvent, useMemo, useState, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { ArrowLeft, Copy, Dices, Download, FileSearch, LoaderCircle, MessageSquareText, Printer, Zap } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import { usePersistentState } from '../lib/usePersistentState';
+import { StartNewButton } from './coach-ui';
 import LessonCoach from './LessonCoach';
 import LiveCoach from './LiveCoach';
 import Primer from './Primer';
@@ -184,21 +186,35 @@ function buildDownloadText({
 
 export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
   const { t } = useLang();
-  const [mode, setMode] = useState<CoachMode>('primer');
-  const [question, setQuestion] = useState('');
-  const [yearLevel, setYearLevel] = useState('1');
+  const [mode, setMode] = usePersistentState<CoachMode>('tmb.mode', 'primer');
+  const [question, setQuestion, resetQuestion] = usePersistentState('tmb.plan.question', '');
+  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.plan.yearLevel', '1');
   const [subject, setSubject] = useState('science');
   const [dominantLanguage, setDominantLanguage] = useState('english');
-  const [classProfile, setClassProfile] = useState('');
-  const [vocabularyText, setVocabularyText] = useState('texture, material, production');
-  const [builderInput, setBuilderInput] = useState<BuilderInput>({
+  const [classProfile, setClassProfile, resetClassProfile] = usePersistentState('tmb.plan.classProfile', '');
+  const [vocabularyText, setVocabularyText, resetVocabularyText] = usePersistentState(
+    'tmb.plan.vocabularyText',
+    'texture, material, production',
+  );
+  const [builderInput, setBuilderInput, resetBuilderInput] = usePersistentState<BuilderInput>('tmb.plan.input', {
     subject: 'science',
     dominantLanguage: 'english',
   });
-  const [plan, setPlan] = useState<BuilderPlan | null>(null);
-  const [meta, setMeta] = useState<BuilderMeta | null>(null);
+  const [plan, setPlan, resetPlan] = usePersistentState<BuilderPlan | null>('tmb.plan.result', null);
+  const [meta, setMeta, resetMeta] = usePersistentState<BuilderMeta | null>('tmb.plan.meta', null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const clearPlanTab = () => {
+    resetQuestion();
+    resetYearLevel();
+    resetClassProfile();
+    resetVocabularyText();
+    resetBuilderInput();
+    resetPlan();
+    resetMeta();
+    setError(null);
+  };
 
   const vocabulary = useMemo(
     () =>
@@ -321,11 +337,20 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
         />
       </div>
 
-      {mode === 'primer' ? <Primer /> : null}
-      {mode === 'lesson' ? <LessonCoach /> : null}
-      {mode === 'live' ? <LiveCoach /> : null}
+      <div className={mode === 'primer' ? '' : 'hidden'}>
+        <Primer />
+      </div>
+      <div className={mode === 'lesson' ? '' : 'hidden'}>
+        <LessonCoach />
+      </div>
+      <div className={mode === 'live' ? '' : 'hidden'}>
+        <LiveCoach />
+      </div>
 
       <div className={mode === 'plan' ? '' : 'hidden'}>
+      <div className="mb-3 flex justify-end print:hidden">
+        <StartNewButton onClear={clearPlanTab} />
+      </div>
       <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
         <div className="grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-2">
           <label className="md:col-span-2">

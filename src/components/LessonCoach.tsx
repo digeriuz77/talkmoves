@@ -2,11 +2,13 @@ import { FormEvent, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Download, FileText, LoaderCircle, Upload, X } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import { usePersistentState } from '../lib/usePersistentState';
 import {
   CopyButton,
   NeedBadge,
   SayLine,
   SelectField,
+  StartNewButton,
   languages,
   subjectLabel,
   subjects,
@@ -119,14 +121,17 @@ function buildDownloadText(result: LessonCoachResult): string {
 
 export default function LessonCoach() {
   const { t } = useLang();
-  const [lessonText, setLessonText] = useState('');
+  const [lessonText, setLessonText, resetLessonText] = usePersistentState('tmb.lesson.lessonText', '');
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [yearLevel, setYearLevel] = useState('4');
-  const [subject, setSubject] = useState('science');
-  const [dominantLanguage, setDominantLanguage] = useState('iban');
-  const [focusConcern, setFocusConcern] = useState('');
-  const [result, setResult] = useState<LessonCoachResult | null>(null);
+  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.lesson.yearLevel', '4');
+  const [subject, setSubject, resetSubject] = usePersistentState('tmb.lesson.subject', 'science');
+  const [dominantLanguage, setDominantLanguage, resetDominantLanguage] = usePersistentState(
+    'tmb.lesson.dominantLanguage',
+    'iban',
+  );
+  const [focusConcern, setFocusConcern, resetFocusConcern] = usePersistentState('tmb.lesson.focusConcern', '');
+  const [result, setResult, resetResult] = usePersistentState<LessonCoachResult | null>('tmb.lesson.result', null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -153,6 +158,17 @@ export default function LessonCoach() {
     setPdfBase64(null);
     setFileName(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const clearTab = () => {
+    resetLessonText();
+    resetYearLevel();
+    resetSubject();
+    resetDominantLanguage();
+    resetFocusConcern();
+    resetResult();
+    clearFile();
+    setError(null);
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -201,6 +217,9 @@ export default function LessonCoach() {
 
   return (
     <div>
+      <div className="mb-3 flex justify-end print:hidden">
+        <StartNewButton onClear={clearTab} />
+      </div>
       <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
         <label className="block">
           <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
