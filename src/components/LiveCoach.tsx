@@ -2,11 +2,13 @@ import { FormEvent, useState, type ReactNode } from 'react';
 import { motion } from 'motion/react';
 import { LoaderCircle, Zap } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import { usePersistentState } from '../lib/usePersistentState';
 import {
   CopyButton,
   NeedBadge,
   SayLine,
   SelectField,
+  StartNewButton,
   languages,
   subjectLabel,
   subjects,
@@ -45,13 +47,25 @@ type LiveCoachResult = {
 
 export default function LiveCoach() {
   const { t } = useLang();
-  const [observation, setObservation] = useState('');
-  const [yearLevel, setYearLevel] = useState('4');
-  const [subject, setSubject] = useState('science');
-  const [dominantLanguage, setDominantLanguage] = useState('iban');
-  const [result, setResult] = useState<LiveCoachResult | null>(null);
+  const [observation, setObservation, resetObservation] = usePersistentState('tmb.live.observation', '');
+  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.live.yearLevel', '4');
+  const [subject, setSubject, resetSubject] = usePersistentState('tmb.live.subject', 'science');
+  const [dominantLanguage, setDominantLanguage, resetDominantLanguage] = usePersistentState(
+    'tmb.live.dominantLanguage',
+    'iban',
+  );
+  const [result, setResult, resetResult] = usePersistentState<LiveCoachResult | null>('tmb.live.result', null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const clearTab = () => {
+    resetObservation();
+    resetYearLevel();
+    resetSubject();
+    resetDominantLanguage();
+    resetResult();
+    setError(null);
+  };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -81,6 +95,9 @@ export default function LiveCoach() {
 
   return (
     <div>
+      <div className="mb-3 flex justify-end print:hidden">
+        <StartNewButton onClear={clearTab} />
+      </div>
       <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
         <label className="block">
           <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">

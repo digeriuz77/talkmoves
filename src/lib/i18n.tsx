@@ -128,6 +128,8 @@ const en: Record<string, string> = {
   'coach.need.control': 'Control',
   'coach.need.scaffolding': 'Language Scaffolding',
   'coach.need.mixed': 'Mixed',
+  'coach.startNew': 'Start new',
+  'coach.clearConfirm': 'Clear this tab? The prepped content saved here will be removed.',
 
   // Live Coach
   'live.observationLabel': 'What is happening in your room right now?',
@@ -178,6 +180,22 @@ const en: Record<string, string> = {
   'primer.transitionHint': 'The game is the warm-up. This move makes pupils do the reasoning, do not skip it.',
   'primer.errors.wordsRequired': 'Type at least 2 key words first.',
   'primer.errors.failed': 'Could not build the primer. Please try again.',
+  'primer.viewReference': 'Caller reference',
+  'primer.viewFlip': 'Flip cards',
+  'primer.leadWord': 'Word first',
+  'primer.leadDefinition': 'Meaning first',
+  'primer.tapToFlip': 'Tap a card to flip',
+  'primer.flipBack': 'Tap to flip back',
+  'primer.present': 'Present',
+  'primer.presentBingo': 'Show on screen',
+  'primer.tapToReveal': 'Tap to reveal',
+  'primer.tapToContinue': 'Tap for next',
+  'primer.next': 'Next',
+  'primer.prev': 'Back',
+  'primer.close': 'Close',
+  'primer.slideOf': '{current} / {total}',
+  'primer.teachingTip': 'Now turn it into talk',
+  'primer.bingoCard': 'Card {n}',
 
   // Lesson Plan Coach
   'lesson.pasteLabel': 'Paste your lesson plan or script',
@@ -470,6 +488,8 @@ const ms: Record<string, string> = {
   'coach.need.control': 'Kawalan',
   'coach.need.scaffolding': 'Sokongan Bahasa',
   'coach.need.mixed': 'Campuran',
+  'coach.startNew': 'Mula baharu',
+  'coach.clearConfirm': 'Kosongkan tab ini? Kandungan persediaan yang disimpan di sini akan dibuang.',
 
   // Live Coach
   'live.observationLabel': 'Apa yang sedang berlaku dalam kelas anda sekarang?',
@@ -520,6 +540,22 @@ const ms: Record<string, string> = {
   'primer.transitionHint': 'Permainan hanyalah pemanas badan. Langkah ini membuat murid menaakul, jangan langkau.',
   'primer.errors.wordsRequired': 'Taip sekurang-kurangnya 2 perkataan utama dahulu.',
   'primer.errors.failed': 'Pemula tidak dapat dibina. Sila cuba lagi.',
+  'primer.viewReference': 'Rujukan pemanggil',
+  'primer.viewFlip': 'Kad selak',
+  'primer.leadWord': 'Perkataan dahulu',
+  'primer.leadDefinition': 'Makna dahulu',
+  'primer.tapToFlip': 'Ketik kad untuk menyelak',
+  'primer.flipBack': 'Ketik untuk selak semula',
+  'primer.present': 'Persembah',
+  'primer.presentBingo': 'Papar pada skrin',
+  'primer.tapToReveal': 'Ketik untuk dedah',
+  'primer.tapToContinue': 'Ketik untuk seterusnya',
+  'primer.next': 'Seterusnya',
+  'primer.prev': 'Kembali',
+  'primer.close': 'Tutup',
+  'primer.slideOf': '{current} / {total}',
+  'primer.teachingTip': 'Kini ubah kepada perbincangan',
+  'primer.bingoCard': 'Kad {n}',
 
   // Lesson Plan Coach
   'lesson.pasteLabel': 'Tampal rancangan pengajaran atau skrip anda',

@@ -1,4 +1,4 @@
-import { Copy } from 'lucide-react';
+import { Copy, RotateCcw } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 
 export const subjects = ['science', 'maths', 'english', 'malay', 'social studies', 'design', 'it'];
@@ -80,6 +80,22 @@ export function SayLine({ label, value }: { label: string; value: string }) {
         <CopyButton value={value} />
       </div>
     </div>
+  );
+}
+
+export function StartNewButton({ onClear }: { onClear: () => void }) {
+  const { t } = useLang();
+  return (
+    <button
+      type="button"
+      onClick={() => {
+        if (window.confirm(t('coach.clearConfirm'))) onClear();
+      }}
+      className="inline-flex items-center gap-1.5 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink-muted transition hover:bg-white hover:text-ink touch-target"
+    >
+      <RotateCcw className="h-3.5 w-3.5" />
+      {t('coach.startNew')}
+    </button>
   );
 }
 
