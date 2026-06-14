@@ -321,9 +321,15 @@ export default function TalkMoveBuilder({ onBack }: TalkMoveBuilderProps) {
         />
       </div>
 
-      {mode === 'primer' ? <Primer /> : null}
-      {mode === 'lesson' ? <LessonCoach /> : null}
-      {mode === 'live' ? <LiveCoach /> : null}
+      <div className={mode === 'primer' ? '' : 'hidden'}>
+        <Primer />
+      </div>
+      <div className={mode === 'lesson' ? '' : 'hidden'}>
+        <LessonCoach />
+      </div>
+      <div className={mode === 'live' ? '' : 'hidden'}>
+        <LiveCoach />
+      </div>
 
       <div className={mode === 'plan' ? '' : 'hidden'}>
       <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
