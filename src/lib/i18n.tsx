@@ -37,6 +37,7 @@ const en: Record<string, string> = {
   'hub.buildBody':
     'Generate a tailored dialogic scaffolding map for your question, class profile, and language context.',
   'hub.buildCta': 'Open builder',
+  'hub.liveCoachCta': 'Take me to the Live Coach',
 
   // GameCard
   'card.startLevel': 'Start level',
@@ -143,6 +144,12 @@ const en: Record<string, string> = {
   'live.coaching': 'Coaching...',
   'live.readBack': 'What I heard',
   'live.detectedLanguage': 'Input',
+  'live.diagnosisTitle': 'Fast diagnosis',
+  'live.barrier': 'Barrier',
+  'live.confidence': 'Confidence',
+  'live.clarifyOnlyIfNeeded': 'Ask only if this would change your move',
+  'live.observeNext': 'Watch next',
+  'live.eefTitle': 'EEF evidence link',
   'live.microTitle': '3-Step Micro-Adaptation',
   'live.step1Title': 'Talk move to use now',
   'live.step2Title': 'Sentence frames for pupils (board-ready)',
@@ -397,6 +404,7 @@ const ms: Record<string, string> = {
   'hub.buildBody':
     'Jana peta sokongan dialogik tersuai untuk soalan, profil kelas, dan konteks bahasa anda.',
   'hub.buildCta': 'Buka pembina',
+  'hub.liveCoachCta': 'Bawa saya ke Live Coach',
 
   // GameCard
   'card.startLevel': 'Mula tahap',
@@ -503,6 +511,12 @@ const ms: Record<string, string> = {
   'live.coaching': 'Sedang membimbing...',
   'live.readBack': 'Apa yang saya faham',
   'live.detectedLanguage': 'Input',
+  'live.diagnosisTitle': 'Diagnosis pantas',
+  'live.barrier': 'Halangan',
+  'live.confidence': 'Keyakinan',
+  'live.clarifyOnlyIfNeeded': 'Tanya hanya jika ini mengubah langkah anda',
+  'live.observeNext': 'Perhatikan seterusnya',
+  'live.eefTitle': 'Pautan bukti EEF',
   'live.microTitle': 'Adaptasi Mikro 3 Langkah',
   'live.step1Title': 'Langkah perbincangan untuk digunakan sekarang',
   'live.step2Title': 'Bingkai ayat untuk murid (sedia untuk papan)',
