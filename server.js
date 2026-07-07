@@ -426,9 +426,27 @@ function sanitizeLessonCoach(data) {
   };
 }
 
+const LIVE_BARRIERS = [
+  'reading-access',
+  'vocabulary',
+  'decoding',
+  'comprehension',
+  'motivation',
+  'participation',
+  'pacing',
+  'control',
+  'mixed',
+];
+
+function normalizeLiveBarrier(value) {
+  const v = normalizeText(value).toLowerCase();
+  return LIVE_BARRIERS.includes(v) ? v : 'mixed';
+}
+
 function sanitizeLiveCoach(data) {
   const out = data && typeof data === 'object' ? data : {};
   const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
+  const diagnosis = out.diagnosis && typeof out.diagnosis === 'object' ? out.diagnosis : {};
   const micro = out.microAdaptation && typeof out.microAdaptation === 'object' ? out.microAdaptation : {};
   const step1 = micro.step1TalkMove && typeof micro.step1TalkMove === 'object' ? micro.step1TalkMove : {};
   const step2 = micro.step2SentenceFrames && typeof micro.step2SentenceFrames === 'object' ? micro.step2SentenceFrames : {};
@@ -441,6 +459,14 @@ function sanitizeLiveCoach(data) {
       summaryEnglish: normalizeText(readBack.summaryEnglish),
       summaryBridge: normalizeText(readBack.summaryBridge),
     },
+    diagnosis: {
+      barrier: normalizeLiveBarrier(diagnosis.barrier),
+      confidence: Math.max(0, Math.min(1, Number(diagnosis.confidence || 0))),
+      evidence: normalizeText(diagnosis.evidence),
+      missingCriticalInfo: asStringArray(diagnosis.missingCriticalInfo).slice(0, 2),
+    },
+    teacherMirror: normalizeText(out.teacherMirror),
+    observeNext: normalizeText(out.observeNext),
     microAdaptation: {
       step1TalkMove: {
         talkMoveId: normalizeText(step1.talkMoveId),
@@ -609,16 +635,21 @@ function buildLiveCoachSystemInstruction() {
     TALK_MOVE_PALETTE,
     'The teacher gives a quick, rough, possibly informal observation (any of the three languages). You must:',
     '1. Read back the need: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood.',
-    '2. Return ONE 3-step Micro-Adaptation:',
+    '2. Diagnose the classroom bottleneck before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
+    '3. Ask at most TWO missingCriticalInfo questions, and only if the answer would change the move. If the teacher can act now, return an empty array.',
+    '4. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
     '   - Step 1: ONE palette talk move to deploy right now, with the exact line to say in simple English AND in Malay/Iban bridge.',
     '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
     '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
-    '3. Add one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
+    '5. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
     'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
     'Keep every string short. No paragraphs. This is read while standing in front of children.',
     'Always output valid JSON only. No markdown. Keys exactly:',
     '{',
     '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
+    '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string, "missingCriticalInfo": string[] },',
+    '  "teacherMirror": string,',
+    '  "observeNext": string,',
     '  "microAdaptation": {',
     '    "step1TalkMove": { "talkMoveId": string, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
     '    "step2SentenceFrames": { "boardTitle": string, "frames": string[] },',
