@@ -30,6 +30,12 @@ type LiveCoachResult = {
     missingCriticalInfo: string[];
   };
   teacherMirror?: string;
+  evidenceLink?: {
+    principleId: string;
+    principle: string;
+    whyThisFits: string;
+    checkAdaptAction: string;
+  };
   observeNext?: string;
   microAdaptation: {
     step1TalkMove: {
@@ -209,6 +215,26 @@ export default function LiveCoach() {
                     ))}
                   </ul>
                 </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          {result.evidenceLink?.principleId ? (
+            <section className="card-warm p-4 sm:p-5">
+              <p className="label-section mb-2">{t('live.eefTitle')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted">
+                  {result.evidenceLink.principleId}
+                </span>
+                {result.evidenceLink.checkAdaptAction ? (
+                  <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
+                    {result.evidenceLink.checkAdaptAction}
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-2 text-sm font-semibold text-ink">{result.evidenceLink.principle}</p>
+              {result.evidenceLink.whyThisFits ? (
+                <p className="mt-1 text-xs text-ink-muted">{result.evidenceLink.whyThisFits}</p>
               ) : null}
             </section>
           ) : null}

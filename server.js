@@ -105,6 +105,26 @@ function buildTalkMovePalette() {
 
 const TALK_MOVE_PALETTE = buildTalkMovePalette();
 
+
+const EEF_INCLUSIVE_TEACHING_BRIEF = [
+  'EEF INCLUSIVE TEACHING EVIDENCE BASE — use ONE principle in every Live Coach response:',
+  '- scaf_1 Scaffolding increases independence over time: make support temporary, keep expectations high, position independence as success. Best for EAL learners and below-average readers.',
+  '- scaf_2 Remove scaffolding gradually: fade one support at a time, move from worked to partial examples, protect confidence.',
+  '- scaf_3 Ask pupils to explain their success: help pupils identify strategies/resources that helped so responsibility transfers back to them.',
+  '- check_1 Explain why you are checking understanding: uncertainty is useful information; checking is support, not judgement. Best for EAL and below-average readers.',
+  '- check_2 Normalise mistakes: treat misconceptions calmly as evidence for next teaching, not failure. Best for below-average readers and SEND.',
+  '- check_3 Reduce social pressure, not cognitive challenge: make participation safe while keeping expectations high. Best for EAL learners.',
+  '- calm_1 Predictable routines reduce uncertainty: use consistent language, routines, and warnings before changes.',
+  '- calm_2 Pupils thrive when valued: use whole-class response routines, early success, and mistake-safe participation.',
+  '- calm_3 Explain why routines matter: model/reteach routines and explain how they support learning.',
+  '- adapt_1 Support thinking rather than reduce it: use prompts, cues, sentence starters, and thinking time before helping; keep the learning intention the same.',
+  '- adapt_2 Enhance high-quality teaching: chunk long tasks, model one more example, and add guided practice with feedback.',
+  '- adapt_3 Small adaptations are often best: pre-teach vocabulary/concepts, adjust scaffolding before changing tasks, and use temporary flexible grouping.',
+  'Check-Adapt states: Most misunderstand => PAUSE AND FIX; Some are unsure => ADAPT SUPPORT; Most understand => EXTEND AND SUPPORT.',
+  'For EAL learners: separate language production from understanding, reduce social pressure, use visuals/thinking time, and pre-teach vocabulary when needed.',
+  'For below-average readers: separate reading demand from task demand, adapt input format before task demand, and keep cognitive challenge high.',
+].join('\n');
+
 const BILINGUAL_INTENT_INSTRUCTIONS = [
   'The teacher may write in English, Bahasa Melayu, Sarawak Malay, or Iban (often informally or mixed). Understand all of them.',
   'Silently detect the input language AND the underlying coaching need behind the words:',
@@ -447,6 +467,7 @@ function sanitizeLiveCoach(data) {
   const out = data && typeof data === 'object' ? data : {};
   const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
   const diagnosis = out.diagnosis && typeof out.diagnosis === 'object' ? out.diagnosis : {};
+  const evidenceLink = out.evidenceLink && typeof out.evidenceLink === 'object' ? out.evidenceLink : {};
   const micro = out.microAdaptation && typeof out.microAdaptation === 'object' ? out.microAdaptation : {};
   const step1 = micro.step1TalkMove && typeof micro.step1TalkMove === 'object' ? micro.step1TalkMove : {};
   const step2 = micro.step2SentenceFrames && typeof micro.step2SentenceFrames === 'object' ? micro.step2SentenceFrames : {};
@@ -466,6 +487,12 @@ function sanitizeLiveCoach(data) {
       missingCriticalInfo: asStringArray(diagnosis.missingCriticalInfo).slice(0, 2),
     },
     teacherMirror: normalizeText(out.teacherMirror),
+    evidenceLink: {
+      principleId: normalizeText(evidenceLink.principleId),
+      principle: normalizeText(evidenceLink.principle),
+      whyThisFits: normalizeText(evidenceLink.whyThisFits),
+      checkAdaptAction: normalizeText(evidenceLink.checkAdaptAction),
+    },
     observeNext: normalizeText(out.observeNext),
     microAdaptation: {
       step1TalkMove: {
@@ -632,16 +659,18 @@ function buildLiveCoachSystemInstruction() {
   return [
     'You are an in-the-moment classroom coach. A teacher is mid-lesson and has 30 seconds to read your answer. Be immediate, concrete, and calm.',
     BILINGUAL_INTENT_INSTRUCTIONS,
+    EEF_INCLUSIVE_TEACHING_BRIEF,
     TALK_MOVE_PALETTE,
     'The teacher gives a quick, rough, possibly informal observation (any of the three languages). You must:',
     '1. Read back the need: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood.',
     '2. Diagnose the classroom bottleneck before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
     '3. Ask at most TWO missingCriticalInfo questions, and only if the answer would change the move. If the teacher can act now, return an empty array.',
-    '4. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
+    '4. Select ONE EEF principle from the evidence base that fits the diagnosis. Prefer small adaptations that keep cognitive demand high and remove access/social-pressure barriers.',
+    '5. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
     '   - Step 1: ONE palette talk move to deploy right now, with the exact line to say in simple English AND in Malay/Iban bridge.',
     '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
     '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
-    '5. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
+    '6. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
     'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
     'Keep every string short. No paragraphs. This is read while standing in front of children.',
     'Always output valid JSON only. No markdown. Keys exactly:',
@@ -649,6 +678,7 @@ function buildLiveCoachSystemInstruction() {
     '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
     '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string, "missingCriticalInfo": string[] },',
     '  "teacherMirror": string,',
+    '  "evidenceLink": { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" },',
     '  "observeNext": string,',
     '  "microAdaptation": {',
     '    "step1TalkMove": { "talkMoveId": string, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
