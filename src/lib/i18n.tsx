@@ -162,6 +162,26 @@ const en: Record<string, string> = {
   'live.ifItFails': 'If it falls flat',
   'live.errors.observationRequired': 'Tell me what is happening first.',
   'live.errors.failed': 'Could not get a coaching response. Please try again.',
+  'live.threadHint': 'This is a point-of-friction coach, not a planner. Describe what just happened; it will diagnose, reset, or firm up — and you can tap a suggestion to reply.',
+  'live.replyPlaceholder': 'Tell the coach what happened, or ask for something else...',
+  'live.replyHint': 'Press Cmd/Ctrl+Enter to send. Tap a chip to fill your reply.',
+  'live.send': 'Send',
+  'live.coachReplyFallback': 'Here is my read on this.',
+  'live.teacherMirror': 'What is really going on',
+  'live.rationaleNote': 'Why this move',
+  'live.ideasTitle': 'Ideas to consider',
+  'live.ideasHint': 'Tap an idea to drop it into your reply as a next step.',
+  'live.tapHint': 'Tap an option to reply:',
+  'live.bilingualFrames': 'Bilingual sentence frames',
+  'live.mode.diagnose': 'Diagnose',
+  'live.mode.reset': 'Reset',
+  'live.mode.firm_up': 'Firm up',
+  'live.ideaKind.alternative-move': 'Alternative move',
+  'live.ideaKind.root-cause': 'Root cause',
+  'live.ideaKind.missed-angle': 'Missed angle',
+  'live.ideaKind.risk': 'Risk',
+  'live.ideaKind.beyond-palette': 'Beyond talk moves',
+  'live.offPalette': 'off-palette',
 
   // 5-Minute Primer
   'primer.wordsLabel': "Today's key words (3-5, comma separated)",
@@ -529,6 +549,26 @@ const ms: Record<string, string> = {
   'live.ifItFails': 'Jika tidak berkesan',
   'live.errors.observationRequired': 'Beritahu dahulu apa yang sedang berlaku.',
   'live.errors.failed': 'Respons bimbingan tidak dapat dijana. Sila cuba lagi.',
+  'live.threadHint': 'Ini jurulatih titik-geseran, bukan perancang. Ceritakan apa yang baru berlaku; ia akan diagnose, reset, atau firm up — dan anda boleh ketik cadangan untuk membalas.',
+  'live.replyPlaceholder': 'Beritahu jurulatih apa yang berlaku, atau minta yang lain...',
+  'live.replyHint': 'Tekan Cmd/Ctrl+Enter untuk hantar. Ketik cip untuk isi balasan anda.',
+  'live.send': 'Hantar',
+  'live.coachReplyFallback': 'Ini pandangan saya.',
+  'live.teacherMirror': 'Apa yang sebenarnya berlaku',
+  'live.rationaleNote': 'Kenapa langkah ini',
+  'live.ideasTitle': 'Idea untuk dipertimbangkan',
+  'live.ideasHint': 'Ketik idea untuk letakkan sebagai langkah seterusnya dalam balasan anda.',
+  'live.tapHint': 'Ketik pilihan untuk membalas:',
+  'live.bilingualFrames': 'Bingkai ayat dwibahasa',
+  'live.mode.diagnose': 'Diagnose',
+  'live.mode.reset': 'Reset',
+  'live.mode.firm_up': 'Firm up',
+  'live.ideaKind.alternative-move': 'Langkah alternatif',
+  'live.ideaKind.root-cause': 'Punca utama',
+  'live.ideaKind.missed-angle': 'Sudut yang terlepas',
+  'live.ideaKind.risk': 'Risiko',
+  'live.ideaKind.beyond-palette': 'Di luar langkah perbincangan',
+  'live.offPalette': 'luar palet',
 
   // 5-Minute Primer
   'primer.wordsLabel': 'Perkataan utama hari ini (3-5, dipisah koma)',
@@ -763,10 +803,12 @@ export function translate(lang: Lang, key: string, params?: Record<string, strin
 // CONTEXT
 // ============================================
 
+export type TranslateFn = (key: string, params?: Record<string, string>) => string;
+
 type LangContextValue = {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  t: (key: string, params?: Record<string, string>) => string;
+  t: TranslateFn;
 };
 
 const LangContext = createContext<LangContextValue | null>(null);

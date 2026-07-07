@@ -105,6 +105,17 @@ function buildTalkMovePalette() {
 
 const TALK_MOVE_PALETTE = buildTalkMovePalette();
 
+const VALID_TALK_MOVE_IDS = new Set(
+  (Array.isArray(talkMovesData?.quick_reference_table) ? talkMovesData.quick_reference_table : [])
+    .map((move) => normalizeText(move?.id))
+    .filter(Boolean),
+);
+
+function normalizeTalkMoveId(value) {
+  const id = normalizeText(value).toUpperCase();
+  return VALID_TALK_MOVE_IDS.has(id) ? id : '';
+}
+
 
 const EEF_INCLUSIVE_TEACHING_BRIEF = [
   'EEF INCLUSIVE TEACHING EVIDENCE BASE — use ONE principle in every Live Coach response:',
@@ -463,17 +474,53 @@ function normalizeLiveBarrier(value) {
   return LIVE_BARRIERS.includes(v) ? v : 'mixed';
 }
 
+const LIVE_IDEA_KINDS = ['alternative-move', 'root-cause', 'missed-angle', 'risk', 'beyond-palette'];
+
+function normalizeCoachingPhase(value) {
+  const v = normalizeText(value).toLowerCase();
+  return v === 'advise' ? 'advise' : 'explore';
+}
+
+function normalizeActionMode(value) {
+  const v = normalizeText(value).toLowerCase().replace(/_/g, '-');
+  return v === 'firm_up' || v === 'firm-up' ? 'firm_up' : (v === 'reset' ? 'reset' : 'diagnose');
+}
+
+function normalizeLiveIdeaKind(value) {
+  const v = normalizeText(value).toLowerCase().replace(/[^a-z-]/g, '');
+  return LIVE_IDEA_KINDS.includes(v) ? v : 'missed-angle';
+}
+
+function sanitizeIdea(idea) {
+  if (!idea || typeof idea !== 'object') return null;
+  const kind = normalizeLiveIdeaKind(idea.kind);
+  const headline = normalizeText(idea.headline);
+  const detail = normalizeText(idea.detail);
+  const rawTalkMoveId = normalizeText(idea.talkMoveId).toUpperCase();
+  const offPalette = Boolean(rawTalkMoveId) && !VALID_TALK_MOVE_IDS.has(rawTalkMoveId);
+  const sayNowEnglish = normalizeText(idea.sayNowEnglish);
+  const sayNowBridge = normalizeText(idea.sayNowBridge);
+  if (!headline) return null;
+  return {
+    kind,
+    headline,
+    detail,
+    talkMoveId: rawTalkMoveId,
+    offPalette,
+    sayNowEnglish,
+    sayNowBridge,
+  };
+}
+
 function sanitizeLiveCoach(data) {
   const out = data && typeof data === 'object' ? data : {};
   const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
   const diagnosis = out.diagnosis && typeof out.diagnosis === 'object' ? out.diagnosis : {};
-  const evidenceLink = out.evidenceLink && typeof out.evidenceLink === 'object' ? out.evidenceLink : {};
-  const micro = out.microAdaptation && typeof out.microAdaptation === 'object' ? out.microAdaptation : {};
-  const step1 = micro.step1TalkMove && typeof micro.step1TalkMove === 'object' ? micro.step1TalkMove : {};
-  const step2 = micro.step2SentenceFrames && typeof micro.step2SentenceFrames === 'object' ? micro.step2SentenceFrames : {};
-  const step3 = micro.step3PhrasingTip && typeof micro.step3PhrasingTip === 'object' ? micro.step3PhrasingTip : {};
 
-  return {
+  const actionMode = normalizeActionMode(out.actionMode);
+
+  const result = {
+    actionMode,
     readBack: {
       detectedLanguage: normalizeText(readBack.detectedLanguage),
       needCategory: normalizeNeedCategory(readBack.needCategory),
@@ -484,37 +531,85 @@ function sanitizeLiveCoach(data) {
       barrier: normalizeLiveBarrier(diagnosis.barrier),
       confidence: Math.max(0, Math.min(1, Number(diagnosis.confidence || 0))),
       evidence: normalizeText(diagnosis.evidence),
-      missingCriticalInfo: asStringArray(diagnosis.missingCriticalInfo).slice(0, 2),
     },
     teacherMirror: normalizeText(out.teacherMirror),
-    evidenceLink: {
-      principleId: normalizeText(evidenceLink.principleId),
-      principle: normalizeText(evidenceLink.principle),
-      whyThisFits: normalizeText(evidenceLink.whyThisFits),
-      checkAdaptAction: normalizeText(evidenceLink.checkAdaptAction),
-    },
-    observeNext: normalizeText(out.observeNext),
-    microAdaptation: {
-      step1TalkMove: {
-        talkMoveId: normalizeText(step1.talkMoveId),
-        talkMoveName: normalizeText(step1.talkMoveName),
-        why: normalizeText(step1.why),
-        sayNowEnglish: normalizeText(step1.sayNowEnglish),
-        sayNowBridge: normalizeText(step1.sayNowBridge),
-      },
-      step2SentenceFrames: {
-        boardTitle: normalizeText(step2.boardTitle),
-        frames: asStringArray(step2.frames).slice(0, 3),
-      },
-      step3PhrasingTip: {
-        tipMalay: normalizeText(step3.tipMalay),
-        tipIban: normalizeText(step3.tipIban),
-        whenToUse: normalizeText(step3.whenToUse),
-      },
-    },
-    regainFocusLine: normalizeText(out.regainFocusLine),
-    ifItFails: normalizeText(out.ifItFails),
+    rationaleNote: normalizeText(out.rationaleNote),
+    ideas: (Array.isArray(out.ideas) ? out.ideas : [])
+      .map(sanitizeIdea)
+      .filter(Boolean)
+      .slice(0, 4),
   };
+
+  if (normalizeText(out.observeNext)) {
+    result.observeNext = normalizeText(out.observeNext);
+  }
+
+  // Mode-specific blocks — keep only the one matching actionMode
+  const diagnose = out.diagnose && typeof out.diagnose === 'object' ? out.diagnose : {};
+  const reset = out.reset && typeof out.reset === 'object' ? out.reset : {};
+  const firmUp = out.firmUp && typeof out.firmUp === 'object' ? out.firmUp : {};
+
+  if (actionMode === 'diagnose') {
+    result.diagnose = {
+      hypothesis: normalizeText(diagnose.hypothesis),
+      clarifyingQuestion: normalizeText(diagnose.clarifyingQuestion),
+      clarifyingOptions: asStringArray(diagnose.clarifyingOptions).slice(0, 4),
+    };
+  } else if (actionMode === 'reset') {
+    const eefPrinciple = reset.eefPrinciple && typeof reset.eefPrinciple === 'object' ? reset.eefPrinciple : {};
+    result.reset = {
+      eefPrinciple: {
+        principleId: normalizeText(eefPrinciple.principleId),
+        principle: normalizeText(eefPrinciple.principle),
+        whyThisFits: normalizeText(eefPrinciple.whyThisFits),
+        checkAdaptAction: normalizeText(eefPrinciple.checkAdaptAction),
+      },
+      resetActionSteps: asStringArray(reset.resetActionSteps).slice(0, 5),
+    };
+  } else if (actionMode === 'firm_up') {
+    const talkMove = firmUp.talkMove && typeof firmUp.talkMove === 'object' ? firmUp.talkMove : {};
+    const talkMoveRawId = normalizeText(talkMove.talkMoveId).toUpperCase();
+    const bilingualFrames = (Array.isArray(firmUp.bilingualSentenceFrames) ? firmUp.bilingualSentenceFrames : [])
+      .map((f) => {
+        if (f && typeof f === 'object') {
+          return {
+            en: normalizeText(f.en),
+            bridge: normalizeText(f.bridge),
+          };
+        }
+        return null;
+      })
+      .filter(Boolean);
+    result.firmUp = {
+      eefRationale: normalizeText(firmUp.eefRationale),
+      talkMove: {
+        talkMoveId: talkMoveRawId,
+        offPalette: Boolean(talkMoveRawId) && !VALID_TALK_MOVE_IDS.has(talkMoveRawId),
+        talkMoveName: normalizeText(talkMove.talkMoveName),
+        why: normalizeText(talkMove.why),
+        sayNowEnglish: normalizeText(talkMove.sayNowEnglish),
+        sayNowBridge: normalizeText(talkMove.sayNowBridge),
+      },
+      bilingualSentenceFrames: bilingualFrames,
+    };
+    const phrasingTip = firmUp.phrasingTip && typeof firmUp.phrasingTip === 'object' ? firmUp.phrasingTip : {};
+    if (normalizeText(phrasingTip.tipMalay) || normalizeText(phrasingTip.tipIban) || normalizeText(phrasingTip.whenToUse)) {
+      result.firmUp.phrasingTip = {
+        tipMalay: normalizeText(phrasingTip.tipMalay),
+        tipIban: normalizeText(phrasingTip.tipIban),
+        whenToUse: normalizeText(phrasingTip.whenToUse),
+      };
+    }
+  }
+
+  if (normalizeText(out.regainFocusLine)) {
+    result.regainFocusLine = normalizeText(out.regainFocusLine);
+  }
+  if (normalizeText(out.ifItFails)) {
+    result.ifItFails = normalizeText(out.ifItFails);
+  }
+
+  return result;
 }
 
 const VALID_PRIMER_GAMES = ['bingo', 'flyswatter', 'hotseat'];
@@ -657,38 +752,67 @@ function buildLessonCoachUserPrompt(input, lessonText) {
 
 function buildLiveCoachSystemInstruction() {
   return [
-    'You are an in-the-moment classroom coach. A teacher is mid-lesson and has 30 seconds to read your answer. Be immediate, concrete, and calm.',
+    'You are an instructional coach for EAL/ESL classrooms in a CONVERSATION with the teacher. You think WITH the teacher, not at them. The teacher can reply between turns (what happened, why a move flopped, a new wrinkle). Treat the whole thread as context: do not repeat yourself, build on prior turns, and revise your advice as the situation changes.',
+    '',
+    'EAL LENS (your strongest interpretive default): This is a POINT-OF-FRICTION intervention tool, NOT a lesson planner. When students disengage, go silent, freeze, or copy, interpret that FIRST as cognitive overload or a language barrier — not as defiance, laziness, or poor behaviour. The barrier taxonomy still allows pacing/control/motivation when genuinely warranted, but reach for those only when the evidence points there, never as a default label for an EAL learner who is stuck.',
+    '',
+    'YOUR KNOWLEDGE SOURCES (a reference library, never a checklist you must fill):',
     BILINGUAL_INTENT_INSTRUCTIONS,
     EEF_INCLUSIVE_TEACHING_BRIEF,
     TALK_MOVE_PALETTE,
-    'The teacher gives a quick, rough, possibly informal observation (any of the three languages). You must:',
-    '1. Read back the need: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood.',
-    '2. Diagnose the classroom bottleneck before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
-    '3. Ask at most TWO missingCriticalInfo questions, and only if the answer would change the move. If the teacher can act now, return an empty array.',
-    '4. Select ONE EEF principle from the evidence base that fits the diagnosis. Prefer small adaptations that keep cognitive demand high and remove access/social-pressure barriers.',
-    '5. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
-    '   - Step 1: ONE palette talk move to deploy right now, with the exact line to say in simple English AND in Malay/Iban bridge.',
-    '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
-    '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
-    '6. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
-    'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
+    'These are a TOOLKIT, not a mandate. Do NOT force a Talk Move into every response. If the teacher needs to model a concept (reset), rely on EEF principles and leave the Talk Move out. If students need to verbalise to reduce writing pressure (firm_up), select the single most appropriate Talk Move. If the problem is ambiguous or you are not yet sure of the root cause (diagnose), do not prescribe at all.',
+    '',
+    'ACTION MODE — choose exactly ONE each turn based on what best resolves the friction right now:',
+    '- "diagnose": use when the teacher reports a freeze, disengagement, copying, or the situation is ambiguous and you are not yet certain whether the barrier is cognitive (content too hard) or linguistic (cannot produce the output). Return a brief hypothesis distinguishing the two, and ONE clarifying question with 2-4 tappable answer options so the teacher can respond with one tap. No Talk Move.',
+    '- "reset": use when the teacher\'s approach needs pulling back to foundations — the jump is too large and students need a model or a worked example before any talk move can work. Return an EEF-backed modeling strategy and concrete reset action steps. No Talk Move.',
+    '- "firm_up": use when the barrier is clear and students need to MAKE THEIR THINKING VISIBLE — typically to reduce writing pressure and transfer linguistic work to pupils. Return a Talk Move with exact bilingual lines and bilingual sentence frames pupils use to respond.',
+    'You decide the mode yourself each turn — do not ask permission. Choose exactly ONE action_mode; do not blend modes in a single turn.',
+    '',
+    'ON EVERY TURN output these fields:',
+    '1. action_mode: one of diagnose | reset | firm_up.',
+    '2. readBack: detect input language and classify the need (pacing, control, scaffolding, or mixed). One short English sentence + one short Sarawak Malay sentence. If the need is unchanged from the prior turn, briefly say so.',
+    '3. diagnosis: exactly one barrier (reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed). Include confidence 0-1 and one evidence phrase from the teacher.',
+    '4. teacherMirror: one teacher-friendly sentence connecting what they said to the likely mechanism through the EAL lens (e.g. "the copying is a symptom of a reading barrier, not laziness").',
+    '5. rationaleNote: ONE line on why you chose THIS mode now and not the others.',
+    '',
+    'MODE-SPECIFIC FIELDS (only the block matching your action_mode):',
+    'If action_mode = "diagnose":',
+    '   - hypothesis: distinguish cognitive barrier (the CONTENT is beyond them) from linguistic barrier (they understand but cannot PRODUCE the English output). Name which is more likely and why.',
+    '   - clarifying_question: exactly ONE question whose answer will tell you which barrier it is.',
+    '   - clarifying_options: 2-4 short, tappable answer options the teacher could tap to reply. Phrased so each reads as a sensible standalone teacher message.',
+    'If action_mode = "reset":',
+    '   - eef_principle: ONE principle from the EEF brief (principleId, principle, whyThisFits, checkAdaptAction).',
+    '   - reset_action_steps: 2-5 concrete modeling/foundation steps. No Talk Move here.',
+    'If action_mode = "firm_up":',
+    '   - eef_rationale: one line tying the move to an EEF principle.',
+    '   - talk_move: the single best Talk Move (prefer a palette TM-* id; if the best move is off-palette, name it and set offPalette true with a reason). why + sayNowEnglish + sayNowBridge.',
+    '   - bilingual_sentence_frames: up to 3 frames PUPILS use to respond, each with English AND Malay/Iban bridge.',
+    '   - phrasing_tip (optional): a Malay (and Iban when confident) tip lowering the entry barrier.',
+    '',
+    'SECONDARY SURFACING — "ideas" is OPTIONAL and always secondary:',
+    'Return 0-3 ideas ONLY when they genuinely add value the teacher did not ask for. ideas are surfaced paths to consider later, NEVER the chosen action and NEVER an equal menu of options. Each idea kind: alternative-move | root-cause | missed-angle | risk | beyond-palette. An empty/omitted ideas array is correct and common.',
+    '',
+    'OPTIONAL fields: observeNext (one sign to watch for), regainFocusLine and ifItFails (only for control/pacing friction — not every problem is an attention problem).',
+    '',
+    'When the teacher reports a move flopped, name WHY it likely failed (wrong barrier, too high a jump, social pressure) before choosing the next mode. When the teacher taps a clarifying_option or pursues an idea, act on it directly.',
     'Keep every string short. No paragraphs. This is read while standing in front of children.',
-    'Always output valid JSON only. No markdown. Keys exactly:',
+    '',
+    'Always output valid JSON only. No markdown. Omit optional fields rather than empty strings/objects. The mode-specific block MUST match the chosen action_mode.',
     '{',
+    '  "action_mode": "diagnose" | "reset" | "firm_up",',
     '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
-    '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string, "missingCriticalInfo": string[] },',
+    '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string },',
     '  "teacherMirror": string,',
-    '  "evidenceLink": { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" },',
-    '  "observeNext": string,',
-    '  "microAdaptation": {',
-    '    "step1TalkMove": { "talkMoveId": string, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
-    '    "step2SentenceFrames": { "boardTitle": string, "frames": string[] },',
-    '    "step3PhrasingTip": { "tipMalay": string, "tipIban": string, "whenToUse": string }',
-    '  },',
-    '  "regainFocusLine": string,',
-    '  "ifItFails": string',
+    '  "rationaleNote": string,',
+    '  "observeNext"?: string,',
+    '  "ideas"?: [ { "kind": "alternative-move" | "root-cause" | "missed-angle" | "risk" | "beyond-palette", "headline": string, "detail": string, "talkMoveId"?: string, "offPalette"?: boolean, "sayNowEnglish"?: string, "sayNowBridge"?: string } ],',
+    '  "diagnose"?: { "hypothesis": string, "clarifying_question": string, "clarifying_options": string[] },',
+    '  "reset"?: { "eef_principle": { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" }, "reset_action_steps": string[] },',
+    '  "firm_up"?: { "eef_rationale": string, "talk_move": { "talkMoveId": string, "offPalette"?: boolean, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string }, "bilingual_sentence_frames": [ { "en": string, "bridge": string } ], "phrasing_tip"?: { "tipMalay": string, "tipIban": string, "whenToUse": string } },',
+    '  "regainFocusLine"?: string,',
+    '  "ifItFails"?: string',
     '}',
-    'If you are not confident in Iban wording, leave "tipIban" as an empty string rather than guessing.',
+    'If you are not confident in Iban wording, leave tipIban / idea sayNowBridge / frame "bridge" as empty strings rather than guessing.',
   ].join('\n');
 }
 
@@ -702,11 +826,27 @@ function buildLiveCoachUserPrompt(input) {
   ].join('\n');
 }
 
-async function callGemini({ model, systemInstruction, userPrompt, sanitize }) {
+const COACH_ROLE_TO_GEMINI = { teacher: 'user', coach: 'model' };
+
+function buildLiveCoachContents(thread, contextLines) {
+  const history = [];
+  if (contextLines && contextLines.length) {
+    history.push({ role: 'user', parts: [{ text: contextLines.join('\n') }] });
+    history.push({ role: 'model', parts: [{ text: 'Understood. I have the class context. Waiting for your first observation.' }] });
+  }
+  for (const msg of thread) {
+    const role = COACH_ROLE_TO_GEMINI[msg.role] || 'user';
+    history.push({ role, parts: [{ text: String(msg.text || '') }] });
+  }
+  return history;
+}
+
+async function callGemini({ model, systemInstruction, userPrompt, contents, sanitize }) {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const finalContents = contents || userPrompt;
   const response = await ai.models.generateContent({
     model,
-    contents: userPrompt,
+    contents: finalContents,
     config: { systemInstruction },
   });
   const text = response.text;
@@ -724,7 +864,7 @@ class CoachError extends Error {
   }
 }
 
-async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, sanitize }) {
+async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, contents, sanitize }) {
   counters = normalizeCounters(counters);
 
   const cached = planCache[cacheKey];
@@ -751,12 +891,12 @@ async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, 
   let plan;
 
   try {
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
   } catch (primaryError) {
     const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
     if (!fallbackAllowed) throw primaryError;
     modelUsed = FALLBACK_MODEL_NAME;
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
   }
 
   if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
@@ -911,7 +1051,7 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
   }
 });
 
-app.post('/api/live-coach', express.json({ limit: '1mb' }), async (req, res) => {
+app.post('/api/live-coach', express.json({ limit: '2mb' }), async (req, res) => {
   try {
     if (!GEMINI_API_KEY) {
       res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
@@ -920,22 +1060,70 @@ app.post('/api/live-coach', express.json({ limit: '1mb' }), async (req, res) => 
 
     const input = req.body || {};
     const observation = normalizeText(input.observation);
-    if (!observation) {
-      res.status(400).json({ error: 'A quick observation is required.' });
-      return;
-    }
+    const yearLevel = normalizeText(input.yearLevel);
+    const subject = normalizeText(input.subject);
+    const dominantLanguage = normalizeText(input.dominantLanguage);
 
-    const cacheKey = createCacheKey('live-coach', {
-      observation: observation.toLowerCase(),
-      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
-      subject: normalizeText(input.subject).toLowerCase(),
-      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
-    });
+    const contextLines = [
+      `Class context — Year Level: ${yearLevel || 'Unknown'}`,
+      `Subject: ${subject || 'Unknown'}`,
+      `Dominant Home Language: ${dominantLanguage || 'Iban'}`,
+    ];
+
+    const rawThread = Array.isArray(input.thread) ? input.thread : [];
+
+    let contents;
+    let cacheKey;
+
+    if (rawThread.length > 0) {
+      const cleanThread = rawThread
+        .map((msg) => ({
+          role: msg?.role === 'coach' ? 'coach' : 'teacher',
+          text: normalizeText(msg?.text),
+        }))
+        .filter((msg) => msg.text)
+        .slice(-20);
+
+      if (!cleanThread.length) {
+        res.status(400).json({ error: 'A quick observation is required.' });
+        return;
+      }
+      if (cleanThread[cleanThread.length - 1].role !== 'teacher') {
+        res.status(400).json({ error: 'The last message must be from the teacher.' });
+        return;
+      }
+
+      contents = buildLiveCoachContents(cleanThread, contextLines);
+      cacheKey = createCacheKey('live-coach-thread:v2', {
+        yearLevel: yearLevel.toLowerCase(),
+        subject: subject.toLowerCase(),
+        dominantLanguage: dominantLanguage.toLowerCase(),
+        thread: cleanThread.map((m) => `${m.role}:${m.text.toLowerCase()}`),
+      });
+    } else {
+      if (!observation) {
+        res.status(400).json({ error: 'A quick observation is required.' });
+        return;
+      }
+      const singlePrompt = buildLiveCoachUserPrompt({
+        observation,
+        yearLevel,
+        subject,
+        dominantLanguage,
+      });
+      contents = [{ role: 'user', parts: [{ text: singlePrompt }] }];
+      cacheKey = createCacheKey('live-coach:v2', {
+        observation: observation.toLowerCase(),
+        yearLevel: yearLevel.toLowerCase(),
+        subject: subject.toLowerCase(),
+        dominantLanguage: dominantLanguage.toLowerCase(),
+      });
+    }
 
     const result = await generateCoachResponse({
       cacheKey,
       systemInstruction: buildLiveCoachSystemInstruction(),
-      userPrompt: buildLiveCoachUserPrompt(input),
+      contents,
       sanitize: sanitizeLiveCoach,
     });
     res.json(result);
