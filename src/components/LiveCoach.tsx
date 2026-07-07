@@ -5,7 +5,9 @@ import {
   LoaderCircle,
   Send,
   Sparkles,
+  Stethoscope,
   TriangleAlert,
+  RefreshCw,
   Zap,
 } from 'lucide-react';
 import { useLang, type TranslateFn } from '../lib/i18n';
@@ -23,6 +25,8 @@ import {
   type NeedCategory,
 } from './coach-ui';
 
+type ActionMode = 'diagnose' | 'reset' | 'firm_up';
+
 type Idea = {
   kind: 'alternative-move' | 'root-cause' | 'missed-angle' | 'risk' | 'beyond-palette';
   headline: string;
@@ -34,7 +38,7 @@ type Idea = {
 };
 
 type LiveCoachResult = {
-  coachingPhase?: 'explore' | 'advise';
+  actionMode: ActionMode;
   readBack: {
     detectedLanguage: string;
     needCategory: NeedCategory;
@@ -45,18 +49,28 @@ type LiveCoachResult = {
     barrier: string;
     confidence: number;
     evidence: string;
-    missingCriticalInfo: string[];
   };
   teacherMirror?: string;
-  evidenceLink?: {
-    principleId: string;
-    principle: string;
-    whyThisFits: string;
-    checkAdaptAction: string;
-  };
+  rationaleNote?: string;
   observeNext?: string;
-  microAdaptation?: {
-    step1TalkMove?: {
+  ideas?: Idea[];
+  diagnose?: {
+    hypothesis: string;
+    clarifyingQuestion: string;
+    clarifyingOptions: string[];
+  };
+  reset?: {
+    eefPrinciple: {
+      principleId: string;
+      principle: string;
+      whyThisFits: string;
+      checkAdaptAction: string;
+    };
+    resetActionSteps: string[];
+  };
+  firmUp?: {
+    eefRationale: string;
+    talkMove: {
       talkMoveId: string;
       offPalette?: boolean;
       talkMoveName: string;
@@ -64,11 +78,8 @@ type LiveCoachResult = {
       sayNowEnglish: string;
       sayNowBridge: string;
     };
-    step2SentenceFrames?: {
-      boardTitle: string;
-      frames: string[];
-    };
-    step3PhrasingTip?: {
+    bilingualSentenceFrames: Array<{ en: string; bridge: string }>;
+    phrasingTip?: {
       tipMalay: string;
       tipIban: string;
       whenToUse: string;
@@ -76,12 +87,17 @@ type LiveCoachResult = {
   };
   regainFocusLine?: string;
   ifItFails?: string;
-  ideas?: Idea[];
 };
 
 type ChatMessage =
   | { id: string; role: 'teacher'; text: string }
   | { id: string; role: 'coach'; text: string; result: LiveCoachResult };
+
+const MODE_ICON: Record<ActionMode, typeof Lightbulb> = {
+  diagnose: Stethoscope,
+  reset: RefreshCw,
+  firm_up: Sparkles,
+};
 
 export default function LiveCoach() {
   const { t } = useLang();
@@ -91,8 +107,9 @@ export default function LiveCoach() {
     'tmb.live.dominantLanguage',
     'iban',
   );
+  // v2: schema changed to the action_mode discriminated union; old results cannot render.
   const [messages, setMessages, resetMessages] = usePersistentState<ChatMessage[]>(
-    'tmb.live.messages',
+    'tmb.live.messages.v2',
     [],
   );
   const [draft, setDraft] = useState('');
@@ -169,6 +186,11 @@ export default function LiveCoach() {
     }
   };
 
+  const fillDraftFromChip = (text: string) => {
+    setDraft(text);
+    draftRef.current?.focus();
+  };
+
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     send(draft);
@@ -243,7 +265,7 @@ export default function LiveCoach() {
               </div>
             ) : (
               <div key={msg.id}>
-                <CoachReply text={msg.text} result={msg.result} t={t} />
+                <CoachReply text={msg.text} result={msg.result} t={t} onChip={fillDraftFromChip} />
               </div>
             ),
           )}
@@ -305,30 +327,24 @@ function CoachReply({
   text,
   result,
   t,
+  onChip,
 }: {
   text: string;
   result: LiveCoachResult;
   t: TranslateFn;
+  onChip: (value: string) => void;
 }) {
+  const mode = result.actionMode;
+  const ModeIcon = MODE_ICON[mode] || Sparkles;
+
   return (
     <div className="flex justify-start">
       <div className="w-full max-w-[92%] space-y-3 rounded-2xl rounded-bl-sm border border-ink/10 bg-parchment-light/70 p-4 sm:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <Sparkles className="h-4 w-4 text-terracotta" />
           <p className="flex-1 text-sm font-semibold text-ink">{text}</p>
-          <PhaseBadge phase={result.coachingPhase} t={t} />
+          <ModeBadge mode={mode} icon={ModeIcon} t={t} />
         </div>
-
-        {result.diagnosis?.missingCriticalInfo && result.diagnosis.missingCriticalInfo.length > 0 ? (
-          <section className="rounded-lg border-2 border-dashed border-terracotta/40 bg-terracotta/5 p-3">
-            <p className="label-section mb-1">{t('live.overToYou')}</p>
-            <ul className="list-disc space-y-1 pl-4 text-sm text-ink">
-              {result.diagnosis.missingCriticalInfo.map((question, idx) => (
-                <li key={`${question}-${idx}`}>{question}</li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
 
         <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -363,113 +379,46 @@ function CoachReply({
           </section>
         ) : null}
 
-        {result.evidenceLink?.principleId ? (
+        {result.teacherMirror ? (
           <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-            <p className="label-section mb-2">{t('live.eefTitle')}</p>
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted">
-                {result.evidenceLink.principleId}
-              </span>
-              {result.evidenceLink.checkAdaptAction ? (
-                <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
-                  {result.evidenceLink.checkAdaptAction}
-                </span>
-              ) : null}
-            </div>
-            <p className="mt-2 text-sm font-semibold text-ink">{result.evidenceLink.principle}</p>
-            {result.evidenceLink.whyThisFits ? (
-              <p className="mt-1 text-xs text-ink-muted">{result.evidenceLink.whyThisFits}</p>
-            ) : null}
+            <p className="label-section mb-1">{t('live.teacherMirror')}</p>
+            <p className="text-sm text-ink-soft">{result.teacherMirror}</p>
           </section>
         ) : null}
 
-        {result.microAdaptation ? (
-          <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-            <p className="label-section mb-3">{t('live.microTitle')}</p>
-            <div className="space-y-3">
-              {result.microAdaptation.step1TalkMove ? (
-                <StepCard step="1" title={t('live.step1Title')}>
-                  <p className="text-sm font-semibold text-ink">
-                    {result.microAdaptation.step1TalkMove.talkMoveId ? (
-                      <span className="font-mono text-xs text-ink-muted">
-                        {result.microAdaptation.step1TalkMove.talkMoveId}{' '}
-                      </span>
-                    ) : null}
-                    {result.microAdaptation.step1TalkMove.talkMoveName}
-                    {result.microAdaptation.step1TalkMove.offPalette ? (
-                      <OffPaletteTag t={t} />
-                    ) : null}
-                  </p>
-                  {result.microAdaptation.step1TalkMove.why ? (
-                    <p className="mt-1 text-xs text-ink-muted">
-                      {result.microAdaptation.step1TalkMove.why}
-                    </p>
-                  ) : null}
-                  <SayLine
-                    label={t('live.sayEnglish')}
-                    value={result.microAdaptation.step1TalkMove.sayNowEnglish}
-                  />
-                  <SayLine
-                    label={t('live.sayBridge')}
-                    value={result.microAdaptation.step1TalkMove.sayNowBridge}
-                  />
-                </StepCard>
-              ) : null}
+        {mode === 'diagnose' && result.diagnose ? (
+          <DiagnoseBlock diagnose={result.diagnose} t={t} onChip={onChip} />
+        ) : null}
 
-              {result.microAdaptation.step2SentenceFrames &&
-              (result.microAdaptation.step2SentenceFrames.frames.length ||
-                result.microAdaptation.step2SentenceFrames.boardTitle) ? (
-                <StepCard step="2" title={t('live.step2Title')}>
-                  {result.microAdaptation.step2SentenceFrames.boardTitle ? (
-                    <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                      {result.microAdaptation.step2SentenceFrames.boardTitle}
-                    </p>
-                  ) : null}
-                  <ul className="mt-1 space-y-1.5">
-                    {result.microAdaptation.step2SentenceFrames.frames.map((frame, idx) => (
-                      <li
-                        key={`${frame}-${idx}`}
-                        className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft"
-                      >
-                        <span className="flex-1">{frame}</span>
-                        <CopyButton value={frame} />
-                      </li>
-                    ))}
-                  </ul>
-                </StepCard>
-              ) : null}
+        {mode === 'reset' && result.reset ? (
+          <ResetBlock reset={result.reset} t={t} />
+        ) : null}
 
-              {result.microAdaptation.step3PhrasingTip &&
-              (result.microAdaptation.step3PhrasingTip.tipMalay ||
-                result.microAdaptation.step3PhrasingTip.tipIban) ? (
-                <StepCard step="3" title={t('live.step3Title')}>
-                  {result.microAdaptation.step3PhrasingTip.tipMalay ? (
-                    <SayLine label={t('live.tipMalay')} value={result.microAdaptation.step3PhrasingTip.tipMalay} />
-                  ) : null}
-                  {result.microAdaptation.step3PhrasingTip.tipIban ? (
-                    <SayLine label={t('live.tipIban')} value={result.microAdaptation.step3PhrasingTip.tipIban} />
-                  ) : null}
-                  {result.microAdaptation.step3PhrasingTip.whenToUse ? (
-                    <p className="mt-1 text-xs text-ink-muted">
-                      {result.microAdaptation.step3PhrasingTip.whenToUse}
-                    </p>
-                  ) : null}
-                </StepCard>
-              ) : null}
-            </div>
-          </section>
+        {mode === 'firm_up' && result.firmUp ? (
+          <FirmUpBlock firmUp={result.firmUp} t={t} />
+        ) : null}
+
+        {result.rationaleNote ? (
+          <p className="text-xs italic text-ink-muted">{t('live.rationaleNote')}: {result.rationaleNote}</p>
         ) : null}
 
         {result.ideas && result.ideas.length > 0 ? (
           <section className="rounded-lg border border-amber-200/60 bg-amber-50/40 p-3">
-            <p className="label-section mb-2 flex items-center gap-1.5">
+            <p className="label-section mb-1 flex items-center gap-1.5">
               <Lightbulb className="h-3.5 w-3.5 text-amber-600" />
               {t('live.ideasTitle')}
             </p>
+            <p className="mb-2 text-[11px] text-ink-muted">{t('live.ideasHint')}</p>
             <div className="space-y-2">
               {result.ideas.map((idea, idx) => (
                 <div key={`${idea.kind}-${idx}`}>
-                  <IdeaCard idea={idea} t={t} />
+                  <button
+                    type="button"
+                    onClick={() => onChip(idea.headline)}
+                    className="w-full text-left"
+                  >
+                    <IdeaCard idea={idea} t={t} />
+                  </button>
                 </div>
               ))}
             </div>
@@ -502,6 +451,141 @@ function CoachReply({
   );
 }
 
+function DiagnoseBlock({
+  diagnose,
+  t,
+  onChip,
+}: {
+  diagnose: NonNullable<LiveCoachResult['diagnose']>;
+  t: TranslateFn;
+  onChip: (value: string) => void;
+}) {
+  const options = (diagnose.clarifyingOptions || []).filter(Boolean);
+  return (
+    <section className="rounded-lg border border-sky-200/60 bg-sky-50/40 p-3">
+      <p className="label-section mb-2 flex items-center gap-1.5">
+        <Stethoscope className="h-3.5 w-3.5 text-sky-700" />
+        {t('live.mode.diagnose')}
+      </p>
+      {diagnose.hypothesis ? <p className="text-sm text-ink-soft">{diagnose.hypothesis}</p> : null}
+      {diagnose.clarifyingQuestion ? (
+        <p className="mt-2 text-sm font-semibold text-ink">{diagnose.clarifyingQuestion}</p>
+      ) : null}
+      {options.length ? (
+        <>
+          <p className="mt-2 text-[11px] text-ink-muted">{t('live.tapHint')}</p>
+          <div className="mt-1 flex flex-wrap gap-2">
+            {options.map((option, idx) => (
+              <button
+                key={`${option}-${idx}`}
+                type="button"
+                onClick={() => onChip(option)}
+                className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-800 transition hover:bg-sky-100 touch-target"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </>
+      ) : null}
+    </section>
+  );
+}
+
+function ResetBlock({ reset, t }: { reset: NonNullable<LiveCoachResult['reset']>; t: TranslateFn }) {
+  return (
+    <section className="rounded-lg border border-emerald-200/60 bg-emerald-50/40 p-3">
+      <p className="label-section mb-2 flex items-center gap-1.5">
+        <RefreshCw className="h-3.5 w-3.5 text-emerald-700" />
+        {t('live.mode.reset')}
+      </p>
+      {reset.eefPrinciple?.principleId ? (
+        <div className="mb-2 flex flex-wrap items-center gap-2">
+          <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted">
+            {reset.eefPrinciple.principleId}
+          </span>
+          {reset.eefPrinciple.checkAdaptAction ? (
+            <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
+              {reset.eefPrinciple.checkAdaptAction}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+      {reset.eefPrinciple?.principle ? (
+        <p className="text-sm font-semibold text-ink">{reset.eefPrinciple.principle}</p>
+      ) : null}
+      {reset.eefPrinciple?.whyThisFits ? (
+        <p className="mt-1 text-xs text-ink-muted">{reset.eefPrinciple.whyThisFits}</p>
+      ) : null}
+      {(reset.resetActionSteps || []).filter(Boolean).length ? (
+        <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-ink-soft">
+          {reset.resetActionSteps.filter(Boolean).map((step, idx) => (
+            <li key={`${step}-${idx}`}>{step}</li>
+          ))}
+        </ol>
+      ) : null}
+    </section>
+  );
+}
+
+function FirmUpBlock({ firmUp, t }: { firmUp: NonNullable<LiveCoachResult['firmUp']>; t: TranslateFn }) {
+  const move = firmUp.talkMove;
+  const frames = (firmUp.bilingualSentenceFrames || []).filter((f) => f && (f.en || f.bridge));
+  return (
+    <section className="rounded-lg border border-violet-200/60 bg-violet-50/40 p-3">
+      <p className="label-section mb-2 flex items-center gap-1.5">
+        <Sparkles className="h-3.5 w-3.5 text-violet-700" />
+        {t('live.mode.firm_up')}
+      </p>
+      {firmUp.eefRationale ? <p className="text-xs italic text-ink-muted">{firmUp.eefRationale}</p> : null}
+      {move ? (
+        <div className="mt-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
+          <p className="text-sm font-semibold text-ink">
+            {move.talkMoveId ? <span className="font-mono text-xs text-ink-muted">{move.talkMoveId} </span> : null}
+            {move.talkMoveName}
+            {move.offPalette ? <OffPaletteTag t={t} /> : null}
+          </p>
+          {move.why ? <p className="mt-1 text-xs text-ink-muted">{move.why}</p> : null}
+          <SayLine label={t('live.sayEnglish')} value={move.sayNowEnglish} />
+          <SayLine label={t('live.sayBridge')} value={move.sayNowBridge} />
+        </div>
+      ) : null}
+      {frames.length ? (
+        <div className="mt-2">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
+            {t('live.bilingualFrames')}
+          </p>
+          <ul className="space-y-1.5">
+            {frames.map((frame, idx) => (
+              <li
+                key={`${frame.en}-${idx}`}
+                className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft"
+              >
+                <span className="flex-1">
+                  <span className="font-semibold text-ink">{frame.en}</span>
+                  {frame.bridge ? <span className="text-ink-muted"> · {frame.bridge}</span> : null}
+                </span>
+                <CopyButton value={frame.en + (frame.bridge ? ` — ${frame.bridge}` : '')} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+      {firmUp.phrasingTip &&
+      (firmUp.phrasingTip.tipMalay || firmUp.phrasingTip.tipIban) ? (
+        <div className="mt-2">
+          {firmUp.phrasingTip.tipMalay ? (
+            <SayLine label={t('live.tipMalay')} value={firmUp.phrasingTip.tipMalay} />
+          ) : null}
+          {firmUp.phrasingTip.tipIban ? (
+            <SayLine label={t('live.tipIban')} value={firmUp.phrasingTip.tipIban} />
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
 const IDEA_META: Record<Idea['kind'], { icon: typeof Lightbulb; tone: string; labelKey: string }> = {
   'alternative-move': {
     icon: Sparkles,
@@ -530,15 +614,17 @@ const IDEA_META: Record<Idea['kind'], { icon: typeof Lightbulb; tone: string; la
   },
 };
 
-function PhaseBadge({ phase, t }: { phase?: 'explore' | 'advise'; t: TranslateFn }) {
-  if (!phase) return null;
+function ModeBadge({ mode, icon: Icon, t }: { mode: ActionMode; icon: typeof Lightbulb; t: TranslateFn }) {
   const tone =
-    phase === 'explore'
-      ? 'border-terracotta/30 bg-terracotta/10 text-ink'
-      : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+    mode === 'diagnose'
+      ? 'border-sky-200 bg-sky-50 text-sky-700'
+      : mode === 'reset'
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+        : 'border-violet-200 bg-violet-50 text-violet-700';
   return (
     <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${tone}`}>
-      {t(`live.phase.${phase}`)}
+      <Icon className="h-3 w-3" />
+      {t(`live.mode.${mode}`)}
     </span>
   );
 }
@@ -570,12 +656,8 @@ function IdeaCard({ idea, t }: { idea: Idea; t: TranslateFn }) {
       </div>
       <p className="mt-1 text-sm font-semibold text-ink">{idea.headline}</p>
       {idea.detail ? <p className="mt-0.5 text-xs text-ink-soft">{idea.detail}</p> : null}
-      {idea.sayNowEnglish ? (
-        <SayLine label={t('live.sayEnglish')} value={idea.sayNowEnglish} />
-      ) : null}
-      {idea.sayNowBridge ? (
-        <SayLine label={t('live.sayBridge')} value={idea.sayNowBridge} />
-      ) : null}
+      {idea.sayNowEnglish ? <SayLine label={t('live.sayEnglish')} value={idea.sayNowEnglish} /> : null}
+      {idea.sayNowBridge ? <SayLine label={t('live.sayBridge')} value={idea.sayNowBridge} /> : null}
     </div>
   );
 }
