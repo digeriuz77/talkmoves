@@ -105,6 +105,17 @@ function buildTalkMovePalette() {
 
 const TALK_MOVE_PALETTE = buildTalkMovePalette();
 
+const VALID_TALK_MOVE_IDS = new Set(
+  (Array.isArray(talkMovesData?.quick_reference_table) ? talkMovesData.quick_reference_table : [])
+    .map((move) => normalizeText(move?.id))
+    .filter(Boolean),
+);
+
+function normalizeTalkMoveId(value) {
+  const id = normalizeText(value).toUpperCase();
+  return VALID_TALK_MOVE_IDS.has(id) ? id : '';
+}
+
 
 const EEF_INCLUSIVE_TEACHING_BRIEF = [
   'EEF INCLUSIVE TEACHING EVIDENCE BASE — use ONE principle in every Live Coach response:',
@@ -463,6 +474,26 @@ function normalizeLiveBarrier(value) {
   return LIVE_BARRIERS.includes(v) ? v : 'mixed';
 }
 
+const LIVE_IDEA_KINDS = ['alternative-move', 'root-cause', 'missed-angle', 'risk'];
+
+function normalizeLiveIdeaKind(value) {
+  const v = normalizeText(value).toLowerCase().replace(/[^a-z-]/g, '');
+  return LIVE_IDEA_KINDS.includes(v) ? v : 'missed-angle';
+}
+
+function sanitizeIdea(idea) {
+  if (!idea || typeof idea !== 'object') return null;
+  const kind = normalizeLiveIdeaKind(idea.kind);
+  const headline = normalizeText(idea.headline);
+  const detail = normalizeText(idea.detail);
+  const talkMoveId = normalizeTalkMoveId(idea.talkMoveId);
+  const sayNowEnglish = normalizeText(idea.sayNowEnglish);
+  const sayNowBridge = normalizeText(idea.sayNowBridge);
+  if (!headline) return null;
+  if (kind === 'alternative-move' && !talkMoveId) return null;
+  return { kind, headline, detail, talkMoveId, sayNowEnglish, sayNowBridge };
+}
+
 function sanitizeLiveCoach(data) {
   const out = data && typeof data === 'object' ? data : {};
   const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
@@ -496,7 +527,7 @@ function sanitizeLiveCoach(data) {
     observeNext: normalizeText(out.observeNext),
     microAdaptation: {
       step1TalkMove: {
-        talkMoveId: normalizeText(step1.talkMoveId),
+        talkMoveId: normalizeTalkMoveId(step1.talkMoveId),
         talkMoveName: normalizeText(step1.talkMoveName),
         why: normalizeText(step1.why),
         sayNowEnglish: normalizeText(step1.sayNowEnglish),
@@ -514,6 +545,10 @@ function sanitizeLiveCoach(data) {
     },
     regainFocusLine: normalizeText(out.regainFocusLine),
     ifItFails: normalizeText(out.ifItFails),
+    ideas: (Array.isArray(out.ideas) ? out.ideas : [])
+      .map(sanitizeIdea)
+      .filter(Boolean)
+      .slice(0, 4),
   };
 }
 
@@ -657,13 +692,13 @@ function buildLessonCoachUserPrompt(input, lessonText) {
 
 function buildLiveCoachSystemInstruction() {
   return [
-    'You are an in-the-moment classroom coach. A teacher is mid-lesson and has 30 seconds to read your answer. Be immediate, concrete, and calm.',
+    'You are an in-the-moment classroom coach in a CONVERSATION with the teacher. The teacher can reply between turns (what happened, why a move flopped, a new wrinkle). Treat the whole thread as context: do not repeat yourself, build on prior turns, and revise your advice as the situation changes.',
     BILINGUAL_INTENT_INSTRUCTIONS,
     EEF_INCLUSIVE_TEACHING_BRIEF,
     TALK_MOVE_PALETTE,
-    'The teacher gives a quick, rough, possibly informal observation (any of the three languages). You must:',
-    '1. Read back the need: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood.',
-    '2. Diagnose the classroom bottleneck before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
+    'The teacher gives quick, rough, possibly informal messages (any of the three languages). On EVERY turn you must:',
+    '1. Read back the need for THIS turn: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood. If the need is unchanged from the prior turn, briefly say so.',
+    '2. Diagnose the classroom bottleneck for THIS turn before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
     '3. Ask at most TWO missingCriticalInfo questions, and only if the answer would change the move. If the teacher can act now, return an empty array.',
     '4. Select ONE EEF principle from the evidence base that fits the diagnosis. Prefer small adaptations that keep cognitive demand high and remove access/social-pressure barriers.',
     '5. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
@@ -671,6 +706,13 @@ function buildLiveCoachSystemInstruction() {
     '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
     '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
     '6. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
+    '7. PROACTIVE IDEAS (use the model to surface what the teacher did NOT ask for). Return 2-4 "ideas", each one of:',
+    '   - kind "alternative-move": a DIFFERENT palette talk move that could also work, with talkMoveId and a sayNow line in EN + bridge. Briefly say why it is worth considering instead.',
+    '   - kind "root-cause": a plausible underlying cause the teacher may have missed (e.g. reading barrier masquerading as laziness). One headline + short detail.',
+    '   - kind "missed-angle": something nobody has mentioned yet (a pupil group, a routine, a curriculum hook).',
+    '   - kind "risk": a likely side-effect of the recommended move and how to mitigate it.',
+    '   Be genuinely useful and specific to THIS class, not generic. Vary the kinds across ideas. Do not pad.',
+    'When the teacher reports a move flopped, pivot: name why it likely failed, pick a different talk move, and lower the entry barrier.',
     'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
     'Keep every string short. No paragraphs. This is read while standing in front of children.',
     'Always output valid JSON only. No markdown. Keys exactly:',
@@ -686,9 +728,10 @@ function buildLiveCoachSystemInstruction() {
     '    "step3PhrasingTip": { "tipMalay": string, "tipIban": string, "whenToUse": string }',
     '  },',
     '  "regainFocusLine": string,',
-    '  "ifItFails": string',
+    '  "ifItFails": string,',
+    '  "ideas": [ { "kind": "alternative-move" | "root-cause" | "missed-angle" | "risk", "headline": string, "detail": string, "talkMoveId": string, "sayNowEnglish": string, "sayNowBridge": string } ]',
     '}',
-    'If you are not confident in Iban wording, leave "tipIban" as an empty string rather than guessing.',
+    'If you are not confident in Iban wording, leave "tipIban" and idea "sayNowBridge" as empty strings rather than guessing.',
   ].join('\n');
 }
 
@@ -702,11 +745,27 @@ function buildLiveCoachUserPrompt(input) {
   ].join('\n');
 }
 
-async function callGemini({ model, systemInstruction, userPrompt, sanitize }) {
+const COACH_ROLE_TO_GEMINI = { teacher: 'user', coach: 'model' };
+
+function buildLiveCoachContents(thread, contextLines) {
+  const history = [];
+  if (contextLines && contextLines.length) {
+    history.push({ role: 'user', parts: [{ text: contextLines.join('\n') }] });
+    history.push({ role: 'model', parts: [{ text: 'Understood. I have the class context. Waiting for your first observation.' }] });
+  }
+  for (const msg of thread) {
+    const role = COACH_ROLE_TO_GEMINI[msg.role] || 'user';
+    history.push({ role, parts: [{ text: String(msg.text || '') }] });
+  }
+  return history;
+}
+
+async function callGemini({ model, systemInstruction, userPrompt, contents, sanitize }) {
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const finalContents = contents || userPrompt;
   const response = await ai.models.generateContent({
     model,
-    contents: userPrompt,
+    contents: finalContents,
     config: { systemInstruction },
   });
   const text = response.text;
@@ -724,7 +783,7 @@ class CoachError extends Error {
   }
 }
 
-async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, sanitize }) {
+async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, contents, sanitize }) {
   counters = normalizeCounters(counters);
 
   const cached = planCache[cacheKey];
@@ -751,12 +810,12 @@ async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, 
   let plan;
 
   try {
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
   } catch (primaryError) {
     const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
     if (!fallbackAllowed) throw primaryError;
     modelUsed = FALLBACK_MODEL_NAME;
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, sanitize });
+    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
   }
 
   if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
@@ -911,7 +970,7 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
   }
 });
 
-app.post('/api/live-coach', express.json({ limit: '1mb' }), async (req, res) => {
+app.post('/api/live-coach', express.json({ limit: '2mb' }), async (req, res) => {
   try {
     if (!GEMINI_API_KEY) {
       res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
@@ -920,22 +979,70 @@ app.post('/api/live-coach', express.json({ limit: '1mb' }), async (req, res) => 
 
     const input = req.body || {};
     const observation = normalizeText(input.observation);
-    if (!observation) {
-      res.status(400).json({ error: 'A quick observation is required.' });
-      return;
-    }
+    const yearLevel = normalizeText(input.yearLevel);
+    const subject = normalizeText(input.subject);
+    const dominantLanguage = normalizeText(input.dominantLanguage);
 
-    const cacheKey = createCacheKey('live-coach', {
-      observation: observation.toLowerCase(),
-      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
-      subject: normalizeText(input.subject).toLowerCase(),
-      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
-    });
+    const contextLines = [
+      `Class context — Year Level: ${yearLevel || 'Unknown'}`,
+      `Subject: ${subject || 'Unknown'}`,
+      `Dominant Home Language: ${dominantLanguage || 'Iban'}`,
+    ];
+
+    const rawThread = Array.isArray(input.thread) ? input.thread : [];
+
+    let contents;
+    let cacheKey;
+
+    if (rawThread.length > 0) {
+      const cleanThread = rawThread
+        .map((msg) => ({
+          role: msg?.role === 'coach' ? 'coach' : 'teacher',
+          text: normalizeText(msg?.text),
+        }))
+        .filter((msg) => msg.text)
+        .slice(-20);
+
+      if (!cleanThread.length) {
+        res.status(400).json({ error: 'A quick observation is required.' });
+        return;
+      }
+      if (cleanThread[cleanThread.length - 1].role !== 'teacher') {
+        res.status(400).json({ error: 'The last message must be from the teacher.' });
+        return;
+      }
+
+      contents = buildLiveCoachContents(cleanThread, contextLines);
+      cacheKey = createCacheKey('live-coach-thread', {
+        yearLevel: yearLevel.toLowerCase(),
+        subject: subject.toLowerCase(),
+        dominantLanguage: dominantLanguage.toLowerCase(),
+        thread: cleanThread.map((m) => `${m.role}:${m.text.toLowerCase()}`),
+      });
+    } else {
+      if (!observation) {
+        res.status(400).json({ error: 'A quick observation is required.' });
+        return;
+      }
+      const singlePrompt = buildLiveCoachUserPrompt({
+        observation,
+        yearLevel,
+        subject,
+        dominantLanguage,
+      });
+      contents = [{ role: 'user', parts: [{ text: singlePrompt }] }];
+      cacheKey = createCacheKey('live-coach', {
+        observation: observation.toLowerCase(),
+        yearLevel: yearLevel.toLowerCase(),
+        subject: subject.toLowerCase(),
+        dominantLanguage: dominantLanguage.toLowerCase(),
+      });
+    }
 
     const result = await generateCoachResponse({
       cacheKey,
       systemInstruction: buildLiveCoachSystemInstruction(),
-      userPrompt: buildLiveCoachUserPrompt(input),
+      contents,
       sanitize: sanitizeLiveCoach,
     });
     res.json(result);
