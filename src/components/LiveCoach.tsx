@@ -8,7 +8,7 @@ import {
   TriangleAlert,
   Zap,
 } from 'lucide-react';
-import { useLang } from '../lib/i18n';
+import { useLang, type TranslateFn } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import {
   CopyButton,
@@ -24,15 +24,17 @@ import {
 } from './coach-ui';
 
 type Idea = {
-  kind: 'alternative-move' | 'root-cause' | 'missed-angle' | 'risk';
+  kind: 'alternative-move' | 'root-cause' | 'missed-angle' | 'risk' | 'beyond-palette';
   headline: string;
   detail: string;
   talkMoveId: string;
+  offPalette?: boolean;
   sayNowEnglish: string;
   sayNowBridge: string;
 };
 
 type LiveCoachResult = {
+  coachingPhase?: 'explore' | 'advise';
   readBack: {
     detectedLanguage: string;
     needCategory: NeedCategory;
@@ -53,26 +55,27 @@ type LiveCoachResult = {
     checkAdaptAction: string;
   };
   observeNext?: string;
-  microAdaptation: {
-    step1TalkMove: {
+  microAdaptation?: {
+    step1TalkMove?: {
       talkMoveId: string;
+      offPalette?: boolean;
       talkMoveName: string;
       why: string;
       sayNowEnglish: string;
       sayNowBridge: string;
     };
-    step2SentenceFrames: {
+    step2SentenceFrames?: {
       boardTitle: string;
       frames: string[];
     };
-    step3PhrasingTip: {
+    step3PhrasingTip?: {
       tipMalay: string;
       tipIban: string;
       whenToUse: string;
     };
   };
-  regainFocusLine: string;
-  ifItFails: string;
+  regainFocusLine?: string;
+  ifItFails?: string;
   ideas?: Idea[];
 };
 
@@ -235,9 +238,13 @@ export default function LiveCoach() {
         <div ref={scrollRef} className="mt-3 max-h-[70vh] space-y-4 overflow-y-auto pr-1 print:max-h-none print:overflow-visible">
           {messages.map((msg) =>
             msg.role === 'teacher' ? (
-              <TeacherBubble key={msg.id} text={msg.text} />
+              <div key={msg.id}>
+                <TeacherBubble text={msg.text} />
+              </div>
             ) : (
-              <CoachReply key={msg.id} text={msg.text} result={msg.result} t={t} />
+              <div key={msg.id}>
+                <CoachReply text={msg.text} result={msg.result} t={t} />
+              </div>
             ),
           )}
           {loading ? (
@@ -301,15 +308,27 @@ function CoachReply({
 }: {
   text: string;
   result: LiveCoachResult;
-  t: (key: string) => string;
+  t: TranslateFn;
 }) {
   return (
     <div className="flex justify-start">
       <div className="w-full max-w-[92%] space-y-3 rounded-2xl rounded-bl-sm border border-ink/10 bg-parchment-light/70 p-4 sm:p-5">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Sparkles className="h-4 w-4 text-terracotta" />
-          <p className="text-sm font-semibold text-ink">{text}</p>
+          <p className="flex-1 text-sm font-semibold text-ink">{text}</p>
+          <PhaseBadge phase={result.coachingPhase} t={t} />
         </div>
+
+        {result.diagnosis?.missingCriticalInfo && result.diagnosis.missingCriticalInfo.length > 0 ? (
+          <section className="rounded-lg border-2 border-dashed border-terracotta/40 bg-terracotta/5 p-3">
+            <p className="label-section mb-1">{t('live.overToYou')}</p>
+            <ul className="list-disc space-y-1 pl-4 text-sm text-ink">
+              {result.diagnosis.missingCriticalInfo.map((question, idx) => (
+                <li key={`${question}-${idx}`}>{question}</li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
 
         <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
           <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -341,18 +360,6 @@ function CoachReply({
             {result.diagnosis.evidence ? (
               <p className="mt-2 text-xs text-ink-muted">{result.diagnosis.evidence}</p>
             ) : null}
-            {result.diagnosis.missingCriticalInfo.length ? (
-              <div className="mt-3 rounded-lg border border-ink/10 bg-white/50 p-3">
-                <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">
-                  {t('live.clarifyOnlyIfNeeded')}
-                </p>
-                <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-ink-soft">
-                  {result.diagnosis.missingCriticalInfo.map((question, idx) => (
-                    <li key={`${question}-${idx}`}>{question}</li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
           </section>
         ) : null}
 
@@ -376,63 +383,82 @@ function CoachReply({
           </section>
         ) : null}
 
-        <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-          <p className="label-section mb-3">{t('live.microTitle')}</p>
-          <div className="space-y-3">
-            <StepCard step="1" title={t('live.step1Title')}>
-              <p className="text-sm font-semibold text-ink">
-                {result.microAdaptation.step1TalkMove.talkMoveId}{' '}
-                {result.microAdaptation.step1TalkMove.talkMoveName}
-              </p>
-              {result.microAdaptation.step1TalkMove.why ? (
-                <p className="mt-1 text-xs text-ink-muted">
-                  {result.microAdaptation.step1TalkMove.why}
-                </p>
+        {result.microAdaptation ? (
+          <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
+            <p className="label-section mb-3">{t('live.microTitle')}</p>
+            <div className="space-y-3">
+              {result.microAdaptation.step1TalkMove ? (
+                <StepCard step="1" title={t('live.step1Title')}>
+                  <p className="text-sm font-semibold text-ink">
+                    {result.microAdaptation.step1TalkMove.talkMoveId ? (
+                      <span className="font-mono text-xs text-ink-muted">
+                        {result.microAdaptation.step1TalkMove.talkMoveId}{' '}
+                      </span>
+                    ) : null}
+                    {result.microAdaptation.step1TalkMove.talkMoveName}
+                    {result.microAdaptation.step1TalkMove.offPalette ? (
+                      <OffPaletteTag t={t} />
+                    ) : null}
+                  </p>
+                  {result.microAdaptation.step1TalkMove.why ? (
+                    <p className="mt-1 text-xs text-ink-muted">
+                      {result.microAdaptation.step1TalkMove.why}
+                    </p>
+                  ) : null}
+                  <SayLine
+                    label={t('live.sayEnglish')}
+                    value={result.microAdaptation.step1TalkMove.sayNowEnglish}
+                  />
+                  <SayLine
+                    label={t('live.sayBridge')}
+                    value={result.microAdaptation.step1TalkMove.sayNowBridge}
+                  />
+                </StepCard>
               ) : null}
-              <SayLine
-                label={t('live.sayEnglish')}
-                value={result.microAdaptation.step1TalkMove.sayNowEnglish}
-              />
-              <SayLine
-                label={t('live.sayBridge')}
-                value={result.microAdaptation.step1TalkMove.sayNowBridge}
-              />
-            </StepCard>
 
-            <StepCard step="2" title={t('live.step2Title')}>
-              {result.microAdaptation.step2SentenceFrames.boardTitle ? (
-                <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  {result.microAdaptation.step2SentenceFrames.boardTitle}
-                </p>
+              {result.microAdaptation.step2SentenceFrames &&
+              (result.microAdaptation.step2SentenceFrames.frames.length ||
+                result.microAdaptation.step2SentenceFrames.boardTitle) ? (
+                <StepCard step="2" title={t('live.step2Title')}>
+                  {result.microAdaptation.step2SentenceFrames.boardTitle ? (
+                    <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+                      {result.microAdaptation.step2SentenceFrames.boardTitle}
+                    </p>
+                  ) : null}
+                  <ul className="mt-1 space-y-1.5">
+                    {result.microAdaptation.step2SentenceFrames.frames.map((frame, idx) => (
+                      <li
+                        key={`${frame}-${idx}`}
+                        className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft"
+                      >
+                        <span className="flex-1">{frame}</span>
+                        <CopyButton value={frame} />
+                      </li>
+                    ))}
+                  </ul>
+                </StepCard>
               ) : null}
-              <ul className="mt-1 space-y-1.5">
-                {result.microAdaptation.step2SentenceFrames.frames.map((frame, idx) => (
-                  <li
-                    key={`${frame}-${idx}`}
-                    className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft"
-                  >
-                    <span className="flex-1">{frame}</span>
-                    <CopyButton value={frame} />
-                  </li>
-                ))}
-              </ul>
-            </StepCard>
 
-            <StepCard step="3" title={t('live.step3Title')}>
-              {result.microAdaptation.step3PhrasingTip.tipMalay ? (
-                <SayLine label={t('live.tipMalay')} value={result.microAdaptation.step3PhrasingTip.tipMalay} />
+              {result.microAdaptation.step3PhrasingTip &&
+              (result.microAdaptation.step3PhrasingTip.tipMalay ||
+                result.microAdaptation.step3PhrasingTip.tipIban) ? (
+                <StepCard step="3" title={t('live.step3Title')}>
+                  {result.microAdaptation.step3PhrasingTip.tipMalay ? (
+                    <SayLine label={t('live.tipMalay')} value={result.microAdaptation.step3PhrasingTip.tipMalay} />
+                  ) : null}
+                  {result.microAdaptation.step3PhrasingTip.tipIban ? (
+                    <SayLine label={t('live.tipIban')} value={result.microAdaptation.step3PhrasingTip.tipIban} />
+                  ) : null}
+                  {result.microAdaptation.step3PhrasingTip.whenToUse ? (
+                    <p className="mt-1 text-xs text-ink-muted">
+                      {result.microAdaptation.step3PhrasingTip.whenToUse}
+                    </p>
+                  ) : null}
+                </StepCard>
               ) : null}
-              {result.microAdaptation.step3PhrasingTip.tipIban ? (
-                <SayLine label={t('live.tipIban')} value={result.microAdaptation.step3PhrasingTip.tipIban} />
-              ) : null}
-              {result.microAdaptation.step3PhrasingTip.whenToUse ? (
-                <p className="mt-1 text-xs text-ink-muted">
-                  {result.microAdaptation.step3PhrasingTip.whenToUse}
-                </p>
-              ) : null}
-            </StepCard>
-          </div>
-        </section>
+            </div>
+          </section>
+        ) : null}
 
         {result.ideas && result.ideas.length > 0 ? (
           <section className="rounded-lg border border-amber-200/60 bg-amber-50/40 p-3">
@@ -442,7 +468,9 @@ function CoachReply({
             </p>
             <div className="space-y-2">
               {result.ideas.map((idea, idx) => (
-                <IdeaCard key={`${idea.kind}-${idx}`} idea={idea} t={t} />
+                <div key={`${idea.kind}-${idx}`}>
+                  <IdeaCard idea={idea} t={t} />
+                </div>
               ))}
             </div>
           </section>
@@ -495,9 +523,35 @@ const IDEA_META: Record<Idea['kind'], { icon: typeof Lightbulb; tone: string; la
     tone: 'border-amber-200 bg-amber-50 text-amber-700',
     labelKey: 'live.ideaKind.risk',
   },
+  'beyond-palette': {
+    icon: Lightbulb,
+    tone: 'border-teal-200 bg-teal-50 text-teal-700',
+    labelKey: 'live.ideaKind.beyond-palette',
+  },
 };
 
-function IdeaCard({ idea, t }: { idea: Idea; t: (key: string) => string }) {
+function PhaseBadge({ phase, t }: { phase?: 'explore' | 'advise'; t: TranslateFn }) {
+  if (!phase) return null;
+  const tone =
+    phase === 'explore'
+      ? 'border-terracotta/30 bg-terracotta/10 text-ink'
+      : 'border-emerald-200 bg-emerald-50 text-emerald-700';
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${tone}`}>
+      {t(`live.phase.${phase}`)}
+    </span>
+  );
+}
+
+function OffPaletteTag({ t }: { t: TranslateFn }) {
+  return (
+    <span className="ml-2 inline-block rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 align-middle text-[9px] font-bold uppercase tracking-wide text-teal-700">
+      {t('live.offPalette')}
+    </span>
+  );
+}
+
+function IdeaCard({ idea, t }: { idea: Idea; t: TranslateFn }) {
   const meta = IDEA_META[idea.kind] || IDEA_META['missed-angle'];
   const Icon = meta.icon;
   return (
@@ -508,7 +562,10 @@ function IdeaCard({ idea, t }: { idea: Idea; t: (key: string) => string }) {
           {t(meta.labelKey)}
         </span>
         {idea.talkMoveId ? (
-          <span className="font-mono text-[11px] text-ink-muted">{idea.talkMoveId}</span>
+          <span className="font-mono text-[11px] text-ink-muted">
+            {idea.talkMoveId}
+            {idea.offPalette ? <OffPaletteTag t={t} /> : null}
+          </span>
         ) : null}
       </div>
       <p className="mt-1 text-sm font-semibold text-ink">{idea.headline}</p>

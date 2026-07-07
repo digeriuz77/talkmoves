@@ -162,6 +162,21 @@ const en: Record<string, string> = {
   'live.ifItFails': 'If it falls flat',
   'live.errors.observationRequired': 'Tell me what is happening first.',
   'live.errors.failed': 'Could not get a coaching response. Please try again.',
+  'live.threadHint': 'Chat with the coach. It thinks with you, asks back when unsure, and only prescribes a move once it understands the problem.',
+  'live.replyPlaceholder': 'Tell the coach what happened, or ask for something else...',
+  'live.replyHint': 'Press Cmd/Ctrl+Enter to send. You can reply as many times as you like.',
+  'live.send': 'Send',
+  'live.coachReplyFallback': 'Here is my read on this.',
+  'live.overToYou': 'Over to you — this would change the move',
+  'live.ideasTitle': 'Ideas the model surfaced',
+  'live.ideaKind.alternative-move': 'Alternative move',
+  'live.ideaKind.root-cause': 'Root cause',
+  'live.ideaKind.missed-angle': 'Missed angle',
+  'live.ideaKind.risk': 'Risk',
+  'live.ideaKind.beyond-palette': 'Beyond talk moves',
+  'live.phase.explore': 'Thinking together',
+  'live.phase.advise': 'Advising',
+  'live.offPalette': 'off-palette',
 
   // 5-Minute Primer
   'primer.wordsLabel': "Today's key words (3-5, comma separated)",
@@ -529,6 +544,21 @@ const ms: Record<string, string> = {
   'live.ifItFails': 'Jika tidak berkesan',
   'live.errors.observationRequired': 'Beritahu dahulu apa yang sedang berlaku.',
   'live.errors.failed': 'Respons bimbingan tidak dapat dijana. Sila cuba lagi.',
+  'live.threadHint': 'Berbual dengan jurulatih. Ia berfikir bersama anda, bertanya semula jika tak pasti, dan hanya mencadangkan langkah selepas memahami masalah.',
+  'live.replyPlaceholder': 'Beritahu jurulatih apa yang berlaku, atau minta yang lain...',
+  'live.replyHint': 'Tekan Cmd/Ctrl+Enter untuk hantar. Anda boleh membalas sebanyak yang diingini.',
+  'live.send': 'Hantar',
+  'live.coachReplyFallback': 'Ini pandangan saya.',
+  'live.overToYou': 'Pulangkan kepada anda — ini akan ubah langkah',
+  'live.ideasTitle': 'Idea yang dicadangkan model',
+  'live.ideaKind.alternative-move': 'Langkah alternatif',
+  'live.ideaKind.root-cause': 'Punca utama',
+  'live.ideaKind.missed-angle': 'Sudut yang terlepas',
+  'live.ideaKind.risk': 'Risiko',
+  'live.ideaKind.beyond-palette': 'Di luar langkah perbincangan',
+  'live.phase.explore': 'Berfikir bersama',
+  'live.phase.advise': 'Menasihati',
+  'live.offPalette': 'luar palet',
 
   // 5-Minute Primer
   'primer.wordsLabel': 'Perkataan utama hari ini (3-5, dipisah koma)',
@@ -763,10 +793,12 @@ export function translate(lang: Lang, key: string, params?: Record<string, strin
 // CONTEXT
 // ============================================
 
+export type TranslateFn = (key: string, params?: Record<string, string>) => string;
+
 type LangContextValue = {
   lang: Lang;
   setLang: (lang: Lang) => void;
-  t: (key: string, params?: Record<string, string>) => string;
+  t: TranslateFn;
 };
 
 const LangContext = createContext<LangContextValue | null>(null);

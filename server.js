@@ -474,7 +474,12 @@ function normalizeLiveBarrier(value) {
   return LIVE_BARRIERS.includes(v) ? v : 'mixed';
 }
 
-const LIVE_IDEA_KINDS = ['alternative-move', 'root-cause', 'missed-angle', 'risk'];
+const LIVE_IDEA_KINDS = ['alternative-move', 'root-cause', 'missed-angle', 'risk', 'beyond-palette'];
+
+function normalizeCoachingPhase(value) {
+  const v = normalizeText(value).toLowerCase();
+  return v === 'advise' ? 'advise' : 'explore';
+}
 
 function normalizeLiveIdeaKind(value) {
   const v = normalizeText(value).toLowerCase().replace(/[^a-z-]/g, '');
@@ -486,12 +491,20 @@ function sanitizeIdea(idea) {
   const kind = normalizeLiveIdeaKind(idea.kind);
   const headline = normalizeText(idea.headline);
   const detail = normalizeText(idea.detail);
-  const talkMoveId = normalizeTalkMoveId(idea.talkMoveId);
+  const rawTalkMoveId = normalizeText(idea.talkMoveId).toUpperCase();
+  const offPalette = Boolean(rawTalkMoveId) && !VALID_TALK_MOVE_IDS.has(rawTalkMoveId);
   const sayNowEnglish = normalizeText(idea.sayNowEnglish);
   const sayNowBridge = normalizeText(idea.sayNowBridge);
   if (!headline) return null;
-  if (kind === 'alternative-move' && !talkMoveId) return null;
-  return { kind, headline, detail, talkMoveId, sayNowEnglish, sayNowBridge };
+  return {
+    kind,
+    headline,
+    detail,
+    talkMoveId: rawTalkMoveId,
+    offPalette,
+    sayNowEnglish,
+    sayNowBridge,
+  };
 }
 
 function sanitizeLiveCoach(data) {
@@ -504,7 +517,10 @@ function sanitizeLiveCoach(data) {
   const step2 = micro.step2SentenceFrames && typeof micro.step2SentenceFrames === 'object' ? micro.step2SentenceFrames : {};
   const step3 = micro.step3PhrasingTip && typeof micro.step3PhrasingTip === 'object' ? micro.step3PhrasingTip : {};
 
-  return {
+  const phase = normalizeCoachingPhase(out.coachingPhase);
+
+  const result = {
+    coachingPhase: phase,
     readBack: {
       detectedLanguage: normalizeText(readBack.detectedLanguage),
       needCategory: normalizeNeedCategory(readBack.needCategory),
@@ -518,38 +534,66 @@ function sanitizeLiveCoach(data) {
       missingCriticalInfo: asStringArray(diagnosis.missingCriticalInfo).slice(0, 2),
     },
     teacherMirror: normalizeText(out.teacherMirror),
-    evidenceLink: {
-      principleId: normalizeText(evidenceLink.principleId),
-      principle: normalizeText(evidenceLink.principle),
-      whyThisFits: normalizeText(evidenceLink.whyThisFits),
-      checkAdaptAction: normalizeText(evidenceLink.checkAdaptAction),
-    },
-    observeNext: normalizeText(out.observeNext),
-    microAdaptation: {
-      step1TalkMove: {
-        talkMoveId: normalizeTalkMoveId(step1.talkMoveId),
-        talkMoveName: normalizeText(step1.talkMoveName),
-        why: normalizeText(step1.why),
-        sayNowEnglish: normalizeText(step1.sayNowEnglish),
-        sayNowBridge: normalizeText(step1.sayNowBridge),
-      },
-      step2SentenceFrames: {
-        boardTitle: normalizeText(step2.boardTitle),
-        frames: asStringArray(step2.frames).slice(0, 3),
-      },
-      step3PhrasingTip: {
-        tipMalay: normalizeText(step3.tipMalay),
-        tipIban: normalizeText(step3.tipIban),
-        whenToUse: normalizeText(step3.whenToUse),
-      },
-    },
-    regainFocusLine: normalizeText(out.regainFocusLine),
-    ifItFails: normalizeText(out.ifItFails),
     ideas: (Array.isArray(out.ideas) ? out.ideas : [])
       .map(sanitizeIdea)
       .filter(Boolean)
       .slice(0, 4),
   };
+
+  // evidenceLink is optional: include only if a real principle id was chosen
+  const principleId = normalizeText(evidenceLink.principleId);
+  if (principleId) {
+    result.evidenceLink = {
+      principleId,
+      principle: normalizeText(evidenceLink.principle),
+      whyThisFits: normalizeText(evidenceLink.whyThisFits),
+      checkAdaptAction: normalizeText(evidenceLink.checkAdaptAction),
+    };
+  }
+
+  if (normalizeText(out.observeNext)) {
+    result.observeNext = normalizeText(out.observeNext);
+  }
+
+  // microAdaptation is optional (often omitted in explore phase). Build it only if a step exists.
+  const microAdaptation = {};
+  if (normalizeText(step1.sayNowEnglish) || normalizeText(step1.sayNowBridge) || normalizeText(step1.talkMoveId)) {
+    const step1RawId = normalizeText(step1.talkMoveId).toUpperCase();
+    microAdaptation.step1TalkMove = {
+      talkMoveId: step1RawId,
+      offPalette: Boolean(step1RawId) && !VALID_TALK_MOVE_IDS.has(step1RawId),
+      talkMoveName: normalizeText(step1.talkMoveName),
+      why: normalizeText(step1.why),
+      sayNowEnglish: normalizeText(step1.sayNowEnglish),
+      sayNowBridge: normalizeText(step1.sayNowBridge),
+    };
+  }
+  const frames = asStringArray(step2.frames).slice(0, 3);
+  if (frames.length || normalizeText(step2.boardTitle)) {
+    microAdaptation.step2SentenceFrames = {
+      boardTitle: normalizeText(step2.boardTitle),
+      frames,
+    };
+  }
+  if (normalizeText(step3.tipMalay) || normalizeText(step3.tipIban) || normalizeText(step3.whenToUse)) {
+    microAdaptation.step3PhrasingTip = {
+      tipMalay: normalizeText(step3.tipMalay),
+      tipIban: normalizeText(step3.tipIban),
+      whenToUse: normalizeText(step3.whenToUse),
+    };
+  }
+  if (Object.keys(microAdaptation).length) {
+    result.microAdaptation = microAdaptation;
+  }
+
+  if (normalizeText(out.regainFocusLine)) {
+    result.regainFocusLine = normalizeText(out.regainFocusLine);
+  }
+  if (normalizeText(out.ifItFails)) {
+    result.ifItFails = normalizeText(out.ifItFails);
+  }
+
+  return result;
 }
 
 const VALID_PRIMER_GAMES = ['bingo', 'flyswatter', 'hotseat'];
@@ -692,44 +736,60 @@ function buildLessonCoachUserPrompt(input, lessonText) {
 
 function buildLiveCoachSystemInstruction() {
   return [
-    'You are an in-the-moment classroom coach in a CONVERSATION with the teacher. The teacher can reply between turns (what happened, why a move flopped, a new wrinkle). Treat the whole thread as context: do not repeat yourself, build on prior turns, and revise your advice as the situation changes.',
+    'You are an in-the-moment classroom coach in a CONVERSATION with the teacher. You think WITH the teacher, not at them. The teacher can reply between turns (what happened, why a move flopped, a new wrinkle). Treat the whole thread as context: do not repeat yourself, build on prior turns, and revise your advice as the situation changes.',
+    '',
+    'YOUR KNOWLEDGE SOURCES (use as reasoning material, never as a checklist you must fill):',
     BILINGUAL_INTENT_INSTRUCTIONS,
     EEF_INCLUSIVE_TEACHING_BRIEF,
     TALK_MOVE_PALETTE,
-    'The teacher gives quick, rough, possibly informal messages (any of the three languages). On EVERY turn you must:',
-    '1. Read back the need for THIS turn: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence so the teacher trusts you understood. If the need is unchanged from the prior turn, briefly say so.',
-    '2. Diagnose the classroom bottleneck for THIS turn before giving advice. Choose exactly one barrier: reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed. Include confidence 0-1 and one evidence phrase from the teacher observation.',
-    '3. Ask at most TWO missingCriticalInfo questions, and only if the answer would change the move. If the teacher can act now, return an empty array.',
-    '4. Select ONE EEF principle from the evidence base that fits the diagnosis. Prefer small adaptations that keep cognitive demand high and remove access/social-pressure barriers.',
-    '5. Mirror the situation back in one teacher-friendly sentence, then return ONE 3-step Micro-Adaptation:',
-    '   - Step 1: ONE palette talk move to deploy right now, with the exact line to say in simple English AND in Malay/Iban bridge.',
-    '   - Step 2: Up to 3 board-ready sentence frames the PUPILS use to respond (so pupils, not the teacher, do the talking).',
-    '   - Step 3: A phrasing tip in Malay (and Iban when confident) telling the teacher how to lower the entry barrier without abandoning English.',
-    '6. Add one observable sign the teacher should watch for next (observeNext), one "regain focus" line the teacher can say verbatim to reset attention, and one backup if the first move falls flat.',
-    '7. PROACTIVE IDEAS (use the model to surface what the teacher did NOT ask for). Return 2-4 "ideas", each one of:',
-    '   - kind "alternative-move": a DIFFERENT palette talk move that could also work, with talkMoveId and a sayNow line in EN + bridge. Briefly say why it is worth considering instead.',
-    '   - kind "root-cause": a plausible underlying cause the teacher may have missed (e.g. reading barrier masquerading as laziness). One headline + short detail.',
-    '   - kind "missed-angle": something nobody has mentioned yet (a pupil group, a routine, a curriculum hook).',
+    'These are a TOOLKIT, not a mandate. Many real classroom problems are NOT talk-move problems (e.g. a reading-access barrier may need a routine change, a reading guide, or regrouping — not any talk move at all). Use EEF principles and talk moves when they genuinely fit; otherwise reason beyond them. Never pad a response with boilerplate just to fill a field.',
+    '',
+    'COACHING PHASE — choose one each turn based on what the teacher needs:',
+    '- "explore": use this on the FIRST turn, or whenever the problem is ambiguous, the teacher is venting, or you are not yet sure the root cause. In explore phase you CONNECT the evidence/moves to THIS teacher\'s specific situation, offer a hypothesis, and INVITE their input before prescribing. You may still give a tentative move, but the point is to think together. In explore phase: microAdaptation is optional (omit it if you want the teacher to respond first); missingCriticalInfo may carry the question you genuinely need answered.',
+    '- "advise": use this once you understand the problem and the teacher is ready to act, or when the situation is clearly urgent. Give the concrete 3-step micro-adaptation now.',
+    'You decide the phase yourself each turn — do not ask permission.',
+    '',
+    'On EVERY turn you must output the readBack and diagnosis fields. Everything else is optional unless stated.',
+    '1. readBack: detect the input language and classify the need (pacing, control, scaffolding, or mixed). Restate it in one short English sentence and one short Sarawak Malay sentence. If the need is unchanged from the prior turn, briefly say so.',
+    '2. diagnosis: pick exactly one barrier (reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed). Include confidence 0-1 and one evidence phrase from the teacher.',
+    '3. missingCriticalInfo: at most TWO questions, only if the answer would change the move. In explore phase this is often the one thing you need the teacher to confirm. Otherwise empty array.',
+    '4. coachingPhase: "explore" or "advise".',
+    '5. teacherMirror: one teacher-friendly sentence connecting what they said to the likely mechanism (e.g. "the copying is a symptom of a reading barrier, not laziness"). In explore phase this is where you hand back to the teacher.',
+    '6. evidenceLink (optional, only if an EEF principle genuinely fits): ONE principle from the brief. If no principle is the best fit, return an empty object {}.',
+    '7. microAdaptation (REQUIRED in advise phase; optional/omitted in explore phase):',
+    '   - step1TalkMove: ONE talk move to deploy now, with the exact line in simple English AND Malay/Iban bridge. Prefer a palette move (TM-*); if the best move is NOT in the palette, you may name it and set "offPalette": true, but explain why it beats the palette options. If you believe NO talk move is the right tool, omit step1TalkMove and say so in teacherMirror / an idea.',
+    '   - step2SentenceFrames: up to 3 board-ready frames PUPILS use to respond.',
+    '   - step3PhrasingTip: a Malay (and Iban when confident) tip to lower the entry barrier.',
+    '8. observeNext: one observable sign to watch for. Optional in explore phase.',
+    '9. regainFocusLine / ifItFails: only in advise phase, and only if relevant (not every problem is an attention problem).',
+    '10. ideas (use the model to surface what the teacher did NOT ask for). Return 0-4 ideas; omit the array entirely if nothing useful to add. Each idea is one of:',
+    '   - kind "alternative-move": a DIFFERENT move that could also work — palette or off-palette. Set talkMoveId (and offPalette true if not a TM-* id) and a sayNow line.',
+    '   - kind "root-cause": a plausible underlying cause the teacher may have missed (e.g. reading barrier masquerading as laziness).',
+    '   - kind "missed-angle": something nobody mentioned (a pupil group, a routine, a curriculum hook).',
     '   - kind "risk": a likely side-effect of the recommended move and how to mitigate it.',
-    '   Be genuinely useful and specific to THIS class, not generic. Vary the kinds across ideas. Do not pad.',
-    'When the teacher reports a move flopped, pivot: name why it likely failed, pick a different talk move, and lower the entry barrier.',
-    'Pick moves that hand talk to pupils: prefer TM-T01 Wait Time and TM-T02 Turn and Talk for control/pacing crises; TM-T03 Revoicing, TM-T07 Repeating, and sentence frames for language crises.',
+    '   - kind "beyond-palette": a fix that is NOT a talk move at all (a routine, grouping, task, or environmental change) — use this freely when it is the honest best answer.',
+    '   Be specific to THIS class, not generic. Do not pad. An empty ideas array is fine and often correct.',
+    '',
+    'When the teacher reports a move flopped, do not just hand them another move: name WHY it likely failed (wrong barrier diagnosis, too high a jump, social pressure), then choose explore or advise accordingly.',
+    'Prefer moves that hand talk to pupils, but treat that as a strong default you can override with a stated reason — not a law.',
     'Keep every string short. No paragraphs. This is read while standing in front of children.',
-    'Always output valid JSON only. No markdown. Keys exactly:',
+    '',
+    'Always output valid JSON only. No markdown. Omit optional fields rather than sending empty strings/objects, EXCEPT evidenceLink may be {} when no principle fits.',
     '{',
+    '  "coachingPhase": "explore" | "advise",',
     '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
     '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string, "missingCriticalInfo": string[] },',
     '  "teacherMirror": string,',
-    '  "evidenceLink": { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" },',
-    '  "observeNext": string,',
-    '  "microAdaptation": {',
-    '    "step1TalkMove": { "talkMoveId": string, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
-    '    "step2SentenceFrames": { "boardTitle": string, "frames": string[] },',
-    '    "step3PhrasingTip": { "tipMalay": string, "tipIban": string, "whenToUse": string }',
+    '  "evidenceLink"?: { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" } | {},',
+    '  "observeNext"?: string,',
+    '  "microAdaptation"?: {',
+    '    "step1TalkMove"?: { "talkMoveId": string, "offPalette"?: boolean, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string },',
+    '    "step2SentenceFrames"?: { "boardTitle": string, "frames": string[] },',
+    '    "step3PhrasingTip"?: { "tipMalay": string, "tipIban": string, "whenToUse": string }',
     '  },',
-    '  "regainFocusLine": string,',
-    '  "ifItFails": string,',
-    '  "ideas": [ { "kind": "alternative-move" | "root-cause" | "missed-angle" | "risk", "headline": string, "detail": string, "talkMoveId": string, "sayNowEnglish": string, "sayNowBridge": string } ]',
+    '  "regainFocusLine"?: string,',
+    '  "ifItFails"?: string,',
+    '  "ideas"?: [ { "kind": "alternative-move" | "root-cause" | "missed-angle" | "risk" | "beyond-palette", "headline": string, "detail": string, "talkMoveId"?: string, "offPalette"?: boolean, "sayNowEnglish"?: string, "sayNowBridge"?: string } ]',
     '}',
     'If you are not confident in Iban wording, leave "tipIban" and idea "sayNowBridge" as empty strings rather than guessing.',
   ].join('\n');
