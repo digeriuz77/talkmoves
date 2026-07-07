@@ -10,7 +10,7 @@ import TalkMovesGame from './components/TalkMovesGame';
 import TalkMoveBuilder from './components/TalkMoveBuilder';
 import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
-import { Sparkles, Layers, ArrowRight, BookOpen, Languages, Bot, Gamepad2 } from 'lucide-react';
+import { Sparkles, Layers, ArrowRight, BookOpen, Languages, Bot, Gamepad2, Zap } from 'lucide-react';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
 import {
   getLevelStatus,
@@ -47,6 +47,15 @@ export default function App() {
     setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
   };
 
+  const openLiveCoach = () => {
+    try {
+      window.localStorage.setItem('tmb.mode', JSON.stringify('live'));
+    } catch {
+      // ignore unavailable storage; the builder still opens normally
+    }
+    setAppMode('build');
+  };
+
   if (!pastLanding) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
@@ -61,7 +70,7 @@ export default function App() {
       className={`flex min-h-screen items-center justify-center bg-parchment font-body text-ink ${selectedGame ? 'p-1 sm:p-2' : 'p-3 sm:p-4'}`}
     >
       {!selectedGame && appMode === 'menu' ? (
-        <ModeHub onPlay={() => setAppMode('play')} onBuild={() => setAppMode('build')} />
+        <ModeHub onPlay={() => setAppMode('play')} onBuild={() => setAppMode('build')} onLiveCoach={openLiveCoach} />
       ) : !selectedGame && appMode === 'build' ? (
         <TalkMoveBuilder onBack={() => setAppMode('menu')} />
       ) : !selectedGame ? (
@@ -90,7 +99,15 @@ export default function App() {
   );
 }
 
-function ModeHub({ onPlay, onBuild }: { onPlay: () => void; onBuild: () => void }) {
+function ModeHub({
+  onPlay,
+  onBuild,
+  onLiveCoach,
+}: {
+  onPlay: () => void;
+  onBuild: () => void;
+  onLiveCoach: () => void;
+}) {
   const { t } = useLang();
   return (
     <motion.div
@@ -107,7 +124,7 @@ function ModeHub({ onPlay, onBuild }: { onPlay: () => void; onBuild: () => void 
         <p className="text-body mx-auto max-w-2xl">{t('hub.description')}</p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <button
           type="button"
           onClick={onPlay}
@@ -140,6 +157,23 @@ function ModeHub({ onPlay, onBuild }: { onPlay: () => void; onBuild: () => void 
           <p className="mb-3 text-sm leading-relaxed text-ink-soft">{t('hub.buildBody')}</p>
           <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
             {t('hub.buildCta')}
+            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={onLiveCoach}
+          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
+        >
+          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
+            <Zap className="h-5 w-5 text-ink-muted" />
+          </div>
+          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
+            {t('hub.liveCoachCta')}
+          </h2>
+          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
+            {t('coach.tab.live')}
             <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
           </div>
         </button>

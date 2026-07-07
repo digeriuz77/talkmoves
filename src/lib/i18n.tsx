@@ -37,6 +37,7 @@ const en: Record<string, string> = {
   'hub.buildBody':
     'Generate a tailored dialogic scaffolding map for your question, class profile, and language context.',
   'hub.buildCta': 'Open builder',
+  'hub.liveCoachCta': 'Take me to the Live Coach',
 
   // GameCard
   'card.startLevel': 'Start level',
@@ -403,6 +404,7 @@ const ms: Record<string, string> = {
   'hub.buildBody':
     'Jana peta sokongan dialogik tersuai untuk soalan, profil kelas, dan konteks bahasa anda.',
   'hub.buildCta': 'Buka pembina',
+  'hub.liveCoachCta': 'Bawa saya ke Live Coach',
 
   // GameCard
   'card.startLevel': 'Mula tahap',
