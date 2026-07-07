@@ -23,6 +23,20 @@ type LiveCoachResult = {
     summaryEnglish: string;
     summaryBridge: string;
   };
+  diagnosis?: {
+    barrier: string;
+    confidence: number;
+    evidence: string;
+    missingCriticalInfo: string[];
+  };
+  teacherMirror?: string;
+  evidenceLink?: {
+    principleId: string;
+    principle: string;
+    whyThisFits: string;
+    checkAdaptAction: string;
+  };
+  observeNext?: string;
   microAdaptation: {
     step1TalkMove: {
       talkMoveId: string;
@@ -169,7 +183,61 @@ export default function LiveCoach() {
             {result.readBack.summaryBridge ? (
               <p className="mt-1 text-sm italic text-ink-muted">{result.readBack.summaryBridge}</p>
             ) : null}
+            {result.teacherMirror ? (
+              <p className="mt-2 rounded-lg bg-white/55 px-3 py-2 text-sm font-medium text-ink">
+                {result.teacherMirror}
+              </p>
+            ) : null}
           </section>
+
+          {result.diagnosis ? (
+            <section className="card-warm p-4 sm:p-5">
+              <p className="label-section mb-2">{t('live.diagnosisTitle')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
+                  {t('live.barrier')}: {result.diagnosis.barrier}
+                </span>
+                <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-semibold text-ink-muted">
+                  {t('live.confidence')}: {Math.round(result.diagnosis.confidence * 100)}%
+                </span>
+              </div>
+              {result.diagnosis.evidence ? (
+                <p className="mt-2 text-xs text-ink-muted">{result.diagnosis.evidence}</p>
+              ) : null}
+              {result.diagnosis.missingCriticalInfo.length ? (
+                <div className="mt-3 rounded-lg border border-ink/10 bg-white/50 p-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-ink-muted">
+                    {t('live.clarifyOnlyIfNeeded')}
+                  </p>
+                  <ul className="mt-1 list-disc space-y-1 pl-4 text-sm text-ink-soft">
+                    {result.diagnosis.missingCriticalInfo.map((question, idx) => (
+                      <li key={`${question}-${idx}`}>{question}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+
+          {result.evidenceLink?.principleId ? (
+            <section className="card-warm p-4 sm:p-5">
+              <p className="label-section mb-2">{t('live.eefTitle')}</p>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted">
+                  {result.evidenceLink.principleId}
+                </span>
+                {result.evidenceLink.checkAdaptAction ? (
+                  <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
+                    {result.evidenceLink.checkAdaptAction}
+                  </span>
+                ) : null}
+              </div>
+              <p className="mt-2 text-sm font-semibold text-ink">{result.evidenceLink.principle}</p>
+              {result.evidenceLink.whyThisFits ? (
+                <p className="mt-1 text-xs text-ink-muted">{result.evidenceLink.whyThisFits}</p>
+              ) : null}
+            </section>
+          ) : null}
 
           <section className="card-warm p-4 sm:p-5">
             <p className="label-section mb-3">{t('live.microTitle')}</p>
@@ -228,6 +296,13 @@ export default function LiveCoach() {
               </StepCard>
             </div>
           </section>
+
+          {result.observeNext ? (
+            <section className="rounded-2xl border border-ink/10 bg-white/45 p-4 sm:p-5">
+              <p className="label-section mb-1">{t('live.observeNext')}</p>
+              <p className="text-sm font-semibold text-ink">{result.observeNext}</p>
+            </section>
+          ) : null}
 
           {result.regainFocusLine ? (
             <section className="rounded-2xl border-2 border-terracotta/40 bg-terracotta/5 p-4 sm:p-5">
