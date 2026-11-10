@@ -13,6 +13,6 @@ Teacher PD game for practising dialogic talk moves with Primary-aged, Malay L1 l
 
 1. Install dependencies:
    `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
+2. Set `FIREWORKS_API_KEY` in [.env.local](.env.local). Model routing is configurable through `FIREWORKS_VISION_MODEL`, `FIREWORKS_REASONING_MODEL`, and `FIREWORKS_FALLBACK_MODEL`; see [.env.example](.env.example). By default, Minimax extracts screenshot content and Kimi K3.1 Pro generates the coaching response.
 3. Run the app:
    `npm run dev`

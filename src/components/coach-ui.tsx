@@ -3,7 +3,7 @@ import { useLang } from '../lib/i18n';
 
 export const subjects = ['science', 'maths', 'english', 'malay', 'social studies', 'design', 'it'];
 export const yearLevels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
-export const languages = ['english', 'malay', 'iban'];
+export const languages = ['iban', 'sarawak malay', 'malay', 'english'];
 
 export function subjectLabel(value: string): string {
   if (value === 'it') return 'IT';

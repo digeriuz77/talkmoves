@@ -3,22 +3,47 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import crypto from 'crypto';
-import { GoogleGenAI } from '@google/genai';
+import dotenv from 'dotenv';
+
+dotenv.config({ path: '.env.local' });
+dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
-const PRIMARY_MODEL_NAME = 'gemma-4-31b-it';
-const FALLBACK_MODEL_NAME = 'gemma-3-27b-it';
-const PRIMARY_MODEL_LIMIT = 1000;
-const PRIMARY_MODEL_SWITCH_THRESHOLD = 950;
-const FALLBACK_MODEL_LIMIT = 150000;
+const FIREWORKS_API_KEY = process.env.FIREWORKS_API_KEY;
+const FIREWORKS_BASE_URL =
+  process.env.FIREWORKS_BASE_URL || 'https://api.fireworks.ai/inference/v1/chat/completions';
 
-const DATA_DIR = path.join(__dirname, '.kilo');
+// Configurable models via environment variables:
+// - VISION_MODEL: cheap vision model that extracts text/diagrams from screenshots first
+// - REASONING_MODEL: high-nuance model (Kimi K3.1 Pro) for instruction following & reasoning prep
+// - FALLBACK_MODEL: high-volume fallback when primary daily limit is reached
+const VISION_MODEL_NAME =
+  process.env.FIREWORKS_VISION_MODEL ||
+  process.env.VISION_MODEL ||
+  'accounts/fireworks/models/minimax-m3p1-flash';
+const PRIMARY_MODEL_NAME =
+  process.env.FIREWORKS_REASONING_MODEL ||
+  process.env.REASONING_MODEL ||
+  'accounts/fireworks/models/kimi-k3p1-pro';
+const FALLBACK_MODEL_NAME =
+  process.env.FIREWORKS_FALLBACK_MODEL ||
+  process.env.FALLBACK_MODEL ||
+  'accounts/fireworks/models/minimax-m3p1-flash';
+
+// If set to "false", sends image directly to REASONING_MODEL when vision + reasoning are the same
+const SPLIT_VISION_PIPELINE =
+  String(process.env.FIREWORKS_SPLIT_VISION ?? 'true').toLowerCase() !== 'false';
+
+const PRIMARY_MODEL_LIMIT = Number(process.env.PRIMARY_MODEL_LIMIT || 1000);
+const PRIMARY_MODEL_SWITCH_THRESHOLD = Number(process.env.PRIMARY_MODEL_SWITCH_THRESHOLD || 950);
+const FALLBACK_MODEL_LIMIT = Number(process.env.FALLBACK_MODEL_LIMIT || 150000);
+
+const DATA_DIR = process.env.COACH_DATA_DIR || path.join(__dirname, '.kilo');
 const COUNTERS_PATH = path.join(DATA_DIR, 'model-usage-counters.json');
 const CACHE_PATH = path.join(DATA_DIR, 'talk-move-plan-cache.json');
 const CACHE_MAX_ENTRIES = 800;
@@ -483,7 +508,139 @@ function normalizeCoachingPhase(value) {
 
 function normalizeActionMode(value) {
   const v = normalizeText(value).toLowerCase().replace(/_/g, '-');
-  return v === 'firm_up' || v === 'firm-up' ? 'firm_up' : (v === 'reset' ? 'reset' : 'diagnose');
+  if (v === 'prep-card' || v === 'prep_card' || v === 'prep') return 'prep_card';
+  return v === 'firm_up' || v === 'firm-up' ? 'firm_up' : v === 'reset' ? 'reset' : 'diagnose';
+}
+
+function normalizeDiagnosticTag(value) {
+  const v = normalizeText(value).toLowerCase().replace(/-/g, '_');
+  if (v === 'correct_reasoning' || v === 'correct') return 'correct_reasoning';
+  if (v === 'concept_misconception' || v === 'misconception') return 'concept_misconception';
+  return 'language_or_surface_trap';
+}
+
+function sanitizePrepCardBlock(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+  const ctx =
+    raw.detectedVisualContext && typeof raw.detectedVisualContext === 'object'
+      ? raw.detectedVisualContext
+      : {};
+  const s1 =
+    raw.strand1_dialogicReasoning && typeof raw.strand1_dialogicReasoning === 'object'
+      ? raw.strand1_dialogicReasoning
+      : {};
+  const claims =
+    s1.competingClaims && typeof s1.competingClaims === 'object' ? s1.competingClaims : {};
+  const s2 =
+    raw.strand2_vocabularyAndEalLadder && typeof raw.strand2_vocabularyAndEalLadder === 'object'
+      ? raw.strand2_vocabularyAndEalLadder
+      : {};
+  const ladder =
+    s2.ealProgressionLadder && typeof s2.ealProgressionLadder === 'object'
+      ? s2.ealProgressionLadder
+      : {};
+  const s3 =
+    raw.strand3_aflAndTransfer && typeof raw.strand3_aflAndTransfer === 'object'
+      ? raw.strand3_aflAndTransfer
+      : {};
+  const twist =
+    s3.whatIfTransferTwist && typeof s3.whatIfTransferTwist === 'object'
+      ? s3.whatIfTransferTwist
+      : {};
+
+  const options = (Array.isArray(s3.options) ? s3.options : [])
+    .map((opt, idx) => ({
+      finger: Number(opt?.finger) || idx + 1,
+      text: normalizeText(opt?.text),
+      diagnosticTag: normalizeDiagnosticTag(opt?.diagnosticTag),
+    }))
+    .filter((opt) => opt.text)
+    .slice(0, 3);
+
+  const followUpChips = (Array.isArray(raw.followUpChips) ? raw.followUpChips : [])
+    .map((chip, idx) => ({
+      id: normalizeText(chip?.id) || `chip_${idx + 1}`,
+      label: normalizeText(chip?.label),
+      nextActionMode: normalizeActionMode(chip?.nextActionMode),
+    }))
+    .filter((chip) => chip.label)
+    .slice(0, 4);
+
+  return {
+    detectedVisualContext: {
+      pageSummary: normalizeText(ctx.pageSummary),
+      visualAnchors: asStringArray(ctx.visualAnchors).slice(0, 4),
+      coreConcept: normalizeText(ctx.coreConcept),
+      commonMisconception: normalizeText(ctx.commonMisconception),
+    },
+    strand1_dialogicReasoning: {
+      talkMoveId: normalizeText(s1.talkMoveId) || 'TM-T08 + TM-T02',
+      talkMoveName:
+        normalizeText(s1.talkMoveName) || 'Competing Claims (Agree/Disagree) + Turn and Talk',
+      visualHookInstruction: normalizeText(s1.visualHookInstruction),
+      competingClaims: {
+        claimA: normalizeText(claims.claimA),
+        claimB: normalizeText(claims.claimB),
+      },
+      teacherScriptEn: normalizeText(s1.teacherScriptEn),
+      teacherScriptBridge: normalizeText(s1.teacherScriptBridge),
+      waitTimeCue:
+        normalizeText(s1.waitTimeCue) ||
+        'Give 5 seconds of silent thinking time + chest finger-vote before partner talk (TM-T01).',
+    },
+    strand2_vocabularyAndEalLadder: {
+      contentNouns: (Array.isArray(s2.contentNouns) ? s2.contentNouns : [])
+        .map((n) => ({
+          en: normalizeText(n?.en),
+          l1Bridge: normalizeText(n?.l1Bridge),
+          visualPointCue: normalizeText(n?.visualPointCue),
+        }))
+        .filter((n) => n.en)
+        .slice(0, 4),
+      relationalConnectors: (Array.isArray(s2.relationalConnectors) ? s2.relationalConnectors : [])
+        .map((r) => ({
+          en: normalizeText(r?.en),
+          l1Bridge: normalizeText(r?.l1Bridge),
+          gestureCue: normalizeText(r?.gestureCue),
+        }))
+        .filter((r) => r.en)
+        .slice(0, 4),
+      ealProgressionLadder: {
+        rung1_pointAndWord: normalizeText(ladder.rung1_pointAndWord),
+        rung2_twoChoiceCloze: normalizeText(ladder.rung2_twoChoiceCloze),
+        rung3_causalFrameEn: normalizeText(ladder.rung3_causalFrameEn),
+        rung3_causalFrameL1: normalizeText(ladder.rung3_causalFrameL1),
+      },
+    },
+    strand3_aflAndTransfer: {
+      fingerVotePrompt: normalizeText(s3.fingerVotePrompt),
+      options,
+      whatIfTransferTwist: {
+        promptEn: normalizeText(twist.promptEn),
+        promptBridge: normalizeText(twist.promptBridge),
+        expectedReasoning: normalizeText(twist.expectedReasoning),
+      },
+    },
+    followUpChips: followUpChips.length
+      ? followUpChips
+      : [
+          {
+            id: 'fix_misconception',
+            label: 'Most picked the misconception (60s visual reset)',
+            nextActionMode: 'reset',
+          },
+          {
+            id: 'revoice_l1_to_en',
+            label: 'They know it in Iban, stuck on English (Choral Revoice)',
+            nextActionMode: 'firm_up',
+          },
+          {
+            id: 'push_transfer',
+            label: "They got it! Push the 'What-If' transfer challenge",
+            nextActionMode: 'firm_up',
+          },
+        ],
+  };
 }
 
 function normalizeLiveIdeaKind(value) {
@@ -517,23 +674,52 @@ function sanitizeLiveCoach(data) {
   const readBack = out.readBack && typeof out.readBack === 'object' ? out.readBack : {};
   const diagnosis = out.diagnosis && typeof out.diagnosis === 'object' ? out.diagnosis : {};
 
-  const actionMode = normalizeActionMode(out.actionMode);
+  const hasPrepCardFields =
+    Boolean(out.prepCard && typeof out.prepCard === 'object') ||
+    Boolean(out.strand1_dialogicReasoning && typeof out.strand1_dialogicReasoning === 'object') ||
+    Boolean(out.detectedVisualContext && typeof out.detectedVisualContext === 'object');
+
+  const rawActionMode = out.actionMode || out.action_mode;
+  const actionMode =
+    hasPrepCardFields && !rawActionMode ? 'prep_card' : normalizeActionMode(rawActionMode);
+
+  const prepCardRaw =
+    out.prepCard && typeof out.prepCard === 'object' ? out.prepCard : hasPrepCardFields ? out : null;
+  const prepCard = actionMode === 'prep_card' ? sanitizePrepCardBlock(prepCardRaw || out) : null;
+
+  const defaultSummaryEn = prepCard?.detectedVisualContext?.pageSummary
+    ? `Prepared 3-strand reasoning card: ${prepCard.detectedVisualContext.pageSummary}`
+    : '';
 
   const result = {
     actionMode,
     readBack: {
-      detectedLanguage: normalizeText(readBack.detectedLanguage),
-      needCategory: normalizeNeedCategory(readBack.needCategory),
-      summaryEnglish: normalizeText(readBack.summaryEnglish),
+      detectedLanguage: normalizeText(readBack.detectedLanguage) || (prepCard ? 'image' : ''),
+      needCategory: normalizeNeedCategory(
+        readBack.needCategory || (prepCard ? 'scaffolding' : 'mixed'),
+      ),
+      summaryEnglish: normalizeText(readBack.summaryEnglish) || defaultSummaryEn,
       summaryBridge: normalizeText(readBack.summaryBridge),
     },
     diagnosis: {
-      barrier: normalizeLiveBarrier(diagnosis.barrier),
-      confidence: Math.max(0, Math.min(1, Number(diagnosis.confidence || 0))),
-      evidence: normalizeText(diagnosis.evidence),
+      barrier: normalizeLiveBarrier(
+        diagnosis.barrier || (prepCard ? 'comprehension' : 'mixed'),
+      ),
+      confidence: Math.max(
+        0,
+        Math.min(1, Number(diagnosis.confidence ?? (prepCard ? 0.9 : 0))),
+      ),
+      evidence:
+        normalizeText(diagnosis.evidence) ||
+        normalizeText(prepCard?.detectedVisualContext?.commonMisconception),
     },
-    teacherMirror: normalizeText(out.teacherMirror),
-    rationaleNote: normalizeText(out.rationaleNote),
+    teacherMirror:
+      normalizeText(out.teacherMirror) ||
+      normalizeText(prepCard?.detectedVisualContext?.commonMisconception) ||
+      defaultSummaryEn,
+    rationaleNote:
+      normalizeText(out.rationaleNote) ||
+      normalizeText(prepCard?.detectedVisualContext?.coreConcept),
     ideas: (Array.isArray(out.ideas) ? out.ideas : [])
       .map(sanitizeIdea)
       .filter(Boolean)
@@ -547,16 +733,28 @@ function sanitizeLiveCoach(data) {
   // Mode-specific blocks — keep only the one matching actionMode
   const diagnose = out.diagnose && typeof out.diagnose === 'object' ? out.diagnose : {};
   const reset = out.reset && typeof out.reset === 'object' ? out.reset : {};
-  const firmUp = out.firmUp && typeof out.firmUp === 'object' ? out.firmUp : {};
+  const firmUp = (out.firmUp || out.firm_up) && typeof (out.firmUp || out.firm_up) === 'object'
+    ? (out.firmUp || out.firm_up)
+    : {};
 
-  if (actionMode === 'diagnose') {
+  if (actionMode === 'prep_card' && prepCard) {
+    result.prepCard = prepCard;
+  } else if (actionMode === 'diagnose') {
     result.diagnose = {
       hypothesis: normalizeText(diagnose.hypothesis),
-      clarifyingQuestion: normalizeText(diagnose.clarifyingQuestion),
-      clarifyingOptions: asStringArray(diagnose.clarifyingOptions).slice(0, 4),
+      clarifyingQuestion: normalizeText(
+        diagnose.clarifyingQuestion || diagnose.clarifying_question,
+      ),
+      clarifyingOptions: asStringArray(
+        diagnose.clarifyingOptions || diagnose.clarifying_options,
+      ).slice(0, 4),
     };
   } else if (actionMode === 'reset') {
-    const eefPrinciple = reset.eefPrinciple && typeof reset.eefPrinciple === 'object' ? reset.eefPrinciple : {};
+    const eefPrinciple =
+      (reset.eefPrinciple || reset.eef_principle) &&
+      typeof (reset.eefPrinciple || reset.eef_principle) === 'object'
+        ? reset.eefPrinciple || reset.eef_principle
+        : {};
     result.reset = {
       eefPrinciple: {
         principleId: normalizeText(eefPrinciple.principleId),
@@ -564,12 +762,21 @@ function sanitizeLiveCoach(data) {
         whyThisFits: normalizeText(eefPrinciple.whyThisFits),
         checkAdaptAction: normalizeText(eefPrinciple.checkAdaptAction),
       },
-      resetActionSteps: asStringArray(reset.resetActionSteps).slice(0, 5),
+      resetActionSteps: asStringArray(
+        reset.resetActionSteps || reset.reset_action_steps,
+      ).slice(0, 5),
     };
   } else if (actionMode === 'firm_up') {
-    const talkMove = firmUp.talkMove && typeof firmUp.talkMove === 'object' ? firmUp.talkMove : {};
+    const talkMove =
+      (firmUp.talkMove || firmUp.talk_move) &&
+      typeof (firmUp.talkMove || firmUp.talk_move) === 'object'
+        ? firmUp.talkMove || firmUp.talk_move
+        : {};
     const talkMoveRawId = normalizeText(talkMove.talkMoveId).toUpperCase();
-    const bilingualFrames = (Array.isArray(firmUp.bilingualSentenceFrames) ? firmUp.bilingualSentenceFrames : [])
+    const rawFrames = Array.isArray(firmUp.bilingualSentenceFrames || firmUp.bilingual_sentence_frames)
+      ? firmUp.bilingualSentenceFrames || firmUp.bilingual_sentence_frames
+      : [];
+    const bilingualFrames = rawFrames
       .map((f) => {
         if (f && typeof f === 'object') {
           return {
@@ -581,7 +788,7 @@ function sanitizeLiveCoach(data) {
       })
       .filter(Boolean);
     result.firmUp = {
-      eefRationale: normalizeText(firmUp.eefRationale),
+      eefRationale: normalizeText(firmUp.eefRationale || firmUp.eef_rationale),
       talkMove: {
         talkMoveId: talkMoveRawId,
         offPalette: Boolean(talkMoveRawId) && !VALID_TALK_MOVE_IDS.has(talkMoveRawId),
@@ -592,8 +799,16 @@ function sanitizeLiveCoach(data) {
       },
       bilingualSentenceFrames: bilingualFrames,
     };
-    const phrasingTip = firmUp.phrasingTip && typeof firmUp.phrasingTip === 'object' ? firmUp.phrasingTip : {};
-    if (normalizeText(phrasingTip.tipMalay) || normalizeText(phrasingTip.tipIban) || normalizeText(phrasingTip.whenToUse)) {
+    const phrasingTip =
+      (firmUp.phrasingTip || firmUp.phrasing_tip) &&
+      typeof (firmUp.phrasingTip || firmUp.phrasing_tip) === 'object'
+        ? firmUp.phrasingTip || firmUp.phrasing_tip
+        : {};
+    if (
+      normalizeText(phrasingTip.tipMalay) ||
+      normalizeText(phrasingTip.tipIban) ||
+      normalizeText(phrasingTip.whenToUse)
+    ) {
       result.firmUp.phrasingTip = {
         tipMalay: normalizeText(phrasingTip.tipMalay),
         tipIban: normalizeText(phrasingTip.tipIban),
@@ -752,104 +967,257 @@ function buildLessonCoachUserPrompt(input, lessonText) {
 
 function buildLiveCoachSystemInstruction() {
   return [
-    'You are an instructional coach for EAL/ESL classrooms in a CONVERSATION with the teacher. You think WITH the teacher, not at them. The teacher can reply between turns (what happened, why a move flopped, a new wrinkle). Treat the whole thread as context: do not repeat yourself, build on prior turns, and revise your advice as the situation changes.',
+    'You are the Sarawak Primary STEM Reasoning & Talk Moves Coach. You help primary teachers (Year 1 to Year 10, especially Mathematics and Science DLP) in Sarawak prepare high-impact, zero-prep classroom routines from a screenshot of a textbook page, worksheet, or classroom resource, AND you coach them through live classroom friction in a multi-turn conversation.',
+    'Most pupils speak Iban or Sarawak Malay as their first language (L1) and have emerging English proficiency (EAL Band A/B). Teachers are strong in content but under severe time pressure.',
     '',
-    'EAL LENS (your strongest interpretive default): This is a POINT-OF-FRICTION intervention tool, NOT a lesson planner. When students disengage, go silent, freeze, or copy, interpret that FIRST as cognitive overload or a language barrier — not as defiance, laziness, or poor behaviour. The barrier taxonomy still allows pacing/control/motivation when genuinely warranted, but reach for those only when the evidence points there, never as a default label for an EAL learner who is stuck.',
+    'EAL LENS (your strongest interpretive default): When students disengage, go silent, freeze, or copy, interpret that FIRST as cognitive overload or a language barrier — not as defiance, laziness, or poor behaviour.',
     '',
-    'YOUR KNOWLEDGE SOURCES (a reference library, never a checklist you must fill):',
+    'YOUR KNOWLEDGE SOURCES (a reference library):',
     BILINGUAL_INTENT_INSTRUCTIONS,
     EEF_INCLUSIVE_TEACHING_BRIEF,
     TALK_MOVE_PALETTE,
-    'These are a TOOLKIT, not a mandate. Do NOT force a Talk Move into every response. If the teacher needs to model a concept (reset), rely on EEF principles and leave the Talk Move out. If students need to verbalise to reduce writing pressure (firm_up), select the single most appropriate Talk Move. If the problem is ambiguous or you are not yet sure of the root cause (diagnose), do not prescribe at all.',
     '',
-    'ACTION MODE — choose exactly ONE each turn based on what best resolves the friction right now:',
-    '- "diagnose": use when the teacher reports a freeze, disengagement, copying, or the situation is ambiguous and you are not yet certain whether the barrier is cognitive (content too hard) or linguistic (cannot produce the output). Return a brief hypothesis distinguishing the two, and ONE clarifying question with 2-4 tappable answer options so the teacher can respond with one tap. No Talk Move.',
-    '- "reset": use when the teacher\'s approach needs pulling back to foundations — the jump is too large and students need a model or a worked example before any talk move can work. Return an EEF-backed modeling strategy and concrete reset action steps. No Talk Move.',
-    '- "firm_up": use when the barrier is clear and students need to MAKE THEIR THINKING VISIBLE — typically to reduce writing pressure and transfer linguistic work to pupils. Return a Talk Move with exact bilingual lines and bilingual sentence frames pupils use to respond.',
-    'You decide the mode yourself each turn — do not ask permission. Choose exactly ONE action_mode; do not blend modes in a single turn.',
+    'ACTION MODE — choose exactly ONE each turn ("prep_card" | "diagnose" | "reset" | "firm_up"):',
+    '- "prep_card": choose "prep_card" for a new image/screenshot (or new EXTRACTED TEXTBOOK/WORKSHEET VISUAL STIMULUS), or when actionTrigger is build_reasoning_prep, competing_claims_debate, spot_mistake, or simplify_bridge. Return the complete 3-Strand Reasoning Prep Card inside "prepCard".',
+    '- "diagnose": use in follow-up or text-only turns when the teacher reports a freeze, disengagement, copying, or the situation is ambiguous between a cognitive barrier (content too hard) vs linguistic barrier (cannot produce English). Return hypothesis, ONE clarifying_question, and 2-4 tappable clarifying_options.',
+    '- "reset": REQUIRED when actionTrigger is fix_misconception; also use when the teacher clicks a visual reset chip or when the conceptual jump is too large and students need a concrete model/worked example first. Do NOT regenerate the prep card on this follow-up turn. Return an EEF principle and 2-5 reset_action_steps.',
+    '- "firm_up": REQUIRED when actionTrigger is revoice_l1_to_en or push_transfer; also use when the barrier is clear or the teacher clicks a revoice/transfer chip and students need to verbalize their thinking. Do NOT regenerate the prep card on this follow-up turn. Return eef_rationale, talk_move, and bilingual_sentence_frames.',
     '',
-    'ON EVERY TURN output these fields:',
-    '1. action_mode: one of diagnose | reset | firm_up.',
-    '2. readBack: detect input language and classify the need (pacing, control, scaffolding, or mixed). One short English sentence + one short Sarawak Malay sentence. If the need is unchanged from the prior turn, briefly say so.',
-    '3. diagnosis: exactly one barrier (reading-access, vocabulary, decoding, comprehension, motivation, participation, pacing, control, or mixed). Include confidence 0-1 and one evidence phrase from the teacher.',
-    '4. teacherMirror: one teacher-friendly sentence connecting what they said to the likely mechanism through the EAL lens (e.g. "the copying is a symptom of a reading barrier, not laziness").',
-    '5. rationaleNote: ONE line on why you chose THIS mode now and not the others.',
+    'CRITICAL PEDAGOGICAL RULES FOR "prep_card" MODE:',
+    '1. NEVER generate rote recall or closed memory questions from the screenshot. Build student reasoning, relational vocabulary, and error-detection (AfL) so students can transfer thinking to unseen problems.',
+    '2. ANCHOR EVERY PROMPT TO THE VISUALS IN THE SCREENSHOT: Explicitly name the pictures, diagrams, tables, numbers, or characters visible in the uploaded image (e.g., "Point to the two beakers in the middle of the page") so low-English pupils can access the problem visually first.',
+    '3. USE COMPETING CLAIMS (CONCEPT CARTOON STYLE) FOR STRAND 1: Frame the dialogic prompt around two fictional pupils (Ali and Bisi) making competing claims or predictions about the visual in the screenshot — one stating the correct reasoning and one stating a realistic misconception (vary which pupil is right so students cannot guess by name) — and ask pupils: "Who do you agree with, and what in the picture proves it?"',
+    '4. TEACH RELATIONAL VOCABULARY + A 3-RUNG EAL LADDER IN STRAND 2: Do not just list content nouns. Always pair 2 content nouns from the page with 2 Tier-2 relational/logical words (e.g., "more than", "less than", "equal to", "because", "increases", "changes when", "stays the same"). Provide a 3-rung progression so low-English pupils never hit a zero floor:',
+    '   - Rung 1 (Point & Single Word): L1 (Iban/Sarawak Malay) hook -> English target word + gesture/pointing to the diagram.',
+    '   - Rung 2 (2-Choice Visual Cloze): A short sentence frame with two bold choices where pupils only have to pick the right relational word.',
+    '   - Rung 3 (Causal Reasoning Frame): A structured "___ because ___" frame linking observation to reason.',
+    '5. BUILD ERROR-SPOTTING & A "WHAT-IF" TRANSFER TWIST IN STRAND 3:',
+    '   - Create a 30-second whole-class Finger-Vote check (1, 2, or 3 fingers held against the chest) where 1 option is "correct_reasoning", 1 option is "concept_misconception", and 1 option is "language_or_surface_trap" (vary which finger number is correct).',
+    '   - Add one "Beyond-the-Page What-If Twist": change one variable or condition in the screenshot diagram and ask what would happen next, training students for far-transfer reasoning.',
+    '6. IBAN & SARAWAK MALAY BRIDGING: When Dominant Home Language is Iban, use natural classroom Iban phrases for conceptual hooks (e.g., "Peratika gambar tu...", "Sapa ti betul — Ali tauka Bisi? Nama kebuah?", "Tunjuk ba gambar...", "Sebut sama enggau pangan..."). If a technical STEM term has no everyday Iban word, use the everyday Iban descriptive phrase + Bahasa Melayu cognate -> bridge directly to the English DLP target term.',
     '',
-    'MODE-SPECIFIC FIELDS (only the block matching your action_mode):',
-    'If action_mode = "diagnose":',
-    '   - hypothesis: distinguish cognitive barrier (the CONTENT is beyond them) from linguistic barrier (they understand but cannot PRODUCE the English output). Name which is more likely and why.',
-    '   - clarifying_question: exactly ONE question whose answer will tell you which barrier it is.',
-    '   - clarifying_options: 2-4 short, tappable answer options the teacher could tap to reply. Phrased so each reads as a sensible standalone teacher message.',
-    'If action_mode = "reset":',
-    '   - eef_principle: ONE principle from the EEF brief (principleId, principle, whyThisFits, checkAdaptAction).',
-    '   - reset_action_steps: 2-5 concrete modeling/foundation steps. No Talk Move here.',
-    'If action_mode = "firm_up":',
-    '   - eef_rationale: one line tying the move to an EEF principle.',
-    '   - talk_move: the single best Talk Move (prefer a palette TM-* id; if the best move is off-palette, name it and set offPalette true with a reason). why + sayNowEnglish + sayNowBridge.',
-    '   - bilingual_sentence_frames: up to 3 frames PUPILS use to respond, each with English AND Malay/Iban bridge.',
-    '   - phrasing_tip (optional): a Malay (and Iban when confident) tip lowering the entry barrier.',
-    '',
-    'SECONDARY SURFACING — "ideas" is OPTIONAL and always secondary:',
-    'Return 0-3 ideas ONLY when they genuinely add value the teacher did not ask for. ideas are surfaced paths to consider later, NEVER the chosen action and NEVER an equal menu of options. Each idea kind: alternative-move | root-cause | missed-angle | risk | beyond-palette. An empty/omitted ideas array is correct and common.',
-    '',
-    'OPTIONAL fields: observeNext (one sign to watch for), regainFocusLine and ifItFails (only for control/pacing friction — not every problem is an attention problem).',
-    '',
-    'When the teacher reports a move flopped, name WHY it likely failed (wrong barrier, too high a jump, social pressure) before choosing the next mode. When the teacher taps a clarifying_option or pursues an idea, act on it directly.',
-    'Keep every string short. No paragraphs. This is read while standing in front of children.',
-    '',
-    'Always output valid JSON only. No markdown. Omit optional fields rather than empty strings/objects. The mode-specific block MUST match the chosen action_mode.',
+    'Always output valid JSON only. No markdown. Omit unused mode blocks so only the block matching action_mode is present:',
     '{',
-    '  "action_mode": "diagnose" | "reset" | "firm_up",',
+    '  "action_mode": "prep_card" | "diagnose" | "reset" | "firm_up",',
     '  "readBack": { "detectedLanguage": string, "needCategory": "pacing" | "control" | "scaffolding" | "mixed", "summaryEnglish": string, "summaryBridge": string },',
     '  "diagnosis": { "barrier": "reading-access" | "vocabulary" | "decoding" | "comprehension" | "motivation" | "participation" | "pacing" | "control" | "mixed", "confidence": number, "evidence": string },',
     '  "teacherMirror": string,',
     '  "rationaleNote": string,',
     '  "observeNext"?: string,',
     '  "ideas"?: [ { "kind": "alternative-move" | "root-cause" | "missed-angle" | "risk" | "beyond-palette", "headline": string, "detail": string, "talkMoveId"?: string, "offPalette"?: boolean, "sayNowEnglish"?: string, "sayNowBridge"?: string } ],',
+    '  "prepCard"?: {',
+    '    "detectedVisualContext": {',
+    '      "pageSummary": "1-sentence description of the exact diagrams, numbers, or problems visible in the screenshot",',
+    '      "visualAnchors": ["Specific visual element 1 on the page", "Specific visual element 2 on the page"],',
+    '      "coreConcept": "The underlying mathematical or scientific relationship",',
+    '      "commonMisconception": "The #1 conceptual trap or surface habit pupils fall into on this page"',
+    '    },',
+    '    "strand1_dialogicReasoning": {',
+    '      "talkMoveId": "TM-T08 + TM-T02",',
+    '      "talkMoveName": "Competing Claims (Agree/Disagree) + Turn and Talk",',
+    '      "visualHookInstruction": "Exact instruction telling the teacher where to point on the screenshot/page",',
+    '      "competingClaims": {',
+    '        "claimA": "Ali says: \'...\'",',
+    '        "claimB": "Bisi says: \'...\'"',
+    '      },',
+    '      "teacherScriptEn": "Exact English prompt asking who they agree with and why",',
+    '      "teacherScriptBridge": "Exact Iban or Sarawak Malay conceptual bridge",',
+    '      "waitTimeCue": "Explicit 5-second silent thinking + chest finger-vote cue before partner talk (TM-T01)"',
+    '    },',
+    '    "strand2_vocabularyAndEalLadder": {',
+    '      "contentNouns": [ { "en": "English noun", "l1Bridge": "Iban / Sarawak Malay term", "visualPointCue": "Where to point on the page or gesture" } ],',
+    '      "relationalConnectors": [ { "en": "more than / because / increases", "l1Bridge": "Iban / Sarawak Malay equivalent", "gestureCue": "Simple hand gesture to pair with the connector" } ],',
+    '      "ealProgressionLadder": {',
+    '        "rung1_pointAndWord": "Band A (Pre-English): Point to [visual] and echo the single word: \'___\'",',
+    '        "rung2_twoChoiceCloze": "Band B (Early Acquisition): \'[Visual A] is [choice1 / choice2] than [Visual B].\'",',
+    '        "rung3_causalFrameEn": "Band B+/C (Reasoning Frame): \'I agree with [Ali/Bisi] because when ___ , ___ .\'",',
+    '        "rung3_causalFrameL1": "Matching Iban / Sarawak Malay meaning scaffold"',
+    '      }',
+    '    },',
+    '    "strand3_aflAndTransfer": {',
+    '      "fingerVotePrompt": "30-second whole-class check question anchored to the image",',
+    '      "options": [',
+    '        { "finger": 1, "text": "Option 1", "diagnosticTag": "correct_reasoning" | "concept_misconception" | "language_or_surface_trap" },',
+    '        { "finger": 2, "text": "Option 2", "diagnosticTag": "correct_reasoning" | "concept_misconception" | "language_or_surface_trap" },',
+    '        { "finger": 3, "text": "Option 3", "diagnosticTag": "correct_reasoning" | "concept_misconception" | "language_or_surface_trap" }',
+    '      ],',
+    '      "whatIfTransferTwist": {',
+    '        "promptEn": "One \'What if we changed X in this picture?\' question that cannot be answered by rote reading",',
+    '        "promptBridge": "Iban / Sarawak Malay bridge for the What-If twist",',
+    '        "expectedReasoning": "What pupils should notice when that variable changes"',
+    '      }',
+    '    },',
+    '    "followUpChips": [',
+    '      { "id": "fix_misconception", "label": "Most picked the misconception (60s visual reset)", "nextActionMode": "reset" },',
+    '      { "id": "revoice_l1_to_en", "label": "They know it in Iban, stuck on English (Choral Revoice)", "nextActionMode": "firm_up" },',
+    '      { "id": "push_transfer", "label": "They got it! Push the \'What-If\' transfer challenge", "nextActionMode": "firm_up" }',
+    '    ]',
+    '  },',
     '  "diagnose"?: { "hypothesis": string, "clarifying_question": string, "clarifying_options": string[] },',
     '  "reset"?: { "eef_principle": { "principleId": string, "principle": string, "whyThisFits": string, "checkAdaptAction": "PAUSE AND FIX" | "ADAPT SUPPORT" | "EXTEND AND SUPPORT" }, "reset_action_steps": string[] },',
     '  "firm_up"?: { "eef_rationale": string, "talk_move": { "talkMoveId": string, "offPalette"?: boolean, "talkMoveName": string, "why": string, "sayNowEnglish": string, "sayNowBridge": string }, "bilingual_sentence_frames": [ { "en": string, "bridge": string } ], "phrasing_tip"?: { "tipMalay": string, "tipIban": string, "whenToUse": string } },',
     '  "regainFocusLine"?: string,',
     '  "ifItFails"?: string',
     '}',
-    'If you are not confident in Iban wording, leave tipIban / idea sayNowBridge / frame "bridge" as empty strings rather than guessing.',
   ].join('\n');
 }
 
 function buildLiveCoachUserPrompt(input) {
-  return [
-    `Live observation from the teacher: ${normalizeText(input.observation)}`,
-    `Year Level: ${normalizeText(input.yearLevel) || 'Unknown'}`,
-    `Subject: ${normalizeText(input.subject) || 'Unknown'}`,
-    `Dominant Home Language: ${normalizeText(input.dominantLanguage) || 'Iban'}`,
-    'Return the 3-step Micro-Adaptation JSON now.',
-  ].join('\n');
+  const lines = [
+    `Live observation / request from the teacher: ${normalizeText(input.observation || input.userText) || 'Build a 3-strand reasoning prep card for this resource.'}`,
+    `Year Level: ${normalizeText(input.yearLevel) || 'Year 4'}`,
+    `Subject: ${normalizeText(input.subject) || 'Science'}`,
+    `Dominant Home Language: ${normalizeText(input.dominantLanguage || input.homeLanguage) || 'Iban'}`,
+  ];
+  if (input.actionTrigger) {
+    lines.push(`Action Trigger: ${normalizeText(input.actionTrigger)}`);
+  }
+  if (input.visionSummary) {
+    lines.push(
+      'EXTRACTED TEXTBOOK/WORKSHEET VISUAL STIMULUS (from Vision Model):',
+      input.visionSummary,
+      'Use this visual stimulus to return action_mode = "prep_card" with the complete prepCard JSON block.',
+    );
+  }
+  lines.push('Return the Live Coach JSON now.');
+  return lines.join('\n');
 }
 
-const COACH_ROLE_TO_GEMINI = { teacher: 'user', coach: 'model' };
+const COACH_ROLE_TO_CHAT = { teacher: 'user', coach: 'assistant' };
 
-function buildLiveCoachContents(thread, contextLines) {
+function buildLiveCoachMessages(thread, contextLines, visionSummary) {
   const history = [];
-  if (contextLines && contextLines.length) {
-    history.push({ role: 'user', parts: [{ text: contextLines.join('\n') }] });
-    history.push({ role: 'model', parts: [{ text: 'Understood. I have the class context. Waiting for your first observation.' }] });
+  const fullContext = [...(contextLines || [])];
+  if (visionSummary) {
+    fullContext.push(
+      '',
+      'EXTRACTED TEXTBOOK/WORKSHEET VISUAL STIMULUS (from Vision Model):',
+      visionSummary,
+    );
+  }
+  if (fullContext.length) {
+    history.push({ role: 'user', content: fullContext.join('\n') });
+    history.push({
+      role: 'assistant',
+      content: 'Understood. I have the class and visual context. Ready for the teacher input.',
+    });
   }
   for (const msg of thread) {
-    const role = COACH_ROLE_TO_GEMINI[msg.role] || 'user';
-    history.push({ role, parts: [{ text: String(msg.text || '') }] });
+    const role = COACH_ROLE_TO_CHAT[msg.role] || 'user';
+    history.push({ role, content: String(msg.text || '') });
   }
   return history;
 }
 
-async function callGemini({ model, systemInstruction, userPrompt, contents, sanitize }) {
-  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-  const finalContents = contents || userPrompt;
-  const response = await ai.models.generateContent({
-    model,
-    contents: finalContents,
-    config: { systemInstruction },
+async function callFireworksChat({ model, messages, maxTokens = 16384 }) {
+  const response = await fetch(FIREWORKS_BASE_URL, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${FIREWORKS_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model,
+      max_tokens: maxTokens,
+      top_k: 40,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+      messages,
+    }),
   });
-  const text = response.text;
+
+  const payload = await response.json().catch(() => null);
+  if (!response.ok) {
+    const errMsg =
+      payload?.error?.message ||
+      payload?.error ||
+      `Fireworks API error (${response.status})`;
+    throw new Error(typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg));
+  }
+
+  const rawContent = payload?.choices?.[0]?.message?.content;
+  if (Array.isArray(rawContent)) {
+    return rawContent.map((part) => part?.text || '').join('\n');
+  }
+  return String(rawContent || '');
+}
+
+async function extractVisualStimulusWithVisionModel({ image, yearLevel, subject }) {
+  const mimeType = normalizeText(image?.mimeType) || 'image/jpeg';
+  const rawBase64 = String(image?.base64Data || '').trim();
+  const dataUrl = rawBase64.startsWith('data:')
+    ? rawBase64
+    : `data:${mimeType};base64,${rawBase64}`;
+
+  const visionPrompt = [
+    `You are analyzing a classroom textbook page, worksheet, or apparatus photo for Primary ${yearLevel || 'Year 4'} ${subject || 'STEM'}.`,
+    'Extract a structured, detailed description for a pedagogical reasoning coach:',
+    '1. Exact diagrams, illustrations, characters, labels, tables, numbers, or equations visible on the page (and their spatial position, e.g. top-left, middle table, Picture A vs Picture B).',
+    '2. Any printed questions, headings, or key vocabulary terms on the page.',
+    '3. The core mathematical or scientific relationship illustrated.',
+    '4. The most likely visual or conceptual trap/misconception a primary pupil would have when looking at this page.',
+    'Be concise, concrete, and accurate.',
+  ].join('\n');
+
+  const text = await callFireworksChat({
+    model: VISION_MODEL_NAME,
+    maxTokens: 4096,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: visionPrompt },
+          { type: 'image_url', image_url: { url: dataUrl } },
+        ],
+      },
+    ],
+  });
+
+  counters = normalizeCounters(counters);
+  counters.flashCalls += 1;
+  writeJson(COUNTERS_PATH, counters);
+
+  return normalizeText(text);
+}
+
+async function callFireworksStructured({
+  model,
+  systemInstruction,
+  userPrompt,
+  messages,
+  image,
+  sanitize,
+}) {
+  const chatMessages = [];
+  if (systemInstruction) {
+    chatMessages.push({ role: 'system', content: systemInstruction });
+  }
+  if (Array.isArray(messages) && messages.length > 0) {
+    chatMessages.push(...messages);
+  } else if (userPrompt) {
+    chatMessages.push({ role: 'user', content: userPrompt });
+  }
+
+  // If SPLIT_VISION_PIPELINE is disabled and an image was passed directly to the model:
+  if (image?.base64Data && chatMessages.length > 0) {
+    const lastIdx = chatMessages.length - 1;
+    const lastMsg = chatMessages[lastIdx];
+    const mimeType = normalizeText(image.mimeType) || 'image/jpeg';
+    const rawBase64 = String(image.base64Data).trim();
+    const dataUrl = rawBase64.startsWith('data:')
+      ? rawBase64
+      : `data:${mimeType};base64,${rawBase64}`;
+    chatMessages[lastIdx] = {
+      role: lastMsg.role || 'user',
+      content: [
+        { type: 'text', text: String(lastMsg.content || '') },
+        { type: 'image_url', image_url: { url: dataUrl } },
+      ],
+    };
+  }
+
+  const text = await callFireworksChat({ model, messages: chatMessages });
   const parsed = safeParseJson(text);
   if (!parsed) {
     throw new Error('Model did not return valid JSON.');
@@ -864,7 +1232,15 @@ class CoachError extends Error {
   }
 }
 
-async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, contents, sanitize }) {
+async function generateCoachResponse({
+  cacheKey,
+  systemInstruction,
+  userPrompt,
+  messages,
+  image,
+  visionModelUsed,
+  sanitize,
+}) {
   counters = normalizeCounters(counters);
 
   const cached = planCache[cacheKey];
@@ -874,6 +1250,7 @@ async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, 
       meta: {
         fromCache: true,
         modelUsed: cached.modelUsed || 'cache',
+        visionModelUsed: cached.visionModelUsed || visionModelUsed || null,
         counters,
         mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
       },
@@ -891,19 +1268,39 @@ async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, 
   let plan;
 
   try {
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
+    plan = await callFireworksStructured({
+      model: modelUsed,
+      systemInstruction,
+      userPrompt,
+      messages,
+      image,
+      sanitize,
+    });
   } catch (primaryError) {
     const fallbackAllowed = modelUsed === PRIMARY_MODEL_NAME && canUseFallback;
     if (!fallbackAllowed) throw primaryError;
     modelUsed = FALLBACK_MODEL_NAME;
-    plan = await callGemini({ model: modelUsed, systemInstruction, userPrompt, contents, sanitize });
+    plan = await callFireworksStructured({
+      model: modelUsed,
+      systemInstruction,
+      userPrompt,
+      messages,
+      image,
+      sanitize,
+    });
   }
 
   if (modelUsed === PRIMARY_MODEL_NAME) counters.proCalls += 1;
   else counters.flashCalls += 1;
   writeJson(COUNTERS_PATH, counters);
 
-  planCache[cacheKey] = { createdAt: Date.now(), modelUsed, plan };
+  const combinedModelLabel = visionModelUsed ? `${visionModelUsed} -> ${modelUsed}` : modelUsed;
+  planCache[cacheKey] = {
+    createdAt: Date.now(),
+    modelUsed: combinedModelLabel,
+    visionModelUsed: visionModelUsed || null,
+    plan,
+  };
   planCache = pruneCache(planCache);
   writeJson(CACHE_PATH, planCache);
 
@@ -911,7 +1308,8 @@ async function generateCoachResponse({ cacheKey, systemInstruction, userPrompt, 
     plan,
     meta: {
       fromCache: false,
-      modelUsed,
+      modelUsed: combinedModelLabel,
+      visionModelUsed: visionModelUsed || null,
       counters,
       mode: modelUsed === PRIMARY_MODEL_NAME ? 'high-quality' : 'high-speed',
     },
@@ -969,8 +1367,8 @@ app.post('/api/save-image', express.json({ limit: '50mb' }), (req, res) => {
 
 app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res) => {
   try {
-    if (!GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+    if (!FIREWORKS_API_KEY) {
+      res.status(500).json({ error: 'Missing FIREWORKS_API_KEY on server.' });
       return;
     }
 
@@ -982,7 +1380,7 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
       return;
     }
 
-    const cacheKey = createCacheKey('plan', {
+    const cacheKey = createCacheKey('plan:v2', {
       question: question.toLowerCase(),
       yearLevel: normalizeText(input.yearLevel).toLowerCase(),
       subject: normalizeText(input.subject).toLowerCase(),
@@ -1008,8 +1406,8 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
 
 app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) => {
   try {
-    if (!GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+    if (!FIREWORKS_API_KEY) {
+      res.status(500).json({ error: 'Missing FIREWORKS_API_KEY on server.' });
       return;
     }
 
@@ -1030,7 +1428,7 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
       lessonText = lessonText.slice(0, MAX_LESSON_CHARS);
     }
 
-    const cacheKey = createCacheKey('lesson-coach', {
+    const cacheKey = createCacheKey('lesson-coach:v2', {
       lessonText: lessonText.toLowerCase(),
       yearLevel: normalizeText(input.yearLevel).toLowerCase(),
       subject: normalizeText(input.subject).toLowerCase(),
@@ -1051,29 +1449,85 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
   }
 });
 
-app.post('/api/live-coach', express.json({ limit: '2mb' }), async (req, res) => {
+app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => {
   try {
-    if (!GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+    if (!FIREWORKS_API_KEY) {
+      res.status(500).json({ error: 'Missing FIREWORKS_API_KEY on server.' });
       return;
     }
 
     const input = req.body || {};
-    const observation = normalizeText(input.observation);
+    const observation = normalizeText(input.observation || input.userText);
+    const actionTrigger = normalizeText(input.actionTrigger);
     const yearLevel = normalizeText(input.yearLevel);
     const subject = normalizeText(input.subject);
-    const dominantLanguage = normalizeText(input.dominantLanguage);
+    const dominantLanguage = normalizeText(input.dominantLanguage || input.homeLanguage);
+
+    const imageObj = input.image && typeof input.image === 'object' ? input.image : null;
+    const hasImage = Boolean(imageObj && String(imageObj.base64Data || '').trim());
+    const imageHash = hasImage
+      ? crypto
+          .createHash('sha256')
+          .update(String(imageObj.base64Data))
+          .digest('hex')
+      : '';
 
     const contextLines = [
-      `Class context — Year Level: ${yearLevel || 'Unknown'}`,
-      `Subject: ${subject || 'Unknown'}`,
+      `Class context — Year Level: ${yearLevel || 'Year 4'}`,
+      `Subject: ${subject || 'Science'}`,
       `Dominant Home Language: ${dominantLanguage || 'Iban'}`,
     ];
+    if (actionTrigger) {
+      contextLines.push(`Requested Action Trigger: ${actionTrigger}`);
+    }
 
-    const rawThread = Array.isArray(input.thread) ? input.thread : [];
+    const rawThread = Array.isArray(input.thread || input.messages)
+      ? input.thread || input.messages
+      : [];
 
-    let contents;
-    let cacheKey;
+    const cachePayload = {
+      yearLevel: yearLevel.toLowerCase(),
+      subject: subject.toLowerCase(),
+      dominantLanguage: dominantLanguage.toLowerCase(),
+      actionTrigger: actionTrigger.toLowerCase(),
+      imageHash,
+      observation: observation.toLowerCase(),
+      thread: rawThread
+        .map((m) => `${m?.role === 'coach' ? 'coach' : 'teacher'}:${normalizeText(m?.text).toLowerCase()}`)
+        .slice(-20),
+    };
+    const cacheKey = createCacheKey('live-coach:v3', cachePayload);
+
+    // Check cache before running vision stage
+    if (planCache[cacheKey]?.plan) {
+      const cached = await generateCoachResponse({
+        cacheKey,
+        systemInstruction: '',
+        sanitize: sanitizeLiveCoach,
+      });
+      res.json(cached);
+      return;
+    }
+
+    // Stage 1: If an image is provided and SPLIT_VISION_PIPELINE is active, extract visual stimulus using VISION_MODEL
+    let visionSummary = normalizeText(input.visionSummary);
+    let visionModelUsed = null;
+    let directImage = null;
+
+    if (hasImage) {
+      if (SPLIT_VISION_PIPELINE) {
+        visionSummary = await extractVisualStimulusWithVisionModel({
+          image: imageObj,
+          yearLevel,
+          subject,
+        });
+        visionModelUsed = VISION_MODEL_NAME;
+      } else {
+        directImage = imageObj;
+      }
+    }
+
+    let messages;
 
     if (rawThread.length > 0) {
       const cleanThread = rawThread
@@ -1084,49 +1538,53 @@ app.post('/api/live-coach', express.json({ limit: '2mb' }), async (req, res) => 
         .filter((msg) => msg.text)
         .slice(-20);
 
-      if (!cleanThread.length) {
-        res.status(400).json({ error: 'A quick observation is required.' });
+      if (!cleanThread.length && !hasImage && !actionTrigger) {
+        res.status(400).json({ error: 'A screenshot or quick observation is required.' });
         return;
       }
-      if (cleanThread[cleanThread.length - 1].role !== 'teacher') {
+      if (cleanThread.length === 0) {
+        cleanThread.push({
+          role: 'teacher',
+          text:
+            observation ||
+            `[${actionTrigger || 'build_reasoning_prep'}] Generate the 3-strand reasoning prep card for this screenshot.`,
+        });
+      } else if (cleanThread[cleanThread.length - 1].role !== 'teacher') {
         res.status(400).json({ error: 'The last message must be from the teacher.' });
         return;
       }
 
-      contents = buildLiveCoachContents(cleanThread, contextLines);
-      cacheKey = createCacheKey('live-coach-thread:v2', {
-        yearLevel: yearLevel.toLowerCase(),
-        subject: subject.toLowerCase(),
-        dominantLanguage: dominantLanguage.toLowerCase(),
-        thread: cleanThread.map((m) => `${m.role}:${m.text.toLowerCase()}`),
-      });
+      messages = buildLiveCoachMessages(cleanThread, contextLines, visionSummary);
     } else {
-      if (!observation) {
-        res.status(400).json({ error: 'A quick observation is required.' });
+      if (!observation && !hasImage && !actionTrigger) {
+        res.status(400).json({ error: 'A screenshot or quick observation is required.' });
         return;
       }
       const singlePrompt = buildLiveCoachUserPrompt({
-        observation,
+        observation:
+          observation ||
+          `[${actionTrigger || 'build_reasoning_prep'}] Generate the 3-strand reasoning prep card for this screenshot.`,
+        actionTrigger,
+        visionSummary,
         yearLevel,
         subject,
         dominantLanguage,
       });
-      contents = [{ role: 'user', parts: [{ text: singlePrompt }] }];
-      cacheKey = createCacheKey('live-coach:v2', {
-        observation: observation.toLowerCase(),
-        yearLevel: yearLevel.toLowerCase(),
-        subject: subject.toLowerCase(),
-        dominantLanguage: dominantLanguage.toLowerCase(),
-      });
+      messages = [{ role: 'user', content: singlePrompt }];
     }
 
     const result = await generateCoachResponse({
       cacheKey,
       systemInstruction: buildLiveCoachSystemInstruction(),
-      contents,
+      messages,
+      image: directImage,
+      visionModelUsed,
       sanitize: sanitizeLiveCoach,
     });
-    res.json(result);
+    res.json({
+      ...result,
+      visionSummary: visionSummary || undefined,
+    });
   } catch (error) {
     const status = error instanceof CoachError ? error.status : 500;
     res.status(status).json({ error: error instanceof Error ? error.message : 'Unexpected server error.' });
@@ -1135,8 +1593,8 @@ app.post('/api/live-coach', express.json({ limit: '2mb' }), async (req, res) => 
 
 app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
   try {
-    if (!GEMINI_API_KEY) {
-      res.status(500).json({ error: 'Missing GEMINI_API_KEY on server.' });
+    if (!FIREWORKS_API_KEY) {
+      res.status(500).json({ error: 'Missing FIREWORKS_API_KEY on server.' });
       return;
     }
 
@@ -1153,7 +1611,7 @@ app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
       return;
     }
 
-    const cacheKey = createCacheKey('primer', {
+    const cacheKey = createCacheKey('primer:v2', {
       words: [...words].sort(),
       yearLevel: normalizeText(input.yearLevel).toLowerCase(),
       subject: normalizeText(input.subject).toLowerCase(),
