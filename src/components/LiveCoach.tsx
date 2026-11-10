@@ -8,20 +8,25 @@ import {
 } from 'react';
 import { motion } from 'motion/react';
 import {
+  ArrowRight,
   Camera,
+  CheckCircle2,
   Hand,
   ImageIcon,
   Layers3,
   Lightbulb,
   LoaderCircle,
+  PencilLine,
   Pin,
   RefreshCw,
   Send,
   Sparkles,
   Stethoscope,
+  Target,
   Trash2,
   TriangleAlert,
   Upload,
+  Volume2,
   X,
   Zap,
 } from 'lucide-react';
@@ -762,7 +767,7 @@ function CoachReply({
       <div className="w-full max-w-[96%] space-y-3 rounded-2xl rounded-bl-sm border border-ink/10 bg-parchment-light/70 p-3 sm:p-5">
         <div className="flex flex-wrap items-center gap-2">
           <Sparkles className="h-4 w-4 text-terracotta" />
-          <p className="flex-1 text-sm font-semibold text-ink">{message.text}</p>
+          {!isPrepCard ? <p className="flex-1 text-sm font-semibold text-ink">{message.text}</p> : null}
           <ModeBadge mode={mode} icon={ModeIcon} t={t} />
           {isPrepCard ? (
             <button
@@ -835,13 +840,13 @@ function CoachReply({
           </>
         )}
 
-        {result.rationaleNote ? (
+        {!isPrepCard && result.rationaleNote ? (
           <p className="text-xs italic text-ink-muted">
             {t('live.rationaleNote')}: {result.rationaleNote}
           </p>
         ) : null}
 
-        {result.ideas && result.ideas.length > 0 ? (
+        {!isPrepCard && result.ideas && result.ideas.length > 0 ? (
           <section className="rounded-lg border border-amber-200/60 bg-amber-50/40 p-3">
             <p className="label-section mb-1 flex items-center gap-1.5">
               <Lightbulb className="h-3.5 w-3.5 text-amber-600" />
@@ -863,14 +868,14 @@ function CoachReply({
           </section>
         ) : null}
 
-        {result.observeNext ? (
+        {!isPrepCard && result.observeNext ? (
           <section className="rounded-lg border border-ink/10 bg-white/50 p-3">
             <p className="label-section mb-1">{t('live.observeNext')}</p>
             <p className="text-sm font-semibold text-ink">{result.observeNext}</p>
           </section>
         ) : null}
 
-        {result.regainFocusLine ? (
+        {!isPrepCard && result.regainFocusLine ? (
           <section className="rounded-lg border-2 border-terracotta/40 bg-terracotta/5 p-3">
             <p className="label-section mb-1">{t('live.regainFocus')}</p>
             <div className="flex items-start justify-between gap-2">
@@ -907,160 +912,185 @@ function ReasoningPrepCardView({
   const strand2 = card.strand2_vocabularyAndEalLadder;
   const strand3 = card.strand3_aflAndTransfer;
   const ladder = strand2.ealProgressionLadder;
+  const goal = context.coreConcept || context.pageSummary;
+  const boardLines = [
+    ladder.rung1_pointAndWord,
+    ladder.rung2_twoChoiceCloze,
+    ladder.rung3_causalFrameEn,
+  ].filter(Boolean);
 
   return (
     <div className="space-y-3">
-      <section className="overflow-hidden rounded-xl border border-ink/10 bg-white/70">
-        {image ? (
-          <img src={image} alt={context.pageSummary} className="max-h-56 w-full bg-white object-contain" />
-        ) : null}
-        <div className="p-3">
-          <p className="label-section mb-1 flex items-center gap-1.5">
-            <ImageIcon className="h-3.5 w-3.5 text-terracotta" />
-            {t('live.detectedVisual')}
-          </p>
-          <p className="text-sm font-semibold text-ink">{context.pageSummary}</p>
-          {context.visualAnchors.length > 0 ? (
-            <ul className="mt-2 list-disc space-y-1 pl-4 text-xs text-ink-soft">
-              {context.visualAnchors.map((anchor) => (
-                <li key={anchor}>{anchor}</li>
-              ))}
-            </ul>
+      <section className="rounded-xl border border-ink/10 bg-white/70 p-3">
+        <div className="flex items-start gap-3">
+          {image ? (
+            <img
+              src={image}
+              alt={context.pageSummary}
+              className="hidden h-16 w-20 shrink-0 rounded-lg border border-ink/10 bg-white object-contain sm:block"
+            />
           ) : null}
-          {context.coreConcept ? (
-            <p className="mt-2 text-xs text-ink-soft">
-              <span className="font-bold text-ink">{t('live.coreConcept')}:</span> {context.coreConcept}
-            </p>
-          ) : null}
-          {context.commonMisconception ? (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50/70 p-2.5">
-              <p className="text-[10px] font-bold uppercase tracking-wide text-amber-800">
-                {t('live.commonMisconception')}
-              </p>
-              <p className="mt-1 text-sm text-ink-soft">{context.commonMisconception}</p>
-            </div>
-          ) : null}
+          <div className="min-w-0 flex-1 space-y-2">
+            {goal ? (
+              <div className="flex items-start gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-2">
+                <Target className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
+                <p className="text-sm font-semibold text-ink">
+                  <span className="text-sky-800">{t('live.goal')}:</span> {goal}
+                </p>
+              </div>
+            ) : null}
+            {context.commonMisconception ? (
+              <div className="flex items-start gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-2">
+                <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+                <p className="text-sm font-semibold text-ink">
+                  <span className="text-amber-800">{t('live.watchOut')}:</span>{' '}
+                  {context.commonMisconception}
+                </p>
+              </div>
+            ) : null}
+          </div>
         </div>
       </section>
 
       <section className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 sm:p-4">
-        <p className="label-section mb-1 flex items-center gap-1.5 text-violet-800">
-          <Layers3 className="h-4 w-4" />
-          {t('live.strand1Title')}
+        <StepHeader
+          number="1"
+          title={t('live.stepDiscuss')}
+          minutes={t('live.twoMinutes')}
+          icon={Layers3}
+          tone="bg-violet-100 text-violet-800"
+        />
+        <p className="mb-3 text-[10px] font-bold uppercase tracking-wide text-violet-700">
+          {strand1.talkMoveId}
         </p>
-        <p className="mb-3 text-xs font-bold uppercase tracking-wide text-terracotta">
-          {strand1.talkMoveId} · {strand1.talkMoveName}
-        </p>
-        {strand1.visualHookInstruction ? (
-          <p className="mb-2 text-sm text-ink-soft">
-            <span className="font-bold text-ink">{t('live.visualHook')}:</span>{' '}
-            {strand1.visualHookInstruction}
-          </p>
-        ) : null}
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <div className="rounded-2xl rounded-bl-sm border border-violet-200 bg-white/80 p-3 text-sm font-semibold text-ink">
-            {strand1.competingClaims.claimA}
+        <div className="space-y-2">
+          <DoLine t={t}>{strand1.visualHookInstruction}</DoLine>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            <SayAloud t={t} value={strand1.competingClaims.claimA} />
+            <SayAloud t={t} value={strand1.competingClaims.claimB} />
           </div>
-          <div className="rounded-2xl rounded-br-sm border border-violet-200 bg-white/80 p-3 text-sm font-semibold text-ink">
-            {strand1.competingClaims.claimB}
-          </div>
+          <DoLine t={t}>{strand1.waitTimeCue}</DoLine>
+          <SayAloud t={t} label={t('live.englishShort')} value={strand1.teacherScriptEn} />
+          <SayAloud t={t} label={t('live.bridgeShort')} value={strand1.teacherScriptBridge} />
         </div>
-        <div className="mt-2 rounded-lg border border-violet-200 bg-violet-100/60 px-3 py-2 text-xs font-semibold text-violet-900">
-          {t('live.waitTimeBadge')}: {strand1.waitTimeCue}
-        </div>
-        <SayLine label={t('live.sayEnglish')} value={strand1.teacherScriptEn} />
-        <SayLine label={t('live.sayBridge')} value={strand1.teacherScriptBridge} />
       </section>
 
       <section className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 sm:p-4">
-        <p className="label-section mb-3 text-sky-800">{t('live.strand2Title')}</p>
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-          <div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
-              {t('live.contentNouns')}
-            </p>
-            <div className="space-y-1.5">
-              {strand2.contentNouns.map((noun) => (
-                <div key={`${noun.en}-${noun.l1Bridge}`} className="rounded-lg border border-sky-200 bg-white/70 px-3 py-2">
-                  <p className="text-sm font-bold text-ink">
-                    {noun.en}
-                    {noun.l1Bridge ? <span className="font-normal text-sky-800"> ↔ {noun.l1Bridge}</span> : null}
-                  </p>
-                  {noun.visualPointCue ? <p className="mt-0.5 text-xs text-ink-muted">{noun.visualPointCue}</p> : null}
-                </div>
-              ))}
-            </div>
-          </div>
-          <div>
-            <p className="mb-1 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
-              {t('live.relationalConnectors')}
-            </p>
-            <div className="space-y-1.5">
-              {strand2.relationalConnectors.map((connector) => (
-                <div key={`${connector.en}-${connector.l1Bridge}`} className="rounded-lg border border-sky-200 bg-white/70 px-3 py-2">
-                  <p className="text-sm font-bold text-ink">
-                    {connector.en}
-                    {connector.l1Bridge ? <span className="font-normal text-sky-800"> ↔ {connector.l1Bridge}</span> : null}
-                  </p>
-                  {connector.gestureCue ? <p className="mt-0.5 text-xs text-ink-muted">{connector.gestureCue}</p> : null}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-        <ol className="mt-3 space-y-2">
+        <StepHeader
+          number="2"
+          title={t('live.stepBoard')}
+          minutes={t('live.twoMinutes')}
+          icon={PencilLine}
+          tone="bg-sky-100 text-sky-800"
+        />
+        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {[
-            ['1', t('live.rung1'), ladder.rung1_pointAndWord],
-            ['2', t('live.rung2'), ladder.rung2_twoChoiceCloze],
-            ['3', t('live.rung3'), `${ladder.rung3_causalFrameEn}${ladder.rung3_causalFrameL1 ? ` · ${ladder.rung3_causalFrameL1}` : ''}`],
-          ].map(([number, title, value]) =>
-            value ? (
-              <li key={number} className="flex gap-2 rounded-lg border border-sky-200 bg-white/70 p-2.5">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-sky-100 text-xs font-bold text-sky-800">
-                  {number}
-                </span>
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-sky-800">{title}</p>
-                  <p className="mt-0.5 text-sm text-ink-soft">{value}</p>
+            { title: t('live.wordsToPoint'), words: strand2.contentNouns },
+            { title: t('live.wordsForReasons'), words: strand2.relationalConnectors },
+          ].map((group) =>
+            group.words.length > 0 ? (
+              <div key={group.title} className="rounded-lg border border-sky-200 bg-white/70 p-3">
+                <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-sky-800">
+                  {group.title}
+                </p>
+                <div className="space-y-1.5">
+                  {group.words.map((word) => (
+                    <p key={`${word.en}-${word.l1Bridge}`} className="text-base font-bold text-ink">
+                      {word.en}
+                      {word.l1Bridge ? (
+                        <span className="ml-2 text-sm font-normal text-sky-800">↔ {word.l1Bridge}</span>
+                      ) : null}
+                    </p>
+                  ))}
                 </div>
-              </li>
+              </div>
             ) : null,
           )}
-        </ol>
+        </div>
+        <div className="mt-3">
+          <DoLine t={t}>{t('live.boardDo')}</DoLine>
+        </div>
+        <div className="mt-2 rounded-xl border border-emerald-950 bg-emerald-950 p-3 text-emerald-50 shadow-inner sm:p-4">
+          <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">
+            <PencilLine className="h-4 w-4" />
+            {t('live.writeOnBoard')}
+          </p>
+          <ol className="space-y-3">
+            {boardLines.map((line, index) => (
+              <li key={`${index}-${line}`} className="flex items-start gap-3">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-600 text-sm font-bold text-emerald-200">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-semibold leading-snug text-white sm:text-lg">{line}</p>
+                  {index === 2 && ladder.rung3_causalFrameL1 ? (
+                    <p className="mt-1 border-t border-emerald-800 pt-1 text-sm text-emerald-100">
+                      {ladder.rung3_causalFrameL1}
+                    </p>
+                  ) : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
       </section>
 
       <section className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 sm:p-4">
-        <p className="label-section mb-2 flex items-center gap-1.5 text-emerald-800">
-          <Hand className="h-4 w-4" />
-          {t('live.strand3Title')}
-        </p>
-        <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">{t('live.fingerVote')}</p>
-        <p className="mt-1 text-sm font-semibold text-ink">{strand3.fingerVotePrompt}</p>
-        <div className="mt-2 space-y-1.5">
-          {strand3.options.map((option) => (
-            <div key={`${option.finger}-${option.text}`} className="flex flex-wrap items-center gap-2 rounded-lg border border-emerald-200 bg-white/70 px-3 py-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-emerald-100 text-sm font-bold text-emerald-900">
-                {option.finger}
-              </span>
-              <p className="min-w-40 flex-1 text-sm text-ink-soft">{option.text}</p>
-              <DiagnosticBadge tag={option.diagnosticTag} t={t} />
-            </div>
-          ))}
+        <StepHeader
+          number="3"
+          title={t('live.stepCheck')}
+          minutes={t('live.oneMinute')}
+          icon={Hand}
+          tone="bg-emerald-100 text-emerald-800"
+        />
+        <div className="space-y-2">
+          <DoLine t={t}>{t('live.fingerVoteDo')}</DoLine>
+          <SayAloud t={t} value={strand3.fingerVotePrompt} />
+          <div className="space-y-1.5">
+            {strand3.options.map((option) => {
+              const isCorrect = option.diagnosticTag === 'correct_reasoning';
+              return (
+                <div
+                  key={`${option.finger}-${option.text}`}
+                  className={`flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 ${
+                    isCorrect
+                      ? 'border-emerald-500 bg-emerald-100 ring-1 ring-emerald-400'
+                      : 'border-ink/10 bg-white/70'
+                  }`}
+                >
+                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${
+                    isCorrect ? 'bg-emerald-600 text-white' : 'bg-ink/5 text-ink-muted'
+                  }`}>
+                    {option.finger}
+                  </span>
+                  <p className="min-w-40 flex-1 text-base font-semibold text-ink">{option.text}</p>
+                  {isCorrect ? (
+                    <span className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-emerald-800">
+                      <CheckCircle2 className="h-5 w-5" />
+                      {t('live.correctFinger', { count: String(option.finger) })}
+                    </span>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
         </div>
         {strand3.whatIfTransferTwist.promptEn ? (
-          <div className="mt-3 rounded-lg border-2 border-emerald-300 bg-white/70 p-3">
-            <p className="text-xs font-bold uppercase tracking-wide text-emerald-800">{t('live.whatIfTitle')}</p>
-            <p className="mt-1 text-sm font-semibold text-ink">{strand3.whatIfTransferTwist.promptEn}</p>
-            {strand3.whatIfTransferTwist.promptBridge ? (
-              <p className="mt-1 text-sm italic text-ink-muted">{strand3.whatIfTransferTwist.promptBridge}</p>
-            ) : null}
-            {strand3.whatIfTransferTwist.expectedReasoning ? (
-              <p className="mt-2 text-xs text-ink-soft">
-                <span className="font-bold">{t('live.expectedReasoning')}:</span>{' '}
-                {strand3.whatIfTransferTwist.expectedReasoning}
-              </p>
-            ) : null}
-          </div>
+          <details className="mt-3 rounded-lg border border-emerald-300 bg-white/70 p-3">
+            <summary className="cursor-pointer text-sm font-bold text-emerald-800">
+              {t('live.earlyFinishers')}
+            </summary>
+            <div className="mt-2 space-y-2">
+              <SayAloud t={t} label={t('live.englishShort')} value={strand3.whatIfTransferTwist.promptEn} />
+              <SayAloud t={t} label={t('live.bridgeShort')} value={strand3.whatIfTransferTwist.promptBridge} />
+              {strand3.whatIfTransferTwist.expectedReasoning ? (
+                <p className="text-xs text-ink-soft">
+                  <span className="font-bold">{t('live.listenFor')}:</span>{' '}
+                  {strand3.whatIfTransferTwist.expectedReasoning}
+                </p>
+              ) : null}
+            </div>
+          </details>
         ) : null}
       </section>
 
@@ -1086,16 +1116,57 @@ function ReasoningPrepCardView({
   );
 }
 
-function DiagnosticBadge({ tag, t }: { tag: DiagnosticTag; t: TranslateFn }) {
-  const styles: Record<DiagnosticTag, string> = {
-    correct_reasoning: 'border-emerald-300 bg-emerald-100 text-emerald-800',
-    concept_misconception: 'border-amber-300 bg-amber-100 text-amber-800',
-    language_or_surface_trap: 'border-sky-300 bg-sky-100 text-sky-800',
-  };
+function StepHeader({
+  number,
+  title,
+  minutes,
+  icon: Icon,
+  tone,
+}: {
+  number: string;
+  title: string;
+  minutes: string;
+  icon: typeof Lightbulb;
+  tone: string;
+}) {
   return (
-    <span className={`rounded-full border px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide ${styles[tag] || styles.language_or_surface_trap}`}>
-      {t(`live.tag.${tag}`)}
-    </span>
+    <div className="mb-3 flex items-center gap-2">
+      <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
+        <Icon className="h-5 w-5" />
+      </span>
+      <p className="flex-1 text-lg font-bold text-ink">
+        <span className="mr-2 text-ink-muted">{number}</span>
+        {title}
+      </p>
+      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>{minutes}</span>
+    </div>
+  );
+}
+
+function DoLine({ children, t }: { children: string; t: TranslateFn }) {
+  if (!children) return null;
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded bg-ink/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+        <ArrowRight className="h-3 w-3" />
+        {t('live.do')}
+      </span>
+      <p className="pt-0.5 text-sm font-semibold text-ink-soft">{children}</p>
+    </div>
+  );
+}
+
+function SayAloud({ value, label, t }: { value: string; label?: string; t: TranslateFn }) {
+  if (!value) return null;
+  return (
+    <div className="rounded-xl border border-ink/20 bg-white p-3 text-ink shadow-sm">
+      <p className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+        <Volume2 className="h-4 w-4 text-terracotta" />
+        {t('live.say')}
+        {label ? <span>· {label}</span> : null}
+      </p>
+      <p className="text-base font-semibold leading-snug sm:text-lg">{value}</p>
+    </div>
   );
 }
 
