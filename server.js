@@ -45,7 +45,8 @@ const FALLBACK_MODEL_LIMIT = Number(process.env.FALLBACK_MODEL_LIMIT || 150000);
 
 const DATA_DIR = process.env.COACH_DATA_DIR || path.join(__dirname, '.kilo');
 const COUNTERS_PATH = path.join(DATA_DIR, 'model-usage-counters.json');
-const CACHE_PATH = path.join(DATA_DIR, 'talk-move-plan-cache.json');
+const CACHE_PATH = path.join(DATA_DIR, 'talk-move-plan-cache-v2.json');
+const LEGACY_CACHE_PATH = path.join(DATA_DIR, 'talk-move-plan-cache.json');
 const CACHE_MAX_ENTRIES = 800;
 const CACHE_TTL_DAYS = 14;
 
@@ -1246,18 +1247,20 @@ async function generateCoachResponse({
 }) {
   counters = normalizeCounters(counters);
 
-  const cached = planCache[cacheKey];
-  if (cached?.plan) {
-    return {
-      plan: cached.plan,
-      meta: {
-        fromCache: true,
-        modelUsed: cached.modelUsed || 'cache',
-        visionModelUsed: cached.visionModelUsed || visionModelUsed || null,
-        counters,
-        mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
-      },
-    };
+  if (cacheKey) {
+    const cached = planCache[cacheKey];
+    if (cached?.plan) {
+      return {
+        plan: cached.plan,
+        meta: {
+          fromCache: true,
+          modelUsed: cached.modelUsed || 'cache',
+          visionModelUsed: cached.visionModelUsed || visionModelUsed || null,
+          counters,
+          mode: counters.proCalls >= PRIMARY_MODEL_SWITCH_THRESHOLD ? 'high-speed' : 'high-quality',
+        },
+      };
+    }
   }
 
   const canUsePrimary =
@@ -1298,14 +1301,16 @@ async function generateCoachResponse({
   writeJson(COUNTERS_PATH, counters);
 
   const combinedModelLabel = visionModelUsed ? `${visionModelUsed} -> ${modelUsed}` : modelUsed;
-  planCache[cacheKey] = {
-    createdAt: Date.now(),
-    modelUsed: combinedModelLabel,
-    visionModelUsed: visionModelUsed || null,
-    plan,
-  };
-  planCache = pruneCache(planCache);
-  writeJson(CACHE_PATH, planCache);
+  if (cacheKey) {
+    planCache[cacheKey] = {
+      createdAt: Date.now(),
+      modelUsed: combinedModelLabel,
+      visionModelUsed: visionModelUsed || null,
+      plan,
+    };
+    planCache = pruneCache(planCache);
+    writeJson(CACHE_PATH, planCache);
+  }
 
   return {
     plan,
@@ -1330,43 +1335,14 @@ async function extractLessonText(input) {
   return String(result.text || '').trim();
 }
 
+try {
+  if (fs.existsSync(LEGACY_CACHE_PATH)) fs.unlinkSync(LEGACY_CACHE_PATH);
+} catch {}
 let counters = normalizeCounters(readJson(COUNTERS_PATH, { date: getUtcDateKey(), proCalls: 0, flashCalls: 0 }));
 let planCache = pruneCache(readJson(CACHE_PATH, {}));
 
 // Serve static files from dist
 app.use(express.static(path.join(__dirname, 'dist')));
-
-// API endpoint for image checking (from vite.config)
-app.get('/api/check-image', (req, res) => {
-  const { filename } = req.query;
-  if (!filename) {
-    res.status(400).json({ error: 'Missing filename' });
-    return;
-  }
-  const filepath = path.join(__dirname, 'dist', String(filename));
-  const exists = fs.existsSync(filepath);
-  res.json({ exists });
-});
-
-// API endpoint for saving images
-app.post('/api/save-image', express.json({ limit: '50mb' }), (req, res) => {
-  try {
-    const { filename, base64 } = req.body;
-    if (!filename || !base64) {
-      res.status(400).json({ error: 'Missing filename or base64' });
-      return;
-    }
-    const filepath = path.join(__dirname, 'dist', filename);
-    const dir = path.dirname(filepath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filepath, Buffer.from(base64, 'base64'));
-    res.json({ success: true });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
-  }
-});
 
 app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res) => {
   try {
@@ -1431,16 +1407,7 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
       lessonText = lessonText.slice(0, MAX_LESSON_CHARS);
     }
 
-    const cacheKey = createCacheKey('lesson-coach:v2', {
-      lessonText: lessonText.toLowerCase(),
-      yearLevel: normalizeText(input.yearLevel).toLowerCase(),
-      subject: normalizeText(input.subject).toLowerCase(),
-      dominantLanguage: normalizeText(input.dominantLanguage).toLowerCase(),
-      focusConcern: normalizeText(input.focusConcern).toLowerCase(),
-    });
-
     const result = await generateCoachResponse({
-      cacheKey,
       systemInstruction: buildLessonCoachSystemInstruction(),
       userPrompt: buildLessonCoachUserPrompt(input, lessonText),
       sanitize: sanitizeLessonCoach,
@@ -1468,12 +1435,6 @@ app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => 
 
     const imageObj = input.image && typeof input.image === 'object' ? input.image : null;
     const hasImage = Boolean(imageObj && String(imageObj.base64Data || '').trim());
-    const imageHash = hasImage
-      ? crypto
-          .createHash('sha256')
-          .update(String(imageObj.base64Data))
-          .digest('hex')
-      : '';
 
     const contextLines = [
       `Class context — Year Level: ${yearLevel || 'Year 4'}`,
@@ -1488,31 +1449,6 @@ app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => 
       ? input.thread || input.messages
       : [];
 
-    const cachePayload = {
-      yearLevel: yearLevel.toLowerCase(),
-      subject: subject.toLowerCase(),
-      dominantLanguage: dominantLanguage.toLowerCase(),
-      actionTrigger: actionTrigger.toLowerCase(),
-      imageHash,
-      observation: observation.toLowerCase(),
-      thread: rawThread
-        .map((m) => `${m?.role === 'coach' ? 'coach' : 'teacher'}:${normalizeText(m?.text).toLowerCase()}`)
-        .slice(-20),
-    };
-    const cacheKey = createCacheKey('live-coach:v3', cachePayload);
-
-    // Check cache before running vision stage
-    if (planCache[cacheKey]?.plan) {
-      const cached = await generateCoachResponse({
-        cacheKey,
-        systemInstruction: '',
-        sanitize: sanitizeLiveCoach,
-      });
-      res.json(cached);
-      return;
-    }
-
-    // Stage 1: If an image is provided and SPLIT_VISION_PIPELINE is active, extract visual stimulus using VISION_MODEL
     let visionSummary = normalizeText(input.visionSummary);
     let visionModelUsed = null;
     let directImage = null;
@@ -1577,7 +1513,6 @@ app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => 
     }
 
     const result = await generateCoachResponse({
-      cacheKey,
       systemInstruction: buildLiveCoachSystemInstruction(),
       messages,
       image: directImage,
@@ -1636,6 +1571,10 @@ app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
 
 // Serve index.html for all other routes (SPA)
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) {
+    res.status(404).json({ error: 'Not found.' });
+    return;
+  }
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
