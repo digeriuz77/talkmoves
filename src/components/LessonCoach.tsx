@@ -1,18 +1,19 @@
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { FormEvent, useRef, useState } from 'react';
 import { motion } from 'motion/react';
 import { Download, FileText, LoaderCircle, TriangleAlert, Upload, X } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
+import { useClassContext } from '../lib/class-context';
 import {
+  CollapsibleFormShell,
   CopyButton,
+  LanguageLensToggle,
   NeedBadge,
   SayLine,
-  SelectField,
+  SegmentedTabs,
   StartNewButton,
-  languages,
-  subjectLabel,
-  subjects,
-  yearLevels,
+  type LangLens,
   type NeedCategory,
 } from './coach-ui';
 
@@ -61,6 +62,8 @@ type LessonCoachResult = {
   agencyShift: string[];
 };
 
+type LessonTab = 'quick' | 'risks' | 'pacing';
+
 function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
   let binary = '';
@@ -99,7 +102,7 @@ function buildDownloadText(result: LessonCoachResult): string {
   lines.push('');
   lines.push('LANGUAGE BRIDGE — COGNATES');
   result.languageBridge.cognates.forEach((c) => {
-    lines.push(`- ${c.english} ↔ ${c.malay}${c.note ? ` (${c.note})` : ''}`);
+    lines.push(`- ${c.english} <-> ${c.malay}${c.note ? ` (${c.note})` : ''}`);
   });
   lines.push('');
   lines.push('QUICK-SHEET');
@@ -111,7 +114,7 @@ function buildDownloadText(result: LessonCoachResult): string {
   lines.push(`Hinge (EN): ${result.instructionalHinge.hingeQuestionEnglish}`);
   lines.push(`Hinge (bridge): ${result.instructionalHinge.hingeQuestionBridge}`);
   result.instructionalHinge.gamePlan.forEach((g) => {
-    lines.push(`- If pupil says "${g.ifStudentSays}"${g.language ? ` [${g.language}]` : ''} → ${g.useMoveId} ${g.useMoveName}: ${g.teacherResponse}`);
+    lines.push(`- If pupil says "${g.ifStudentSays}"${g.language ? ` [${g.language}]` : ''} -> ${g.useMoveId} ${g.useMoveName}: ${g.teacherResponse}`);
   });
   lines.push('');
   lines.push('AGENCY SHIFT — CUT TEACHER TALK');
@@ -121,20 +124,21 @@ function buildDownloadText(result: LessonCoachResult): string {
 
 export default function LessonCoach() {
   const { t } = useLang();
+  const { yearLevel, subject, dominantLanguage } = useClassContext();
   const [lessonText, setLessonText, resetLessonText] = usePersistentState('tmb.lesson.lessonText', '');
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
-  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.lesson.yearLevel', '4');
-  const [subject, setSubject, resetSubject] = usePersistentState('tmb.lesson.subject', 'science');
-  const [dominantLanguage, setDominantLanguage, resetDominantLanguage] = usePersistentState(
-    'tmb.lesson.dominantLanguage',
-    'iban',
-  );
   const [focusConcern, setFocusConcern, resetFocusConcern] = usePersistentState('tmb.lesson.focusConcern', '');
   const [result, setResult, resetResult] = usePersistentState<LessonCoachResult | null>('tmb.lesson.result', null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [formCollapsed, setFormCollapsed] = useState<boolean>(() => Boolean(result));
+  const [activeTab, setActiveTab] = useState<LessonTab>('quick');
+  const [langLens, setLangLens] = useState<LangLens>('both');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showEn = langLens === 'both' || langLens === 'en';
+  const showL1 = langLens === 'both' || langLens === 'l1';
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -162,12 +166,10 @@ export default function LessonCoach() {
 
   const clearTab = () => {
     resetLessonText();
-    resetYearLevel();
-    resetSubject();
-    resetDominantLanguage();
     resetFocusConcern();
     resetResult();
     clearFile();
+    setFormCollapsed(false);
     setError(null);
   };
 
@@ -197,6 +199,8 @@ export default function LessonCoach() {
         throw new Error(payload?.error || t('lesson.errors.failed'));
       }
       setResult(payload.plan as LessonCoachResult);
+      setFormCollapsed(true);
+      setActiveTab('quick');
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t('lesson.errors.failed'));
     } finally {
@@ -215,253 +219,173 @@ export default function LessonCoach() {
     URL.revokeObjectURL(url);
   };
 
+  const summaryLabel = fileName || lessonText.trim().slice(0, 60) || t('lesson.outputTitle');
+
   return (
-    <div>
-      <div className="mb-3 flex justify-end print:hidden">
-        <StartNewButton onClear={clearTab} />
-      </div>
-      <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-          <p className="text-xs font-semibold text-amber-900">{t('coach.piiWarning')}</p>
-        </div>
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {t('lesson.pasteLabel')}
-          </span>
-          <textarea
-            value={lessonText}
-            onChange={(event) => {
-              setLessonText(event.target.value);
-              if (event.target.value.trim()) clearFile();
-            }}
-            className="min-h-36 w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-            placeholder={t('lesson.pastePlaceholder')}
-          />
-        </label>
+    <div className="space-y-4">
+      <CollapsibleFormShell
+        collapsed={Boolean(result) && formCollapsed}
+        onToggle={() => setFormCollapsed((c) => !c)}
+        summary={result ? summaryLabel : ''}
+        actions={<StartNewButton onClear={clearTab} />}
+      >
+        <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5">
+          <div className="mb-3 flex items-center gap-2 rounded-xl border-2 border-amber/35 bg-amber-bg px-3 py-2">
+            <TriangleAlert className="h-4 w-4 shrink-0 text-[#9e5f06]" />
+            <p className="text-xs font-bold text-[#7c4902]">{t('coach.piiWarning')}</p>
+          </div>
 
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="inline-flex items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-white touch-target"
-          >
-            <Upload className="h-4 w-4" />
-            {t('lesson.uploadLabel')}
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.txt,.md,text/plain,application/pdf"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void handleFile(file);
-            }}
-          />
-          {fileName ? (
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs text-ink-soft">
-              <FileText className="h-3.5 w-3.5" />
-              {fileName}
-              <button type="button" onClick={clearFile} aria-label={t('lesson.removeFile')}>
-                <X className="h-3.5 w-3.5 text-ink-muted hover:text-ink" />
-              </button>
+          <label className="block">
+            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+              {t('lesson.pasteLabel')}
             </span>
-          ) : (
-            <span className="text-xs text-ink-muted">{t('lesson.uploadHint')}</span>
-          )}
-        </div>
+            <textarea
+              value={lessonText}
+              onChange={(event) => {
+                setLessonText(event.target.value);
+                if (event.target.value.trim()) clearFile();
+              }}
+              rows={4}
+              className="w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2.5 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+              placeholder={t('lesson.pastePlaceholder')}
+            />
+          </label>
 
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <SelectField
-            label={t('live.yearLabel')}
-            value={yearLevel}
-            onChange={setYearLevel}
-            options={yearLevels.map((y) => ({ value: y, label: `Year ${y}` }))}
-          />
-          <SelectField
-            label={t('live.subjectLabel')}
-            value={subject}
-            onChange={setSubject}
-            options={subjects.map((s) => ({ value: s, label: subjectLabel(s) }))}
-          />
-          <SelectField
-            label={t('live.languageLabel')}
-            value={dominantLanguage}
-            onChange={setDominantLanguage}
-            options={languages.map((l) => ({
-              value: l,
-              label: l.charAt(0).toUpperCase() + l.slice(1),
-            }))}
-          />
-        </div>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-ink/15 bg-white px-3.5 py-2 font-display text-xs font-semibold text-ink transition hover:border-terracotta/40 touch-target"
+            >
+              <Upload className="h-4 w-4 text-terracotta" />
+              {t('lesson.uploadLabel')}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".pdf,.txt,.md,text/plain,application/pdf"
+              className="hidden"
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) void handleFile(file);
+              }}
+            />
+            {fileName ? (
+              <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-sage/30 bg-sage-bg px-3 py-1 text-xs font-bold text-[#1f6b4a]">
+                <FileText className="h-3.5 w-3.5" />
+                {fileName}
+                <button type="button" onClick={clearFile} aria-label={t('lesson.removeFile')}>
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              </span>
+            ) : (
+              <span className="text-xs font-semibold text-ink-muted">{t('lesson.uploadHint')}</span>
+            )}
+          </div>
 
-        <label className="mt-3 block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {t('lesson.concernLabel')}
-          </span>
-          <input
-            value={focusConcern}
-            onChange={(event) => setFocusConcern(event.target.value)}
-            className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-            placeholder={t('lesson.concernPlaceholder')}
-          />
-        </label>
+          <label className="mt-3 block">
+            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+              {t('lesson.concernLabel')}
+            </span>
+            <input
+              value={focusConcern}
+              onChange={(event) => setFocusConcern(event.target.value)}
+              className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+              placeholder={t('lesson.concernPlaceholder')}
+            />
+          </label>
 
-        {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
+          {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-primary mt-4 inline-flex items-center gap-2 rounded-lg touch-target disabled:opacity-70"
-        >
-          {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
-          {loading ? t('lesson.analyzing') : t('lesson.analyze')}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary mt-4 inline-flex w-full items-center justify-center gap-2 touch-target disabled:opacity-70 sm:w-auto"
+          >
+            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
+            {loading ? t('lesson.analyzing') : t('lesson.analyze')}
+          </button>
+        </form>
+      </CollapsibleFormShell>
 
       {result ? (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="mt-4 sm:mt-6 space-y-3 sm:space-y-4"
+          transition={{ duration: 0.2 }}
+          className="space-y-3"
         >
-          <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
-            <h2 className="font-display text-lg font-bold text-ink">{t('lesson.outputTitle')}</h2>
-            <button
-              type="button"
-              onClick={handleDownload}
-              className="inline-flex items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-white touch-target"
-            >
-              <Download className="h-4 w-4" />
-              {t('builder.downloadTxt')}
-            </button>
-          </div>
-
-          <section className="card-warm p-4 sm:p-5">
-            <div className="mb-2 flex flex-wrap items-center gap-2">
-              <p className="label-section">{t('lesson.detectedConcern')}</p>
-              <NeedBadge category={result.detectedConcern.category} />
+          {/* Compact Detected Concern Banner */}
+          <section className="card-warm p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <NeedBadge category={result.detectedConcern.category} />
+                <span className="text-xs font-bold text-ink-muted">{t('lesson.detectedConcern')}</span>
+              </div>
+              <button
+                type="button"
+                onClick={handleDownload}
+                className="inline-flex items-center gap-1.5 rounded-xl border-2 border-ink/15 bg-white px-3 py-1.5 font-display text-xs font-semibold text-ink transition hover:border-ink/30 touch-target print:hidden"
+              >
+                <Download className="h-3.5 w-3.5" />
+                {t('builder.downloadTxt')}
+              </button>
             </div>
-            {result.planSummary ? <p className="text-sm text-ink-soft">{result.planSummary}</p> : null}
+            {result.planSummary ? (
+              <p className="mt-2 text-sm font-semibold text-ink">{result.planSummary}</p>
+            ) : null}
             {result.detectedConcern.rationale ? (
-              <p className="mt-1 text-xs text-ink-muted">{result.detectedConcern.rationale}</p>
+              <p className="mt-1 text-xs text-ink-soft">{result.detectedConcern.rationale}</p>
             ) : null}
           </section>
 
-          {result.riskMoments.length > 0 ? (
-            <section className="card-warm p-4 sm:p-5">
-              <p className="label-section mb-3">{t('lesson.riskMoments')}</p>
-              <div className="space-y-3">
-                {result.riskMoments.map((moment, idx) => (
-                  <div key={`risk-${idx}`} className="rounded-lg border border-ink/10 bg-white/50 px-3 py-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-red-50 text-xs font-bold text-red-700">
-                        {idx + 1}
-                      </span>
-                      <p className="text-sm font-semibold text-ink">{moment.momentLabel}</p>
-                      {moment.lessonPhase ? (
-                        <span className="rounded-full border border-ink/10 bg-white/60 px-2 py-0.5 text-[10px] uppercase tracking-wide text-ink-muted">
-                          {moment.lessonPhase}
-                        </span>
-                      ) : null}
-                    </div>
-                    <p className="mt-1.5 text-sm text-ink-soft">{moment.whyRisky}</p>
-                    {moment.talkMoveId || moment.talkMoveName ? (
-                      <p className="mt-2 text-xs font-bold uppercase tracking-wide text-terracotta">
-                        {moment.talkMoveId} {moment.talkMoveName}
-                      </p>
-                    ) : null}
-                    <SayLine label={t('lesson.scriptEnglish')} value={moment.teacherScriptEnglish} />
-                    <SayLine label={t('lesson.scriptBridge')} value={moment.teacherScriptBridge} />
-                    {moment.sentenceFrames.length > 0 ? (
-                      <div className="mt-2">
-                        <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
-                          {t('lesson.frames')}
-                        </p>
-                        <ul className="space-y-1">
-                          {moment.sentenceFrames.map((frame, frameIdx) => (
-                            <li key={`frame-${idx}-${frameIdx}`} className="text-sm italic text-ink-soft">
-                              "{frame}"
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            </section>
-          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
+            <LanguageLensToggle value={langLens} onChange={setLangLens} />
+          </div>
 
-          {result.pacingCoach.teacherTalkZones.length > 0 || result.pacingCoach.talkRatioTip ? (
+          <SegmentedTabs
+            ariaLabel={t('lesson.outputTitle')}
+            active={activeTab}
+            onChange={setActiveTab}
+            tabs={[
+              { id: 'quick', label: t('lesson.tabQuick') },
+              {
+                id: 'risks',
+                label: t('lesson.tabRisks'),
+                badge: result.riskMoments.length ? String(result.riskMoments.length) : undefined,
+              },
+              { id: 'pacing', label: t('lesson.tabPacing') },
+            ]}
+          />
+
+          {/* TAB 1: Quick-Sheet */}
+          <div className={activeTab === 'quick' ? 'space-y-3' : 'hidden print:block print:space-y-3'}>
             <section className="card-warm p-4 sm:p-5">
-              <p className="label-section mb-3">{t('lesson.pacingCoach')}</p>
-              <div className="space-y-2">
-                {result.pacingCoach.teacherTalkZones.map((zone, idx) => (
-                  <div key={`zone-${idx}`} className="rounded-lg border border-amber-200 bg-amber-50/50 px-3 py-2">
-                    <p className="text-sm font-semibold text-ink">{zone.zone}</p>
-                    {zone.signal ? <p className="mt-0.5 text-xs text-ink-muted">{zone.signal}</p> : null}
-                    <p className="mt-1 text-xs font-bold uppercase tracking-wide text-terracotta">
-                      {t('lesson.hardBreak')}: {zone.hardBreakMoveId} {zone.hardBreakMoveName}
-                    </p>
-                    <SayLine label={t('lesson.script')} value={zone.script} />
-                  </div>
-                ))}
-              </div>
-              {result.pacingCoach.talkRatioTip ? (
-                <p className="mt-3 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft">
-                  {result.pacingCoach.talkRatioTip}
-                </p>
+              <p className="label-section mb-2">{t('lesson.quickSheet')}</p>
+              {showEn ? (
+                <SayLine
+                  label={t('lesson.targetQuestion')}
+                  value={result.languageBridge.quickSheet.targetQuestionEnglish}
+                  tone="en"
+                />
               ) : null}
-            </section>
-          ) : null}
-
-          <section className="card-warm p-4 sm:p-5">
-            <p className="label-section mb-3">{t('lesson.languageBridge')}</p>
-            {result.languageBridge.cognates.length > 0 ? (
-              <div className="mb-4">
-                <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                  {t('lesson.cognates')}
-                </p>
-                <ul className="space-y-1.5">
-                  {result.languageBridge.cognates.map((cognate, idx) => (
-                    <li
-                      key={`cognate-${idx}`}
-                      className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft"
-                    >
-                      <span className="font-semibold text-ink">{cognate.english}</span>
-                      {' ↔ '}
-                      <span className="font-semibold text-ink">{cognate.malay}</span>
-                      {cognate.note ? <span className="text-xs text-ink-muted"> — {cognate.note}</span> : null}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ) : null}
-            <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              {t('lesson.quickSheet')}
-            </p>
-            <div className="rounded-lg border border-ink/10 bg-white/50 px-3 py-3">
-              <SayLine
-                label={t('lesson.targetQuestion')}
-                value={result.languageBridge.quickSheet.targetQuestionEnglish}
-              />
-              <SayLine
-                label={t('lesson.lowStakesEntry')}
-                value={result.languageBridge.quickSheet.lowStakesEntryBridge}
-              />
+              {showL1 ? (
+                <SayLine
+                  label={t('lesson.lowStakesEntry')}
+                  value={result.languageBridge.quickSheet.lowStakesEntryBridge}
+                  tone="l1"
+                />
+              ) : null}
               {result.languageBridge.quickSheet.sentenceFrames.length > 0 ? (
-                <div className="mt-2">
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
+                <div className="mt-3">
+                  <p className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
                     {t('lesson.frames')}
                   </p>
-                  <ul className="space-y-1.5">
+                  <ul className="space-y-2">
                     {result.languageBridge.quickSheet.sentenceFrames.map((frame, idx) => (
                       <li
                         key={`qs-frame-${idx}`}
-                        className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/60 px-3 py-2 text-sm text-ink-soft"
+                        className="flex items-start justify-between gap-2 rounded-2xl border-2 border-ink/10 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink"
                       >
                         <span className="flex-1">{frame}</span>
                         <CopyButton value={frame} />
@@ -470,57 +394,159 @@ export default function LessonCoach() {
                   </ul>
                 </div>
               ) : null}
-            </div>
-          </section>
+            </section>
 
-          {result.instructionalHinge.hingeQuestionEnglish || result.instructionalHinge.gamePlan.length > 0 ? (
-            <section className="card-warm p-4 sm:p-5">
-              <p className="label-section mb-3">{t('lesson.hinge')}</p>
-              <SayLine label="EN" value={result.instructionalHinge.hingeQuestionEnglish} />
-              <SayLine label="MS/Iban" value={result.instructionalHinge.hingeQuestionBridge} />
-              {result.instructionalHinge.gamePlan.length > 0 ? (
-                <div className="mt-3">
-                  <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                    {t('lesson.gamePlan')}
+            {result.languageBridge.cognates.length > 0 ? (
+              <section className="card-warm p-4 sm:p-5">
+                <p className="label-section mb-2.5">{t('lesson.cognates')}</p>
+                <div className="flex flex-wrap gap-2">
+                  {result.languageBridge.cognates.map((cognate, idx) => (
+                    <div
+                      key={`cognate-${idx}`}
+                      className="rounded-2xl border-2 border-sky/25 bg-sky-bg/60 px-3 py-2 text-sm"
+                    >
+                      <span className="font-display font-bold text-ink">{cognate.english}</span>
+                      <span className="mx-1.5 text-sky">↔</span>
+                      <span className="font-display font-bold text-[#1c5f8d]">{cognate.malay}</span>
+                      {cognate.note ? (
+                        <p className="mt-0.5 text-xs text-ink-muted">{cognate.note}</p>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ) : null}
+
+            {result.agencyShift.length > 0 ? (
+              <section className="card-warm p-4 sm:p-5">
+                <p className="label-section mb-2">{t('lesson.agencyShift')}</p>
+                <ul className="space-y-2 text-sm text-ink-soft">
+                  {result.agencyShift.map((tip, idx) => (
+                    <li key={`agency-${idx}`} className="rounded-xl border-2 border-sage/20 bg-sage-bg/40 px-3.5 py-2.5 font-semibold text-ink">
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </div>
+
+          {/* TAB 2: High-Risk Moments */}
+          <div className={activeTab === 'risks' ? 'space-y-2.5' : 'hidden print:block print:space-y-2.5'}>
+            {result.riskMoments.map((moment, idx) => (
+              <details
+                key={`risk-${idx}`}
+                open={idx === 0}
+                className="card-warm group overflow-hidden p-4"
+              >
+                <summary className="flex cursor-pointer list-none items-center gap-2.5 [&::-webkit-details-marker]:hidden touch-target">
+                  <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-terracotta font-display text-xs font-bold text-white">
+                    {idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-display text-base font-semibold text-ink">{moment.momentLabel}</p>
+                    {moment.lessonPhase ? (
+                      <span className="text-xs font-bold text-ink-muted">{moment.lessonPhase}</span>
+                    ) : null}
+                  </div>
+                  {moment.talkMoveName ? (
+                    <span className="pill-terracotta hidden sm:inline-block">{moment.talkMoveName}</span>
+                  ) : null}
+                </summary>
+
+                <div className="mt-3 border-t border-ink/10 pt-3">
+                  <p className="text-sm text-ink-soft">{moment.whyRisky}</p>
+                  {moment.talkMoveId || moment.talkMoveName ? (
+                    <p className="mt-2 font-display text-xs font-bold uppercase tracking-wide text-terracotta">
+                      {moment.talkMoveId} {moment.talkMoveName}
+                    </p>
+                  ) : null}
+                  {showEn ? (
+                    <SayLine label={t('lesson.scriptEnglish')} value={moment.teacherScriptEnglish} tone="en" />
+                  ) : null}
+                  {showL1 ? (
+                    <SayLine label={t('lesson.scriptBridge')} value={moment.teacherScriptBridge} tone="l1" />
+                  ) : null}
+                  {moment.sentenceFrames.length > 0 ? (
+                    <div className="mt-2.5">
+                      <p className="mb-1 text-[11px] font-extrabold uppercase tracking-wide text-ink-muted">
+                        {t('lesson.frames')}
+                      </p>
+                      <ul className="space-y-1">
+                        {moment.sentenceFrames.map((frame, frameIdx) => (
+                          <li key={`frame-${idx}-${frameIdx}`} className="text-sm font-semibold italic text-ink-soft">
+                            "{frame}"
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </div>
+              </details>
+            ))}
+          </div>
+
+          {/* TAB 3: Pacing & Hinge */}
+          <div className={activeTab === 'pacing' ? 'space-y-3' : 'hidden print:block print:space-y-3'}>
+            {result.pacingCoach.teacherTalkZones.length > 0 || result.pacingCoach.talkRatioTip ? (
+              <section className="card-warm p-4 sm:p-5">
+                <p className="label-section mb-2.5">{t('lesson.pacingCoach')}</p>
+                <div className="space-y-2.5">
+                  {result.pacingCoach.teacherTalkZones.map((zone, idx) => (
+                    <div key={`zone-${idx}`} className="rounded-2xl border-2 border-amber/35 bg-amber-bg/60 p-3.5">
+                      <p className="font-display text-sm font-bold text-ink">{zone.zone}</p>
+                      {zone.signal ? <p className="mt-0.5 text-xs text-ink-soft">{zone.signal}</p> : null}
+                      <p className="mt-1.5 font-display text-xs font-bold text-terracotta">
+                        {t('lesson.hardBreak')}: {zone.hardBreakMoveId} {zone.hardBreakMoveName}
+                      </p>
+                      <SayLine label={t('lesson.script')} value={zone.script} />
+                    </div>
+                  ))}
+                </div>
+                {result.pacingCoach.talkRatioTip ? (
+                  <p className="mt-3 rounded-xl border border-ink/10 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink-soft">
+                    {result.pacingCoach.talkRatioTip}
                   </p>
-                  <div className="space-y-2">
+                ) : null}
+              </section>
+            ) : null}
+
+            {result.instructionalHinge.hingeQuestionEnglish || result.instructionalHinge.gamePlan.length > 0 ? (
+              <section className="card-warm p-4 sm:p-5">
+                <p className="label-section mb-2">{t('lesson.hinge')}</p>
+                {showEn ? (
+                  <SayLine label="EN" value={result.instructionalHinge.hingeQuestionEnglish} tone="en" />
+                ) : null}
+                {showL1 ? (
+                  <SayLine label="L1" value={result.instructionalHinge.hingeQuestionBridge} tone="l1" />
+                ) : null}
+                {result.instructionalHinge.gamePlan.length > 0 ? (
+                  <div className="mt-3 space-y-2">
+                    <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+                      {t('lesson.gamePlan')}
+                    </p>
                     {result.instructionalHinge.gamePlan.map((branch, idx) => (
-                      <div key={`branch-${idx}`} className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
+                      <div key={`branch-${idx}`} className="rounded-2xl border-2 border-ink/10 bg-white p-3">
                         <p className="text-sm text-ink-soft">
-                          <span className="font-semibold text-ink">{t('lesson.ifStudentSays')}</span>{' '}
+                          <span className="font-bold text-ink">{t('lesson.ifStudentSays')}</span>{' '}
                           "{branch.ifStudentSays}"
                           {branch.language ? (
-                            <span className="text-xs text-ink-muted"> [{branch.language}]</span>
+                            <span className="text-xs font-bold text-ink-muted"> [{branch.language}]</span>
                           ) : null}
                         </p>
-                        <p className="mt-1 text-xs font-bold uppercase tracking-wide text-terracotta">
+                        <p className="mt-1 font-display text-xs font-bold text-terracotta">
                           {branch.useMoveId} {branch.useMoveName}
                         </p>
-                        <p className="mt-1 text-sm text-ink-soft">{branch.teacherResponse}</p>
+                        <p className="mt-1 text-sm font-semibold text-ink">{branch.teacherResponse}</p>
                       </div>
                     ))}
                   </div>
-                </div>
-              ) : null}
-            </section>
-          ) : null}
-
-          {result.agencyShift.length > 0 ? (
-            <section className="card-warm p-4 sm:p-5">
-              <p className="label-section mb-2">{t('lesson.agencyShift')}</p>
-              <ul className="space-y-1.5 text-sm text-ink-soft">
-                {result.agencyShift.map((tip, idx) => (
-                  <li key={`agency-${idx}`} className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
-                    {tip}
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ) : null}
+                ) : null}
+              </section>
+            ) : null}
+          </div>
         </motion.div>
       ) : null}
     </div>
   );
 }
-
-

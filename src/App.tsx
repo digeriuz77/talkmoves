@@ -3,31 +3,33 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { Fragment, useEffect, useState } from 'react';
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
+import { ArrowRight, BookOpen, ChevronDown, Layers, Sparkles, Trophy } from 'lucide-react';
+import AppShell from './components/AppShell';
 import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
 import TalkMoveBuilder from './components/TalkMoveBuilder';
+import LiveCoach from './components/LiveCoach';
+import Primer from './components/Primer';
 import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
-import { Sparkles, Layers, ArrowRight, BookOpen, Languages, Bot, Gamepad2, Zap } from 'lucide-react';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
 import {
   getLevelStatus,
   updateLevelProgress,
   type LevelProgressMap,
 } from './lib/level-progress';
-import { useLang, type Lang } from './lib/i18n';
+import { useLang } from './lib/i18n';
+import { useAppRoute } from './lib/router';
+import { ClassContextProvider } from './lib/class-context';
 
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
-  const [pastLanding, setPastLanding] = useState(false);
-  const [appMode, setAppMode] = useState<'menu' | 'play' | 'build'>('menu');
-  const [selectedGameId, setSelectedGameId] = useState<string | null>(null);
+  const { route, navigate } = useAppRoute();
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
-  const selectedGame = gameCatalog.find((game) => game.id === selectedGameId) ?? null;
-  const { t, lang, setLang } = useLang();
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
@@ -40,307 +42,191 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(LEVEL_PROGRESS_STORAGE_KEY, JSON.stringify(levelProgress));
+    try {
+      window.localStorage.setItem(LEVEL_PROGRESS_STORAGE_KEY, JSON.stringify(levelProgress));
+    } catch {
+      // storage unavailable
+    }
   }, [levelProgress]);
 
   const handleLevelComplete = (result: { levelId: string; score: number; completed: boolean }) => {
     setLevelProgress((current) => updateLevelProgress(current, result.levelId, result));
   };
 
-  const openLiveCoach = () => {
-    try {
-      window.localStorage.setItem('tmb.mode', JSON.stringify('live'));
-    } catch {
-      // ignore unavailable storage; the builder still opens normally
-    }
-    setAppMode('build');
-  };
+  const selectedGame =
+    route.name === 'game' ? gameCatalog.find((game) => game.id === route.gameId) ?? null : null;
 
-  if (!pastLanding) {
+  useEffect(() => {
+    if (route.name === 'game' && !selectedGame) {
+      navigate({ name: 'play' }, { replace: true });
+    }
+  }, [navigate, route, selectedGame]);
+
+  if (route.name === 'welcome') {
+    return <Landing onEnter={() => navigate({ name: 'play' })} />;
+  }
+
+  if (route.name === 'game') {
+    if (!selectedGame) {
+      return null;
+    }
+
     return (
-      <div className="flex min-h-screen items-center justify-center bg-parchment p-4 font-body text-ink">
-        <Landing onEnter={() => setPastLanding(true)} />
-        <LangToggle lang={lang} setLang={setLang} t={t} />
+      <div className="min-h-[100dvh] bg-ink font-body text-parchment-light sm:flex sm:items-center sm:justify-center sm:bg-parchment sm:p-2">
+        {selectedGame.engine === 'choice' ? (
+          <Game
+            assets={DEFAULT_ASSETS}
+            scenario={selectedGame.scenario}
+            onExit={() => navigate({ name: 'play' })}
+            onComplete={handleLevelComplete}
+          />
+        ) : (
+          <TalkMovesGame
+            assets={DEFAULT_ASSETS}
+            scenario={selectedGame.scenario}
+            onExit={() => navigate({ name: 'play' })}
+            onComplete={handleLevelComplete}
+          />
+        )}
       </div>
     );
   }
 
   return (
-    <div
-      className={`flex min-h-screen items-center justify-center bg-parchment font-body text-ink ${selectedGame ? 'p-1 sm:p-2' : 'p-3 sm:p-4'}`}
-    >
-      {!selectedGame && appMode === 'menu' ? (
-        <ModeHub onPlay={() => setAppMode('play')} onBuild={() => setAppMode('build')} onLiveCoach={openLiveCoach} />
-      ) : !selectedGame && appMode === 'build' ? (
-        <TalkMoveBuilder onBack={() => setAppMode('menu')} />
-      ) : !selectedGame ? (
-        <ModeSelect
-          onSelect={setSelectedGameId}
-          levelProgress={levelProgress}
-          onBack={() => setAppMode('menu')}
-        />
-      ) : selectedGame.engine === 'choice' ? (
-        <Game
-          assets={DEFAULT_ASSETS}
-          scenario={selectedGame.scenario}
-          onExit={() => setSelectedGameId(null)}
-          onComplete={handleLevelComplete}
-        />
-      ) : (
-        <TalkMovesGame
-          assets={DEFAULT_ASSETS}
-          scenario={selectedGame.scenario}
-          onExit={() => setSelectedGameId(null)}
-          onComplete={handleLevelComplete}
-        />
-      )}
-      {!selectedGame ? <LangToggle lang={lang} setLang={setLang} t={t} /> : null}
-    </div>
+    <ClassContextProvider>
+      <AppShell route={route} onNavigate={navigate}>
+        {route.name === 'live' ? (
+          <LiveCoach />
+        ) : route.name === 'primer' ? (
+          <Primer />
+        ) : route.name === 'plan' || route.name === 'lesson' ? (
+          <TalkMoveBuilder
+            subMode={route.name}
+            onSubModeChange={(next) => navigate({ name: next })}
+          />
+        ) : (
+          <ScenarioLibrary
+            levelProgress={levelProgress}
+            onSelect={(gameId) => navigate({ name: 'game', gameId })}
+          />
+        )}
+      </AppShell>
+    </ClassContextProvider>
   );
 }
 
-function ModeHub({
-  onPlay,
-  onBuild,
-  onLiveCoach,
-}: {
-  onPlay: () => void;
-  onBuild: () => void;
-  onLiveCoach: () => void;
-}) {
-  const { t } = useLang();
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.35 }}
-      className="w-full max-w-4xl px-4 sm:px-6"
-    >
-      <div className="mb-6 sm:mb-8 text-center">
-        <p className="label-section mb-2">{t('hub.tagline')}</p>
-        <h1 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
-          {t('hub.title')}
-        </h1>
-        <p className="text-body mx-auto max-w-2xl">{t('hub.description')}</p>
-      </div>
+type EngineFilter = 'all' | 'choice' | 'talk-moves';
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <button
-          type="button"
-          onClick={onPlay}
-          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
-        >
-          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
-            <Gamepad2 className="h-5 w-5 text-ink-muted" />
-          </div>
-          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
-            {t('hub.playTitle')}
-          </h2>
-          <p className="mb-3 text-sm leading-relaxed text-ink-soft">{t('hub.playBody')}</p>
-          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
-            {t('hub.playCta')}
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={onBuild}
-          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
-        >
-          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
-            <Bot className="h-5 w-5 text-ink-muted" />
-          </div>
-          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
-            {t('hub.buildTitle')}
-          </h2>
-          <p className="mb-3 text-sm leading-relaxed text-ink-soft">{t('hub.buildBody')}</p>
-          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
-            {t('hub.buildCta')}
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={onLiveCoach}
-          className="group card-warm p-5 sm:p-6 text-left transition-shadow duration-300 touch-target"
-        >
-          <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-ink/5">
-            <Zap className="h-5 w-5 text-ink-muted" />
-          </div>
-          <h2 className="heading-editorial mb-2" style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}>
-            {t('hub.liveCoachCta')}
-          </h2>
-          <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
-            {t('coach.tab.live')}
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
-          </div>
-        </button>
-      </div>
-    </motion.div>
-  );
-}
-
-function LangToggle({
-  lang,
-  setLang,
-  t,
-}: {
-  lang: Lang;
-  setLang: (next: Lang) => void;
-  t: (key: string) => string;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label={t('lang.aria')}
-      className="fixed bottom-4 right-4 z-[100] flex max-w-[calc(100vw-2rem)] items-stretch overflow-hidden rounded-xl border-2 border-terracotta/40 bg-parchment-light/95 text-ink shadow-lg backdrop-blur-md"
-    >
-      <div
-        className="hidden items-center justify-center border-r-2 border-terracotta/25 px-2 sm:flex"
-        aria-hidden
-      >
-        <Languages className="h-4 w-4 text-terracotta" />
-      </div>
-      <button
-        type="button"
-        onClick={() => setLang('en')}
-        aria-pressed={lang === 'en'}
-        className={`touch-target min-w-[5.5rem] px-3 py-2.5 text-center text-[11px] font-semibold sm:min-w-0 sm:text-xs ${lang === 'en' ? 'bg-terracotta/20 text-ink' : 'text-ink-muted hover:bg-parchment/80'}`}
-      >
-        {t('lang.segmentEn')}
-      </button>
-      <span className="w-px shrink-0 self-stretch bg-ink/15" aria-hidden />
-      <button
-        type="button"
-        onClick={() => setLang('ms')}
-        aria-pressed={lang === 'ms'}
-        className={`touch-target min-w-[5.5rem] px-2 py-2.5 text-center text-[11px] font-semibold leading-snug sm:min-w-0 sm:px-3 sm:text-xs ${lang === 'ms' ? 'bg-terracotta/20 text-ink' : 'text-ink-muted hover:bg-parchment/80'}`}
-      >
-        {t('lang.segmentMs')}
-      </button>
-    </div>
-  );
-}
-
-function ModeSelect({
+function ScenarioLibrary({
   onSelect,
   levelProgress,
-  onBack,
 }: {
   onSelect: (gameId: string) => void;
   levelProgress: LevelProgressMap;
-  onBack: () => void;
 }) {
   const { t } = useLang();
+  const [filter, setFilter] = useState<EngineFilter>('all');
+
+  const filteredCatalog = useMemo(() => {
+    if (filter === 'all') return gameCatalog;
+    return gameCatalog.filter((game) => game.engine === filter);
+  }, [filter]);
+
+  const completedCount = useMemo(
+    () => gameCatalog.filter((g) => getLevelStatus(levelProgress, g.id).statusKey === 'completed').length,
+    [levelProgress],
+  );
+
+  const filterButtons: Array<{ id: EngineFilter; label: string }> = [
+    { id: 'all', label: t('filter.all') },
+    { id: 'choice', label: t('filter.choice') },
+    { id: 'talk-moves', label: t('filter.talkMoves') },
+  ];
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      className="w-full max-w-6xl px-4 sm:px-6"
+      transition={{ duration: 0.25 }}
+      className="space-y-4"
     >
-      <div className="mb-4 flex justify-start">
-        <button
-          type="button"
-          onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-lg border border-ink/15 bg-parchment-light px-3 py-2 text-sm font-semibold text-ink transition-colors hover:bg-parchment touch-target"
-        >
-          {t('builder.back')}
-        </button>
+      {/* Compact Banner + Progress Counter */}
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="label-section text-terracotta">{t('mode.tagline')}</p>
+          <h1 className="heading-editorial mt-0.5">{t('mode.title')}</h1>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full border-2 border-sage/35 bg-sage-bg px-3.5 py-1.5 font-display text-sm font-bold tabular-nums text-[#1f6b4a]">
+          <Trophy className="h-4 w-4 text-sage" aria-hidden />
+          {completedCount}/{gameCatalog.length}
+        </div>
       </div>
 
-      <div className="text-center mb-6 sm:mb-10 md:mb-12">
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.1, duration: 0.7, ease: [0.25, 1, 0.5, 1] }}
-          className="mx-auto mb-4 sm:mb-6 h-[3px] w-10 sm:w-12 rounded-full bg-terracotta"
-        />
-
-        <motion.p
-          initial={{ opacity: 0, y: 6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.15 }}
-          className="label-section mb-2 sm:mb-3"
-        >
-          {t('mode.tagline')}
-        </motion.p>
-
-        <motion.h1
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.5 }}
-          className="heading-editorial mb-1"
-          style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
-        >
-          {t('mode.title')}
-        </motion.h1>
-
-        <motion.div
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ delay: 0.35, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-          className="rule-editorial mx-auto mt-4 sm:mt-5 mb-3 sm:mb-4 max-w-[220px] sm:max-w-xs"
-        />
-
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-body mx-auto max-w-2xl"
-        >
-          {t('mode.description')}
-        </motion.p>
+      {/* Horizontal Filter Pills */}
+      <div
+        role="group"
+        aria-label="Filter scenarios"
+        className="no-scrollbar flex gap-2 overflow-x-auto pb-0.5"
+      >
+        {filterButtons.map((btn) => {
+          const active = filter === btn.id;
+          return (
+            <button
+              key={btn.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setFilter(btn.id)}
+              className={`min-h-[40px] shrink-0 rounded-full border-2 px-4 py-1.5 font-display text-sm font-semibold transition ${
+                active
+                  ? 'border-terracotta bg-terracotta text-white shadow-[0_2px_0_#a33a1b]'
+                  : 'border-ink/12 bg-parchment-light text-ink-soft hover:border-ink/25'
+              }`}
+            >
+              {btn.label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-        {gameCatalog.map((game, index) => (
-          <Fragment key={game.id}>
-            <GameCard
-              game={game}
-              index={index}
-              onSelect={onSelect}
-              progress={getLevelStatus(levelProgress, game.id)}
-            />
-          </Fragment>
+      {/* Streamlined Scenario Grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
+        {filteredCatalog.map((game) => (
+          <GameCard
+            key={game.id}
+            game={game}
+            onSelect={onSelect}
+            progress={getLevelStatus(levelProgress, game.id)}
+          />
         ))}
       </div>
 
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mt-6 sm:mt-10 md:mt-12 rounded-2xl border border-navy/10 bg-navy-bg/40 p-4 sm:p-6 md:p-8"
-      >
-        <div className="flex flex-col sm:flex-row sm:items-start sm:gap-5">
-          <div className="mb-3 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-navy/10 sm:mb-0">
-            <BookOpen className="h-5 w-5 text-navy" />
-          </div>
-          <div className="flex-1">
-            <h3 className="font-display text-lg font-bold text-ink mb-2" style={{ fontVariationSettings: "'SOFT' 100" }}>
+      {/* Collapsible Research Note */}
+      <details className="card-warm group p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden touch-target">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-bg text-navy">
+              <BookOpen className="h-4 w-4" aria-hidden />
+            </span>
+            <span className="font-display text-base font-semibold text-ink">
               {t('mode.aboutTitle')}
-            </h3>
-            <p className="text-sm leading-relaxed text-ink-soft">
-              {t('mode.aboutBody')}
-            </p>
+            </span>
           </div>
-        </div>
-      </motion.div>
+          <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
+        </summary>
+        <p className="mt-3 border-t border-ink/10 pt-3 text-sm leading-relaxed text-ink-soft">
+          {t('mode.aboutBody')}
+        </p>
+      </details>
     </motion.div>
   );
 }
 
 function GameCard({
   game,
-  index,
   onSelect,
   progress,
 }: {
   game: GameCatalogEntry;
-  index: number;
   onSelect: (gameId: string) => void;
   progress: ReturnType<typeof getLevelStatus>;
 }) {
@@ -358,66 +244,46 @@ function GameCard({
       ? game.scenario.descriptionMs ?? game.description
       : game.description;
 
+  const statusPillClass =
+    progress.statusKey === 'completed'
+      ? 'pill-sage'
+      : progress.statusKey === 'inProgress'
+        ? 'pill-amber'
+        : 'pill-terracotta';
+
   return (
-    <motion.button
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.25 + index * 0.06, duration: 0.4 }}
+    <button
+      type="button"
       onClick={() => onSelect(game.id)}
-      className="group card-warm relative p-4 sm:p-5 md:p-6 text-left transition-shadow duration-300 touch-target"
+      className="group card-warm card-warm-interactive flex flex-col justify-between p-4 text-left touch-target"
     >
-      <div className="absolute right-3 top-3 sm:right-4 sm:top-4 flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-lg bg-ink/5">
-        <Icon className="h-4 w-4 text-ink-muted" />
-      </div>
-
-      <div className="mb-2 sm:mb-3 flex items-center justify-between gap-2">
-        <div className="label-section">{subtitle}</div>
-        <div
-          className={
-            progress.statusKey === 'completed'
-              ? 'pill-sage'
-              : progress.statusKey === 'inProgress'
-                ? 'pill-amber'
-                : 'pill-terracotta'
-          }
-        >
-          {t(`status.${progress.statusKey}`)}
-        </div>
-      </div>
-
-      <h2
-        className="heading-editorial mb-2 sm:mb-2.5"
-        style={{ fontVariationSettings: "'SOFT' 100, 'WONK' 1" }}
-      >
-        {title}
-      </h2>
-
-      <p className="mb-3 sm:mb-4 text-sm leading-relaxed text-ink-soft">{description}</p>
-
-      <div className="mb-3 sm:mb-4 flex flex-wrap gap-1.5">
-        {game.focusAreas.slice(0, 3).map((area) => (
-          <span
-            key={area}
-            className="rounded-full border border-ink/8 bg-ink/[0.03] px-2 sm:px-2.5 py-0.5 text-[10px] uppercase tracking-[0.14em] text-ink-muted"
-          >
-            {area}
+      <div>
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+            <Icon className={`h-3.5 w-3.5 ${isTalkMoves ? 'text-amber' : 'text-sky'}`} aria-hidden />
+            <span className="truncate">{subtitle}</span>
           </span>
-        ))}
+          <span className={statusPillClass}>{t(`status.${progress.statusKey}`)}</span>
+        </div>
+
+        <h2 className="card-title mb-1.5">{title}</h2>
+
+        <p className="line-clamp-2 text-sm leading-snug text-ink-soft">{description}</p>
       </div>
 
-      <div className="flex items-center gap-1.5 text-sm font-bold text-terracotta">
-        {t('card.startLevel')}
-        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" />
+      <div className="mt-3.5 flex items-center justify-between gap-2 border-t border-ink/8 pt-3">
+        <span className="font-display text-xs font-semibold tabular-nums text-ink-muted">
+          {progress.attempts > 0
+            ? `${progress.bestScore}% · ${progress.attempts}×`
+            : isTalkMoves
+              ? t('filter.talkMoves')
+              : t('filter.choice')}
+        </span>
+        <span className="inline-flex items-center gap-1 font-display text-sm font-bold text-terracotta">
+          {t('card.startLevel')}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </span>
       </div>
-
-      <div className="mt-3 sm:mt-4 border-t border-ink/[0.06] pt-2.5 sm:pt-3 text-[11px] text-ink-muted space-y-1">
-        <div>
-          {isTalkMoves ? t('card.chainInfo') : t('card.choiceInfo')}
-        </div>
-        <div className="font-mono text-[11px]">
-          {t('card.bestScore')} {progress.bestScore}% &middot; {t('card.attempts')} {progress.attempts}
-        </div>
-      </div>
-    </motion.button>
+    </button>
   );
 }

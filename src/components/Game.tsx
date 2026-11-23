@@ -1,10 +1,10 @@
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { useMemo, useState } from 'react';
 import Classroom from './Classroom';
 import DialogueBox from './DialogueBox';
 import EndScreen, { type ChoiceGameResult } from './EndScreen';
 import GameSessionHeader from './GameSessionHeader';
-import GameLangSegment from './GameLangSegment';
-import ChoiceTeacherGuide from './ChoiceTeacherGuide';
+import { ChoiceTeacherGuideContent } from './ChoiceTeacherGuide';
 import type { AssetUrls } from './AssetLoader';
 import type { ChoiceMove, ChoiceNode, ChoiceScenarioDefinition } from '../data/choice-scenarios';
 import {
@@ -190,32 +190,10 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
 
   return (
     <div
-      className="game-surface relative flex w-full max-w-[min(100%,88rem)] flex-col overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
-      style={{ background: '#2c2520', minHeight: 'min(100dvh - 0.5rem, 960px)' }}
+      className="game-surface relative flex min-h-[100dvh] w-full max-w-[min(100%,88rem)] flex-col overflow-hidden bg-[#272220] sm:min-h-[min(100dvh-1rem,920px)] sm:rounded-3xl sm:border-2 sm:border-white/12 sm:shadow-2xl"
     >
       {gameState === 'playing' ? (
         <>
-          <div className="flex min-h-0 flex-1 flex-col pt-[2.75rem] sm:pt-[3.25rem]">
-            <div className="h-[min(30dvh,14rem)] shrink-0 border-b border-white/10">
-              <Classroom
-                engagementScore={engagementScore}
-                lastDelta={lastDelta}
-                hotspots={scenario.hotspots}
-                spokenStudentIds={spokenStudents}
-                assets={assets}
-                focusMode
-              />
-            </div>
-            <DialogueBox
-              node={currentNode}
-              onChoice={handleChoice}
-              feedback={feedback}
-              onDismissFeedback={() => setFeedback(null)}
-              speakerLabel={speakerLabel}
-              layout="panel"
-            />
-          </div>
-
           <GameSessionHeader
             onExit={onExit}
             subtitle={localizedScenarioMeta.subtitle}
@@ -223,12 +201,62 @@ export default function Game({ assets, scenario, onExit, onComplete }: GameProps
             description={localizedScenarioMeta.description}
             engagementScore={engagementScore}
             metrics={metrics}
-            langSlot={<GameLangSegment />}
-            rightSlot={
-              scenario.teacherGuide ? <ChoiceTeacherGuide guide={scenario.teacherGuide} lang={lang} /> : undefined
+            guideContent={
+              scenario.teacherGuide ? (
+                <ChoiceTeacherGuideContent guide={scenario.teacherGuide} lang={lang} />
+              ) : undefined
             }
           />
 
+          {/* Compact mobile participation strip (< sm) */}
+          <div className="flex shrink-0 items-center justify-between gap-2 border-b border-white/10 bg-[#201b18] px-3 py-2 sm:hidden">
+            <div className="no-scrollbar flex items-center gap-1.5 overflow-x-auto">
+              {scenario.hotspots.map((hotspot) => {
+                const isSpeaking = currentNode.speakerId === hotspot.id;
+                const hasSpoken = spokenStudents.includes(hotspot.id);
+                const label = hotspot.name.match(/Student\s+([A-Za-z0-9])/i)?.[1] ?? hotspot.name.slice(0, 2);
+                return (
+                  <span
+                    key={hotspot.id}
+                    title={hotspot.name}
+                    className={`inline-flex h-8 min-w-[2rem] items-center justify-center rounded-full border-2 px-2 font-display text-xs font-bold transition ${
+                      isSpeaking
+                        ? 'border-amber-300 bg-terracotta text-white shadow-sm'
+                        : hasSpoken
+                          ? 'border-sage/70 bg-sage/30 text-[#a6dac2]'
+                          : 'border-white/15 bg-white/6 text-white/55'
+                    }`}
+                  >
+                    {label}
+                  </span>
+                );
+              })}
+            </div>
+            <span className="shrink-0 font-display text-xs font-bold tabular-nums text-white/70">
+              {spokenStudents.length}/{scenario.hotspots.length}
+            </span>
+          </div>
+
+          {/* Full classroom illustration on larger screens */}
+          <div className="hidden h-[min(28dvh,13rem)] shrink-0 border-b border-white/10 sm:block">
+            <Classroom
+              engagementScore={engagementScore}
+              lastDelta={lastDelta}
+              hotspots={scenario.hotspots}
+              spokenStudentIds={spokenStudents}
+              assets={assets}
+              focusMode
+            />
+          </div>
+
+          <DialogueBox
+            node={currentNode}
+            onChoice={handleChoice}
+            feedback={feedback}
+            onDismissFeedback={() => setFeedback(null)}
+            speakerLabel={speakerLabel}
+            layout="panel"
+          />
         </>
       ) : (
         <EndScreen result={result} onRestart={handleRestart} onExit={onExit} />

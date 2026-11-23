@@ -19,24 +19,21 @@ export default function CoachingStrip({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -4 }}
       transition={{ duration: 0.25, ease: [0.25, 1, 0.5, 1] }}
-      className={`overflow-hidden rounded-lg border border-amber-400/20 backdrop-blur-sm ${className}`}
-      style={{ background: 'linear-gradient(135deg, rgba(212,149,43,0.12) 0%, rgba(196,92,60,0.08) 100%)' }}
+      className={`overflow-hidden rounded-2xl border-2 border-amber-400/35 backdrop-blur-sm ${className}`}
+      style={{ background: 'linear-gradient(135deg, rgba(217,138,22,0.16) 0%, rgba(217,93,57,0.12) 100%)' }}
     >
-      <div className="flex items-start gap-2.5 sm:gap-3 p-3 sm:p-4">
+      <div className="flex items-start gap-2.5 sm:gap-3 p-3 sm:p-3.5">
         <div
-          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg"
-          style={{ background: 'rgba(212, 149, 43, 0.15)' }}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
+          style={{ background: 'rgba(240, 173, 56, 0.2)' }}
         >
-          <MessageSquare className="h-4 w-4" style={{ color: '#d4952b' }} aria-hidden />
+          <MessageSquare className="h-4 w-4 text-amber-300" aria-hidden />
         </div>
         <div className="min-w-0 flex-1">
-          <p
-            className="text-[10px] font-bold uppercase tracking-[0.14em]"
-            style={{ color: 'rgba(212, 149, 43, 0.8)' }}
-          >
+          <p className="font-display text-[11px] font-bold uppercase tracking-wider text-amber-300">
             {t('coaching.programResponse')}
           </p>
-          <p className="mt-1 text-sm leading-snug text-white/90" style={{ wordBreak: 'break-word' }}>
+          <p className="mt-0.5 text-sm font-semibold leading-snug text-white/95" style={{ wordBreak: 'break-word' }}>
             {message}
           </p>
         </div>

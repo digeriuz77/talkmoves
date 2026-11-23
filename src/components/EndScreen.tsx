@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { motion } from 'motion/react';
 import {
   AlertTriangle,
   ArrowLeft,
+  ChevronDown,
   Lightbulb,
   RotateCcw,
   Sparkles,
@@ -52,341 +53,211 @@ const METRIC_LABEL_KEYS: Record<keyof Metrics, string> = {
 };
 
 const METRIC_COLORS: Record<string, string> = {
-  participation: '#e8a892',
-  reasoning: '#8aab8f',
-  ownership: '#f0d48a',
+  participation: '#eb7a58',
+  reasoning: '#52a982',
+  ownership: '#f0ad38',
 };
 
 export default function EndScreen({ result, onRestart, onExit }: EndScreenProps) {
   const { t } = useLang();
   const isWin = result.outcome === 'win';
 
-  const description = isWin
-    ? t('end.winDescription', { title: result.title })
-    : t('end.lossDescription', { title: result.title });
+  // Deduplicated move breakdown: use profile counts for talk-moves, historyCounts for choice
+  const moveBreakdown: Array<{ label: string; count: number; isTerminal?: boolean }> =
+    result.variant === 'talk-moves'
+      ? Object.entries(result.profile.movesById)
+          .sort((a, b) => b[1] - a[1])
+          .map(([id, count]) => ({
+            label: talkMovesMap[id]?.name ?? id,
+            count,
+            isTerminal: talkMovesMap[id]?.category === 'terminal',
+          }))
+      : Object.entries(result.historyCounts)
+          .sort((a, b) => b[1] - a[1])
+          .map(([label, count]) => ({ label, count }));
 
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.4 }}
-      className="absolute inset-0 z-50 overflow-y-auto"
+      transition={{ duration: 0.3 }}
+      className="flex-1 overflow-y-auto px-3 py-5 sm:p-6 pb-safe"
       style={{
         background: isWin
-          ? 'linear-gradient(180deg, #1a2e1c 0%, #2c2520 50%, #1a2e1c 100%)'
-          : 'linear-gradient(180deg, #2d3a4a 0%, #2c2520 50%, #2d3a4a 100%)',
+          ? 'linear-gradient(180deg, #1b3627 0%, #272220 55%, #1b3627 100%)'
+          : 'linear-gradient(180deg, #273647 0%, #272220 55%, #273647 100%)',
       }}
     >
-      <div className="mx-auto flex min-h-full max-w-4xl items-center justify-center p-4 sm:p-6">
-        <div
-          className="w-full rounded-xl sm:rounded-2xl border border-white/10 p-4 sm:p-6 md:p-8 text-center backdrop-blur-sm sm:backdrop-blur-xl"
-          style={{ background: 'rgba(44, 37, 32, 0.6)' }}
-        >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-            className="mx-auto mb-4 sm:mb-6 flex h-16 w-16 sm:h-20 sm:w-20 items-center justify-center rounded-full"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
-          >
+      <div className="mx-auto max-w-3xl space-y-4">
+        {/* Hero Card */}
+        <section className="rounded-3xl border-2 border-white/15 bg-[#231d19]/90 p-5 text-center shadow-xl sm:p-7">
+          <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-3xl border-2 border-amber-300/40 bg-white/8">
             {result.variant === 'talk-moves' ? (
               isWin ? (
-                <Sparkles className="h-8 w-8 sm:h-10 sm:w-10" style={{ color: '#d4952b' }} />
+                <Sparkles className="h-8 w-8 text-[#f0ad38]" />
               ) : (
-                <Lightbulb className="h-8 w-8 sm:h-10 sm:w-10" style={{ color: '#8aab8f' }} />
+                <Lightbulb className="h-8 w-8 text-[#52a982]" />
               )
             ) : isWin ? (
-              <Trophy className="h-8 w-8 sm:h-10 sm:w-10" style={{ color: '#8aab8f' }} />
+              <Trophy className="h-8 w-8 text-[#f0ad38]" />
             ) : (
-              <AlertTriangle className="h-8 w-8 sm:h-10 sm:w-10" style={{ color: '#8aab8f' }} />
+              <AlertTriangle className="h-8 w-8 text-[#eb7a58]" />
             )}
-          </motion.div>
+          </div>
 
-          <motion.h1
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="font-bold text-white"
-            style={{
-              fontFamily: "'Fraunces', serif",
-              fontVariationSettings: "'SOFT' 100, 'WONK' 1",
-              fontSize: 'clamp(1.5rem, 1.2rem + 2vw, 2.25rem)',
-              wordBreak: 'break-word',
-            }}
-          >
+          <h1 className="font-display text-2xl font-bold text-white sm:text-3xl">
             {result.reflection.headline}
-          </motion.h1>
+          </h1>
+          <p className="mx-auto mt-1.5 max-w-xl text-sm text-white/75">{result.reflection.summary}</p>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mx-auto mt-2 sm:mt-3 max-w-2xl text-xs sm:text-sm md:text-base leading-relaxed"
-            style={{ color: 'rgba(245, 240, 232, 0.6)', wordBreak: 'break-word' }}
-          >
-            {result.reflection.summary}
-          </motion.p>
-
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.35 }}
-            className="mt-4 sm:mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm"
-            style={{ background: 'rgba(255,255,255,0.08)', color: 'rgba(245,240,232,0.8)' }}
-          >
-            <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#d4952b' }} />
-            {t('end.score')}
-            <span className="font-mono font-bold text-white">{result.finalScore}%</span>
-            <span style={{ color: 'rgba(245,240,232,0.35)' }}>|</span>
-            {t('end.goal')}
-            <span className="font-mono font-bold text-white">{result.passThreshold}%</span>
-          </motion.div>
-
-          <div className="mt-5 sm:mt-8 grid grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
-            {METRIC_ORDER.map((metric, i) => (
-              <motion.div
-                key={metric}
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 + i * 0.08 }}
-                className="rounded-lg sm:rounded-xl p-3 sm:p-4 text-left"
-                style={{ background: 'rgba(255,255,255,0.04)' }}
-              >
-                <div
-                  className="text-[10px] font-bold uppercase tracking-[0.18em]"
-                  style={{ color: 'rgba(245,240,232,0.4)' }}
-                >
-                  {t(METRIC_LABEL_KEYS[metric])}
-                </div>
-                <div
-                  className="mt-1.5 sm:mt-2 text-xl sm:text-2xl font-semibold text-white"
-                  style={{ fontFamily: "'Fraunces', serif" }}
-                >
-                  {result.metrics[metric]}
-                </div>
-                <div
-                  className="mt-2 sm:mt-3 h-1.5 overflow-hidden rounded-full"
-                  style={{ background: 'rgba(255,255,255,0.08)' }}
-                >
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${result.metrics[metric]}%` }}
-                    transition={{ delay: 0.5 + i * 0.08, duration: 0.6, ease: [0.25, 1, 0.5, 1] }}
-                    className="h-full rounded-full"
-                    style={{ background: METRIC_COLORS[metric] }}
-                  />
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          {result.variant === 'talk-moves' && (
-            <>
-              <div
-                className="mt-5 sm:mt-8 inline-flex items-center gap-2 rounded-full px-3 sm:px-4 py-1.5 sm:py-2"
-                style={{ background: 'rgba(255,255,255,0.08)' }}
-              >
-                <Target className="h-3.5 w-3.5 sm:h-4 sm:w-4" style={{ color: '#d4952b' }} />
-                <span className="text-xs sm:text-sm font-bold text-white">{result.profile.style}</span>
-                <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(245,240,232,0.45)' }}>
-                  {t('end.teachingStyle')}
-                </span>
-              </div>
-
-              <div
-                className="mt-4 sm:mt-6 rounded-lg sm:rounded-xl p-3 sm:p-5 text-left"
-                style={{ background: 'rgba(255,255,255,0.04)' }}
-              >
-                <h3
-                  className="mb-3 sm:mb-4 text-[10px] font-bold uppercase tracking-[0.18em]"
-                  style={{ color: 'rgba(245,240,232,0.4)' }}
-                >
-                  {t('end.talkMoveProfile')}
-                </h3>
-                <div className="space-y-2.5 sm:space-y-3">
-                  {Object.entries(result.profile.movesById)
-                    .sort((left, right) => right[1] - left[1])
-                    .map(([moveId, count]) => {
-                      const move = talkMovesMap[moveId];
-                      if (!move) return null;
-                      return (
-                        <div key={moveId} className="flex items-center justify-between">
-                          <div className="flex min-w-0 items-center gap-2">
-                            <span
-                              className="h-2 w-2 shrink-0 rounded-full"
-                              style={{
-                                background: move.category === 'terminal' ? '#d4952b' : 'rgba(245,240,232,0.3)',
-                              }}
-                            />
-                            <span className="truncate text-sm" style={{ color: 'rgba(245,240,232,0.8)' }}>
-                              {move.name}
-                            </span>
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            <span className="text-[10px] sm:text-xs" style={{ color: 'rgba(245,240,232,0.35)' }}>
-                              {move.category}
-                            </span>
-                            <span
-                              className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm"
-                              style={{ background: 'rgba(107,143,113,0.1)', color: '#8aab8f' }}
-                            >
-                              &times;{count}
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    })}
-                </div>
-              </div>
-            </>
-          )}
-
-          <div className="mt-5 sm:mt-8 grid grid-cols-1 gap-3 text-left md:grid-cols-3">
-            <div className="rounded-lg sm:rounded-xl p-4" style={{ background: 'rgba(26, 46, 28, 0.35)' }}>
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(138,171,143,0.85)' }}>
-                {t('end.whatWorked')}
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm leading-relaxed" style={{ color: 'rgba(245,240,232,0.82)' }}>
-                {result.reflection.strength}
-              </p>
-            </div>
-            <div className="rounded-lg sm:rounded-xl p-4" style={{ background: 'rgba(212, 149, 43, 0.12)' }}>
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(240, 212, 138, 0.9)' }}>
-                {t('end.watchOut')}
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm leading-relaxed" style={{ color: 'rgba(245,240,232,0.82)' }}>
-                {result.reflection.risk}
-              </p>
-            </div>
-            <div className="rounded-lg sm:rounded-xl p-4" style={{ background: 'rgba(42, 100, 140, 0.12)' }}>
-              <h3 className="text-[10px] font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(138, 171, 143, 0.95)' }}>
-                {t('end.tryNext')}
-              </h3>
-              <p className="mt-2 text-xs sm:text-sm leading-relaxed" style={{ color: 'rgba(245,240,232,0.82)' }}>
-                {result.reflection.nextStep}
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl p-3 sm:p-5 text-left"
-            style={{ background: 'rgba(255,255,255,0.04)' }}
-          >
-            <h3
-              className="mb-3 sm:mb-4 text-[10px] font-bold uppercase tracking-[0.18em]"
-              style={{ color: 'rgba(245,240,232,0.4)' }}
-            >
-              {t('end.replayEvidence')}
-            </h3>
-            <div className="space-y-2">
-              {result.reflection.evidence.map((line) => (
-                <div key={line} className="text-xs sm:text-sm" style={{ color: 'rgba(245,240,232,0.7)' }}>
-                  &middot; {line}
-                </div>
-              ))}
-            </div>
-            {result.reflection.languageNote ? (
-              <p
-                className="mt-4 rounded-lg border px-3 py-3 text-xs sm:text-sm leading-relaxed"
-                style={{
-                  borderColor: 'rgba(138, 171, 143, 0.25)',
-                  background: 'rgba(26, 46, 28, 0.25)',
-                  color: 'rgba(220, 235, 222, 0.9)',
-                }}
-              >
-                {result.reflection.languageNote}
-              </p>
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="score-badge text-sm">
+              <Target className="h-4 w-4 text-[#f0ad38]" />
+              {t('end.score')} {result.finalScore}% · {t('end.goal')} {result.passThreshold}%
+            </span>
+            {result.variant === 'talk-moves' ? (
+              <span className="rounded-full border-2 border-white/15 bg-white/10 px-3 py-1.5 font-display text-xs font-bold text-white">
+                {result.profile.style}
+              </span>
             ) : null}
           </div>
 
-          <div
-            className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl p-3 sm:p-5 text-left"
-            style={{ background: 'rgba(255,255,255,0.04)' }}
-          >
-            <h3
-              className="mb-3 sm:mb-4 text-[10px] font-bold uppercase tracking-[0.18em]"
-              style={{ color: 'rgba(245,240,232,0.4)' }}
-            >
-              {t('end.movePattern')}
-            </h3>
-            <div className="grid grid-cols-1 gap-2.5 sm:gap-3 md:grid-cols-2">
-              {Object.entries(result.historyCounts).length > 0 ? (
-                Object.entries(result.historyCounts)
-                  .sort((left, right) => right[1] - left[1])
-                  .map(([label, count]) => (
-                    <div
-                      key={label}
-                      className="flex items-center justify-between border-b pb-2"
-                      style={{ borderColor: 'rgba(255,255,255,0.05)' }}
-                    >
-                      <span className="text-sm" style={{ color: 'rgba(245,240,232,0.75)' }}>
-                        {label}
-                      </span>
-                      <span
-                        className="rounded px-1.5 sm:px-2 py-0.5 font-mono text-xs sm:text-sm"
-                        style={{ background: 'rgba(255,255,255,0.06)', color: 'rgba(245,240,232,0.6)' }}
-                      >
-                        &times;{count}
-                      </span>
-                    </div>
-                  ))
-              ) : (
-                <div className="text-sm" style={{ color: 'rgba(245,240,232,0.35)' }}>
-                  {t('end.noMoves')}
+          {/* Compact 3-Metric Row */}
+          <div className="mt-5 grid grid-cols-3 gap-2 text-left sm:gap-3">
+            {METRIC_ORDER.map((metric) => (
+              <div key={metric} className="rounded-2xl border border-white/10 bg-white/5 p-3">
+                <p className="truncate text-[11px] font-extrabold text-white/60">
+                  {t(METRIC_LABEL_KEYS[metric])}
+                </p>
+                <p className="mt-1 font-display text-lg font-bold tabular-nums text-white sm:text-xl">
+                  {result.metrics[metric]}%
+                </p>
+                <div className="mt-2 h-2 overflow-hidden rounded-full bg-white/12">
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${result.metrics[metric]}%`, background: METRIC_COLORS[metric] }}
+                  />
                 </div>
-              )}
+              </div>
+            ))}
+          </div>
+
+          {/* Primary Takeaway Trio */}
+          <div className="mt-4 grid grid-cols-1 gap-2.5 text-left sm:grid-cols-3">
+            <div className="rounded-2xl border border-sage/35 bg-sage/15 p-3.5">
+              <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#9ce2be]">
+                {t('end.whatWorked')}
+              </h2>
+              <p className="mt-1 text-sm font-semibold text-white/90">{result.reflection.strength}</p>
+            </div>
+            <div className="rounded-2xl border border-amber-400/35 bg-amber-500/15 p-3.5">
+              <h2 className="font-display text-xs font-bold uppercase tracking-wider text-amber-200">
+                {t('end.watchOut')}
+              </h2>
+              <p className="mt-1 text-sm font-semibold text-white/90">{result.reflection.risk}</p>
+            </div>
+            <div className="rounded-2xl border border-sky-400/35 bg-sky-500/15 p-3.5">
+              <h2 className="font-display text-xs font-bold uppercase tracking-wider text-sky-200">
+                {t('end.tryNext')}
+              </h2>
+              <p className="mt-1 text-sm font-semibold text-white/90">{result.reflection.nextStep}</p>
             </div>
           </div>
 
-          <div
-            className="mt-5 sm:mt-8 rounded-lg sm:rounded-xl border p-3 sm:p-5 text-left"
-            style={{ borderColor: 'rgba(42,100,140,0.2)', background: 'rgba(42,100,140,0.06)' }}
-          >
-            <h3
-              className="mb-2 sm:mb-3 text-[10px] font-bold uppercase tracking-[0.18em]"
-              style={{ color: '#8aab8f' }}
-            >
-              {t('end.trainerDebrief')}
-            </h3>
-            <p
-              className="text-xs sm:text-sm leading-relaxed"
-              style={{ color: 'rgba(245,240,232,0.7)', wordBreak: 'break-word' }}
-            >
-              {result.reflectionPrompt}
-            </p>
-            {result.advice.length > 0 && (
-              <div className="mt-3 sm:mt-4 space-y-1.5 sm:space-y-2">
-                {result.advice.map((advice, i) => (
-                  <div
-                    key={i}
-                    className="text-xs sm:text-sm"
-                    style={{ color: 'rgba(245,240,232,0.65)', wordBreak: 'break-word' }}
-                  >
-                    &middot; {advice}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="mt-5 sm:mt-8 flex flex-col justify-center gap-2.5 sm:gap-3 sm:flex-row">
+          {/* Prominent CTAs above the fold */}
+          <div className="mt-5 flex flex-col justify-center gap-2.5 sm:flex-row">
             <button
+              type="button"
               onClick={onRestart}
-              className="btn-primary inline-flex items-center justify-center gap-2 rounded-lg px-6 sm:px-8 py-3.5 sm:py-4"
+              className="btn-primary inline-flex w-full items-center justify-center gap-2 touch-target sm:w-auto sm:px-7"
             >
-              <RotateCcw className="h-5 w-5" />
+              <RotateCcw className="h-4 w-4" />
               {t('end.tryAgain')}
             </button>
             <button
+              type="button"
               onClick={onExit}
-              className="btn-secondary inline-flex items-center justify-center gap-2 rounded-lg px-6 sm:px-8 py-3.5 sm:py-4"
-              style={{ borderColor: 'rgba(245,240,232,0.2)', color: 'rgba(245,240,232,0.85)' }}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border-2 border-white/20 bg-white/8 px-6 py-3 font-display text-sm font-bold text-white transition hover:bg-white/15 touch-target sm:w-auto"
             >
-              <ArrowLeft className="h-5 w-5" />
+              <ArrowLeft className="h-4 w-4" />
               {t('end.backToLevels')}
             </button>
           </div>
-        </div>
+        </section>
+
+        {/* Collapsible Full Debrief & Deduplicated Move Breakdown */}
+        <details className="group rounded-3xl border-2 border-white/15 bg-[#231d19]/90 p-4 text-left text-white sm:p-5">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-display text-base font-bold text-white [&::-webkit-details-marker]:hidden touch-target">
+            <span>{t('end.fullDebrief')}</span>
+            <ChevronDown className="h-5 w-5 text-white/60 transition-transform group-open:rotate-180" />
+          </summary>
+
+          <div className="mt-4 space-y-4 border-t border-white/10 pt-4">
+            {/* Replay Evidence */}
+            <div>
+              <h3 className="mb-2 text-xs font-extrabold uppercase tracking-wider text-white/55">
+                {t('end.replayEvidence')}
+              </h3>
+              <ul className="space-y-1.5 text-sm text-white/80">
+                {result.reflection.evidence.map((line) => (
+                  <li key={line}>· {line}</li>
+                ))}
+              </ul>
+              {result.reflection.languageNote ? (
+                <p className="mt-3 rounded-2xl border border-sage/35 bg-sage/15 px-3.5 py-2.5 text-xs font-semibold text-[#c5edd8]">
+                  {result.reflection.languageNote}
+                </p>
+              ) : null}
+            </div>
+
+            {/* Unified Move Breakdown */}
+            <div>
+              <h3 className="mb-2 text-xs font-extrabold uppercase tracking-wider text-white/55">
+                {result.variant === 'talk-moves' ? t('end.talkMoveProfile') : t('end.movePattern')}
+              </h3>
+              {moveBreakdown.length > 0 ? (
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  {moveBreakdown.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+                    >
+                      <span className="flex min-w-0 items-center gap-2 text-sm font-semibold text-white/90">
+                        {item.isTerminal !== undefined ? (
+                          <span
+                            className="h-2 w-2 shrink-0 rounded-full"
+                            style={{ background: item.isTerminal ? '#f0ad38' : '#52a982' }}
+                          />
+                        ) : null}
+                        <span className="truncate">{item.label}</span>
+                      </span>
+                      <span className="ml-2 rounded-full bg-white/10 px-2.5 py-0.5 font-display text-xs font-bold tabular-nums text-amber-200">
+                        ×{item.count}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-white/45">{t('end.noMoves')}</p>
+              )}
+            </div>
+
+            {/* Trainer Debrief */}
+            <div className="rounded-2xl border border-sky-400/25 bg-sky-500/10 p-4">
+              <h3 className="mb-1.5 text-xs font-extrabold uppercase tracking-wider text-sky-200">
+                {t('end.trainerDebrief')}
+              </h3>
+              <p className="text-sm leading-relaxed text-white/85">{result.reflectionPrompt}</p>
+              {result.advice.length > 0 ? (
+                <ul className="mt-3 space-y-1 text-xs text-white/75">
+                  {result.advice.map((advice, i) => (
+                    <li key={i}>· {advice}</li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          </div>
+        </details>
       </div>
     </motion.div>
   );

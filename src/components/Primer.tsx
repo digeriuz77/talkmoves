@@ -1,21 +1,23 @@
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { Fragment, FormEvent, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import { Dices, LoaderCircle, MonitorPlay, Printer } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
+import { ClassContextBar, useClassContext } from '../lib/class-context';
 import {
+  CollapsibleFormShell,
   CopyButton,
+  LanguageLensToggle,
   SayLine,
-  SelectField,
+  SegmentedTabs,
   StartNewButton,
-  languages,
-  subjectLabel,
-  subjects,
-  yearLevels,
+  type LangLens,
 } from './coach-ui';
 import { BingoPresent, WordDeckPresent, type WordCard } from './PrimerPresent';
 
 type PrimerGameId = 'bingo' | 'flyswatter' | 'hotseat';
+type PrimerOutputTab = 'game' | 'cards' | 'talk';
 
 type PrimerResult = {
   games: Array<{
@@ -96,7 +98,7 @@ function openBingoPrintWindow(grids: string[][], title: string) {
 <meta charset="utf-8" />
 <title>${title}</title>
 <style>
-  body { font-family: Georgia, 'Times New Roman', serif; margin: 16mm; color: #1f2421; }
+  body { font-family: Nunito, system-ui, sans-serif; margin: 16mm; color: #1f2421; }
   .grid-wrap { display: flex; flex-wrap: wrap; gap: 10mm; }
   .card { break-inside: avoid; }
   .card-title { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin: 0 0 4mm; }
@@ -118,13 +120,8 @@ function openBingoPrintWindow(grids: string[][], title: string) {
 
 export default function Primer() {
   const { t } = useLang();
+  const { yearLevel, subject, dominantLanguage } = useClassContext();
   const [wordsText, setWordsText, resetWordsText] = usePersistentState('tmb.primer.wordsText', '');
-  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.primer.yearLevel', '4');
-  const [subject, setSubject, resetSubject] = usePersistentState('tmb.primer.subject', 'science');
-  const [dominantLanguage, setDominantLanguage, resetDominantLanguage] = usePersistentState(
-    'tmb.primer.dominantLanguage',
-    'iban',
-  );
   const [result, setResult, resetResult] = usePersistentState<PrimerResult | null>('tmb.primer.result', null);
   const [selectedGame, setSelectedGame, resetSelectedGame] = usePersistentState<PrimerGameId | null>(
     'tmb.primer.selectedGame',
@@ -132,7 +129,7 @@ export default function Primer() {
   );
   const [cardView, setCardView, resetCardView] = usePersistentState<'reference' | 'flip'>(
     'tmb.primer.cardView',
-    'reference',
+    'flip',
   );
   const [leadFace, setLeadFace, resetLeadFace] = usePersistentState<'word' | 'definition'>(
     'tmb.primer.leadFace',
@@ -142,16 +139,20 @@ export default function Primer() {
   const [error, setError] = useState<string | null>(null);
   const [presentDeck, setPresentDeck] = useState(false);
   const [presentBingo, setPresentBingo] = useState(false);
+  const [formCollapsed, setFormCollapsed] = useState<boolean>(() => Boolean(result));
+  const [outputTab, setOutputTab] = useState<PrimerOutputTab>('game');
+  const [langLens, setLangLens] = useState<LangLens>('both');
+
+  const showEn = langLens === 'both' || langLens === 'en';
+  const showL1 = langLens === 'both' || langLens === 'l1';
 
   const clearTab = () => {
     resetWordsText();
-    resetYearLevel();
-    resetSubject();
-    resetDominantLanguage();
     resetResult();
     resetSelectedGame();
     resetCardView();
     resetLeadFace();
+    setFormCollapsed(false);
     setError(null);
   };
 
@@ -190,6 +191,8 @@ export default function Primer() {
       const plan = payload.plan as PrimerResult;
       setResult(plan);
       setSelectedGame(plan.games[0]?.gameId ?? null);
+      setFormCollapsed(true);
+      setOutputTab('game');
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : t('primer.errors.failed'));
     } finally {
@@ -200,223 +203,221 @@ export default function Primer() {
   const activeGame = result?.games.find((g) => g.gameId === selectedGame) ?? null;
 
   return (
-    <div>
-      <div className="mb-3 flex justify-end print:hidden">
-        <StartNewButton onClear={clearTab} />
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-2 print:hidden">
+        <h1 className="heading-editorial">{t('coach.tab.primer')}</h1>
+        {result ? (
+          <button
+            type="button"
+            onClick={() => setPresentDeck(true)}
+            className="btn-primary inline-flex items-center gap-1.5 px-3.5 py-2 text-sm touch-target"
+          >
+            <MonitorPlay className="h-4 w-4" />
+            {t('primer.present')}
+          </button>
+        ) : null}
       </div>
-      <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
-        <label className="block">
-          <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-            {t('primer.wordsLabel')}
-          </span>
-          <input
-            value={wordsText}
-            onChange={(event) => setWordsText(event.target.value)}
-            className="w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-            placeholder={t('primer.wordsPlaceholder')}
-          />
-        </label>
-        {words.length > 0 ? (
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {words.slice(0, 6).map((word) => (
-              <span
-                key={word}
-                className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-wide text-terracotta"
-              >
-                {word}
-              </span>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-1 text-xs text-ink-muted">{t('primer.wordsHint')}</p>
-        )}
 
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <SelectField
-            label={t('live.yearLabel')}
-            value={yearLevel}
-            onChange={setYearLevel}
-            options={yearLevels.map((y) => ({ value: y, label: `Year ${y}` }))}
-          />
-          <SelectField
-            label={t('live.subjectLabel')}
-            value={subject}
-            onChange={setSubject}
-            options={subjects.map((s) => ({ value: s, label: subjectLabel(s) }))}
-          />
-          <SelectField
-            label={t('live.languageLabel')}
-            value={dominantLanguage}
-            onChange={setDominantLanguage}
-            options={languages.map((l) => ({
-              value: l,
-              label: l.charAt(0).toUpperCase() + l.slice(1),
-            }))}
-          />
-        </div>
+      <ClassContextBar />
 
-        {error ? <p className="mt-3 text-sm text-red-700">{error}</p> : null}
+      <CollapsibleFormShell
+        collapsed={Boolean(result) && formCollapsed}
+        onToggle={() => setFormCollapsed((c) => !c)}
+        summary={words.length > 0 ? words.join(' · ') : t('coach.tab.primer')}
+        actions={<StartNewButton onClear={clearTab} />}
+      >
+        <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5">
+          <label className="block">
+            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+              {t('primer.wordsLabel')}
+            </span>
+            <input
+              value={wordsText}
+              onChange={(event) => setWordsText(event.target.value)}
+              className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+              placeholder={t('primer.wordsPlaceholder')}
+            />
+          </label>
+          {words.length > 0 ? (
+            <div className="mt-2.5 flex flex-wrap gap-1.5">
+              {words.slice(0, 6).map((word) => (
+                <span key={word} className="pill-terracotta">
+                  {word}
+                </span>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-1.5 text-xs font-semibold text-ink-muted">{t('primer.wordsHint')}</p>
+          )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="btn-primary mt-4 inline-flex items-center gap-2 rounded-lg touch-target disabled:opacity-70"
-        >
-          {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Dices className="h-4 w-4" />}
-          {loading ? t('primer.generating') : t('primer.generate')}
-        </button>
-      </form>
+          {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary mt-4 inline-flex w-full items-center justify-center gap-2 touch-target disabled:opacity-70 sm:w-auto"
+          >
+            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Dices className="h-4 w-4" />}
+            {loading ? t('primer.generating') : t('primer.generate')}
+          </button>
+        </form>
+      </CollapsibleFormShell>
 
       {result ? (
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.25 }}
-          className="mt-4 sm:mt-6 space-y-3 sm:space-y-4"
+          transition={{ duration: 0.2 }}
+          className="space-y-3"
         >
-          {result.localHook ? (
-            <section className="card-warm p-4 sm:p-5">
-              <p className="label-section mb-1">{t('primer.localHook')}</p>
-              <div className="flex items-start justify-between gap-2">
-                <p className="flex-1 text-sm text-ink-soft">{result.localHook}</p>
-                <CopyButton value={result.localHook} />
-              </div>
-            </section>
-          ) : null}
+          <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
+            <LanguageLensToggle value={langLens} onChange={setLangLens} />
+          </div>
 
-          <section className="card-warm p-4 sm:p-5">
-            <p className="label-section mb-3">{t('primer.pickGame')}</p>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-3" role="tablist" aria-label={t('primer.pickGame')}>
-              {result.games.map((game) => (
-                <button
-                  key={game.gameId}
-                  type="button"
-                  role="tab"
-                  aria-selected={selectedGame === game.gameId}
-                  onClick={() => setSelectedGame(game.gameId)}
-                  className={`rounded-xl border-2 px-3 py-2.5 text-left transition-colors touch-target ${
-                    selectedGame === game.gameId
-                      ? 'border-terracotta/50 bg-terracotta/10'
-                      : 'border-ink/10 bg-white/50 hover:bg-white'
-                  }`}
-                >
-                  <span
-                    className={`block text-sm font-bold ${
-                      selectedGame === game.gameId ? 'text-terracotta' : 'text-ink'
-                    }`}
-                  >
-                    {game.name || t(`primer.game.${game.gameId}`)}
-                  </span>
-                  {game.controlBenefit ? (
-                    <span className="mt-0.5 block text-xs text-ink-muted">{game.controlBenefit}</span>
-                  ) : null}
-                </button>
-              ))}
-            </div>
+          <SegmentedTabs
+            ariaLabel={t('coach.tab.primer')}
+            active={outputTab}
+            onChange={setOutputTab}
+            tabs={[
+              { id: 'game', label: t('primer.tabGame') },
+              {
+                id: 'cards',
+                label: t('primer.tabCards'),
+                badge: String(result.wordCards.length),
+              },
+              { id: 'talk', label: t('primer.tabTalk') },
+            ]}
+          />
 
-            {activeGame ? (
-              <div className="mt-3">
-                <SayLine label={t('primer.setupEnglish')} value={activeGame.setupEnglish} />
-                <SayLine label={t('primer.setupBridge')} value={activeGame.setupBridge} />
-                {activeGame.gameId === 'bingo' && bingoGrids.length > 0 ? (
-                  <div className="mt-3">
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
-                        {t('primer.bingoPreview')}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setPresentBingo(true)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-terracotta/40 bg-terracotta/10 px-3 py-2 text-xs font-semibold text-terracotta transition hover:bg-terracotta/20 touch-target"
-                        >
-                          <MonitorPlay className="h-4 w-4" />
-                          {t('primer.presentBingo')}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openBingoPrintWindow(bingoGrids, t('primer.bingoCardTitle'))}
-                          className="inline-flex items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-white touch-target"
-                        >
-                          <Printer className="h-4 w-4" />
-                          {t('primer.printBingo')}
-                        </button>
-                      </div>
-                    </div>
-                    <div className="inline-block rounded-lg border border-ink/15 bg-white/60 p-2">
-                      <table className="border-collapse">
-                        <tbody>
-                          {[0, 1, 2].map((row) => (
-                            <tr key={`row-${row}`}>
-                              {bingoGrids[0].slice(row * 3, row * 3 + 3).map((word, col) => (
-                                <td
-                                  key={`cell-${row}-${col}`}
-                                  className="border border-ink/30 px-3 py-2 text-center text-sm text-ink-soft"
-                                >
-                                  {word}
-                                </td>
-                              ))}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                    <p className="mt-1 text-xs text-ink-muted">{t('primer.bingoHint')}</p>
-                  </div>
-                ) : null}
-              </div>
+          {/* TAB 1: Local Hook & Game */}
+          <div className={outputTab === 'game' ? 'space-y-3' : 'hidden print:block print:space-y-3'}>
+            {result.localHook ? (
+              <section className="card-warm p-4">
+                <p className="label-section mb-1">{t('primer.localHook')}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="flex-1 text-base font-semibold leading-snug text-ink">{result.localHook}</p>
+                  <CopyButton value={result.localHook} />
+                </div>
+              </section>
             ) : null}
-          </section>
 
-          <section className="card-warm p-4 sm:p-5">
-            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <p className="label-section">{t('primer.wordCards')}</p>
-              <div className="flex flex-wrap items-center gap-2">
-                <div className="inline-flex overflow-hidden rounded-lg border border-ink/15" role="tablist">
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={cardView === 'reference'}
-                    onClick={() => setCardView('reference')}
-                    className={`px-3 py-1.5 text-xs font-semibold ${
-                      cardView === 'reference' ? 'bg-terracotta/15 text-terracotta' : 'bg-white/60 text-ink-muted hover:bg-white'
-                    }`}
-                  >
-                    {t('primer.viewReference')}
-                  </button>
+            <section className="card-warm p-4 sm:p-5">
+              <p className="label-section mb-2.5">{t('primer.pickGame')}</p>
+              <div className="grid grid-cols-3 gap-2" role="tablist" aria-label={t('primer.pickGame')}>
+                {result.games.map((game) => {
+                  const selected = selectedGame === game.gameId;
+                  return (
+                    <button
+                      key={game.gameId}
+                      type="button"
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setSelectedGame(game.gameId)}
+                      className={`rounded-2xl border-2 px-2.5 py-2.5 text-center transition touch-target ${
+                        selected
+                          ? 'border-terracotta bg-terracotta-bg text-terracotta shadow-[0_2px_0_rgba(217,93,57,0.2)]'
+                          : 'border-ink/12 bg-white text-ink hover:border-ink/25'
+                      }`}
+                    >
+                      <span className="block font-display text-xs font-bold sm:text-sm">
+                        {game.name || t(`primer.game.${game.gameId}`)}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {activeGame ? (
+                <div className="mt-3">
+                  {activeGame.controlBenefit ? (
+                    <p className="mb-2 text-xs font-semibold text-ink-muted">{activeGame.controlBenefit}</p>
+                  ) : null}
+                  {showEn ? (
+                    <SayLine label={t('primer.setupEnglish')} value={activeGame.setupEnglish} tone="en" />
+                  ) : null}
+                  {showL1 ? (
+                    <SayLine label={t('primer.setupBridge')} value={activeGame.setupBridge} tone="l1" />
+                  ) : null}
+                  {activeGame.gameId === 'bingo' && bingoGrids.length > 0 ? (
+                    <div className="mt-3 rounded-2xl border-2 border-ink/10 bg-white p-3">
+                      <div className="mb-2.5 flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+                          {t('primer.bingoPreview')}
+                        </p>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() => setPresentBingo(true)}
+                            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-terracotta/40 bg-terracotta-bg px-3 py-1.5 font-display text-xs font-semibold text-terracotta touch-target"
+                          >
+                            <MonitorPlay className="h-4 w-4" />
+                            {t('primer.presentBingo')}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openBingoPrintWindow(bingoGrids, t('primer.bingoCardTitle'))}
+                            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-ink/15 bg-parchment-light px-3 py-1.5 font-display text-xs font-semibold text-ink touch-target"
+                          >
+                            <Printer className="h-4 w-4" />
+                            {t('primer.printBingo')}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="grid max-w-xs grid-cols-3 gap-1.5">
+                        {bingoGrids[0].map((word, idx) => (
+                          <div
+                            key={`cell-${idx}`}
+                            className="flex min-h-[44px] items-center justify-center rounded-xl border-2 border-ink/15 bg-parchment-light px-2 py-1.5 text-center font-display text-xs font-semibold text-ink"
+                          >
+                            {word}
+                          </div>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-ink-muted">{t('primer.bingoHint')}</p>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+            </section>
+          </div>
+
+          {/* TAB 2: Word Cards */}
+          <div className={outputTab === 'cards' ? '' : 'hidden print:block'}>
+            <section className="card-warm p-4 sm:p-5">
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="inline-flex overflow-hidden rounded-full border-2 border-ink/12 bg-parchment-dark/60 p-0.5" role="tablist">
                   <button
                     type="button"
                     role="tab"
                     aria-selected={cardView === 'flip'}
                     onClick={() => setCardView('flip')}
-                    className={`px-3 py-1.5 text-xs font-semibold ${
-                      cardView === 'flip' ? 'bg-terracotta/15 text-terracotta' : 'bg-white/60 text-ink-muted hover:bg-white'
+                    className={`min-h-[36px] rounded-full px-3 font-display text-xs font-semibold ${
+                      cardView === 'flip' ? 'bg-white text-terracotta shadow-sm' : 'text-ink-muted'
                     }`}
                   >
                     {t('primer.viewFlip')}
                   </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={cardView === 'reference'}
+                    onClick={() => setCardView('reference')}
+                    className={`min-h-[36px] rounded-full px-3 font-display text-xs font-semibold ${
+                      cardView === 'reference' ? 'bg-white text-terracotta shadow-sm' : 'text-ink-muted'
+                    }`}
+                  >
+                    {t('primer.viewReference')}
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setPresentDeck(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-terracotta/40 bg-terracotta/10 px-3 py-1.5 text-xs font-semibold text-terracotta transition hover:bg-terracotta/20 touch-target"
-                >
-                  <MonitorPlay className="h-4 w-4" />
-                  {t('primer.present')}
-                </button>
-              </div>
-            </div>
 
-            {cardView === 'flip' ? (
-              <div>
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <div className="inline-flex overflow-hidden rounded-lg border border-ink/15">
+                {cardView === 'flip' ? (
+                  <div className="inline-flex overflow-hidden rounded-full border-2 border-ink/12 bg-parchment-dark/60 p-0.5">
                     <button
                       type="button"
                       aria-pressed={leadFace === 'word'}
                       onClick={() => setLeadFace('word')}
-                      className={`px-3 py-1.5 text-xs font-semibold ${
-                        leadFace === 'word' ? 'bg-terracotta/15 text-terracotta' : 'bg-white/60 text-ink-muted hover:bg-white'
+                      className={`min-h-[36px] rounded-full px-3 font-display text-xs font-semibold ${
+                        leadFace === 'word' ? 'bg-white text-terracotta shadow-sm' : 'text-ink-muted'
                       }`}
                     >
                       {t('primer.leadWord')}
@@ -425,15 +426,17 @@ export default function Primer() {
                       type="button"
                       aria-pressed={leadFace === 'definition'}
                       onClick={() => setLeadFace('definition')}
-                      className={`px-3 py-1.5 text-xs font-semibold ${
-                        leadFace === 'definition' ? 'bg-terracotta/15 text-terracotta' : 'bg-white/60 text-ink-muted hover:bg-white'
+                      className={`min-h-[36px] rounded-full px-3 font-display text-xs font-semibold ${
+                        leadFace === 'definition' ? 'bg-white text-terracotta shadow-sm' : 'text-ink-muted'
                       }`}
                     >
                       {t('primer.leadDefinition')}
                     </button>
                   </div>
-                  <p className="text-xs text-ink-muted">{t('primer.tapToFlip')}</p>
-                </div>
+                ) : null}
+              </div>
+
+              {cardView === 'flip' ? (
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {result.wordCards.map((card) => (
                     <Fragment key={card.word}>
@@ -441,80 +444,74 @@ export default function Primer() {
                     </Fragment>
                   ))}
                 </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-                {result.wordCards.map((card) => (
-                  <div key={card.word} className="rounded-lg border border-ink/10 bg-white/50 px-3 py-2.5">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <p className="text-sm font-bold uppercase tracking-wide text-ink">{card.word}</p>
-                      {card.bridgeWord ? (
-                        <span className="rounded-full border border-ink/10 bg-white/60 px-2 py-0.5 text-[11px] text-ink-muted">
-                          {card.bridgeWord}
-                        </span>
+              ) : (
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  {result.wordCards.map((card) => (
+                    <div key={card.word} className="rounded-2xl border-2 border-ink/10 bg-white p-3.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-display text-base font-bold text-ink">{card.word}</p>
+                        {card.bridgeWord ? <span className="pill-amber">{card.bridgeWord}</span> : null}
+                        {card.isCognate ? <span className="pill-sage">{t('primer.cognate')}</span> : null}
+                      </div>
+                      {card.kidDefinition ? (
+                        <p className="mt-1.5 text-sm text-ink-soft">{card.kidDefinition}</p>
                       ) : null}
-                      {card.isCognate ? (
-                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-                          {t('primer.cognate')}
-                        </span>
+                      {card.clue ? (
+                        <div className="mt-2 flex items-start justify-between gap-2 rounded-xl bg-parchment-light px-3 py-2">
+                          <p className="flex-1 text-xs font-semibold text-ink-soft">
+                            <span className="font-extrabold uppercase text-ink-muted">{t('primer.clue')}: </span>
+                            {card.clue}
+                          </p>
+                          <CopyButton value={card.clue} />
+                        </div>
                       ) : null}
                     </div>
-                    {card.kidDefinition ? (
-                      <p className="mt-1.5 text-sm text-ink-soft">{card.kidDefinition}</p>
-                    ) : null}
-                    {card.clue ? (
-                      <div className="mt-1.5 flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/60 px-2.5 py-1.5">
-                        <p className="flex-1 text-xs text-ink-soft">
-                          <span className="font-semibold uppercase tracking-wide text-ink-muted">
-                            {t('primer.clue')}:
-                          </span>{' '}
-                          {card.clue}
-                        </p>
-                        <CopyButton value={card.clue} />
-                      </div>
-                    ) : null}
-                    {card.isCognate && card.cognateNote ? (
-                      <p className="mt-1 text-xs italic text-ink-muted">{card.cognateNote}</p>
-                    ) : null}
-                  </div>
-                ))}
-              </div>
-            )}
-          </section>
-
-          {result.transition.teacherLineEnglish ? (
-            <section className="rounded-2xl border-2 border-terracotta/40 bg-terracotta/5 p-4 sm:p-5">
-              <div className="mb-1 flex flex-wrap items-center gap-2">
-                <p className="label-section">{t('primer.transition')}</p>
-                {result.transition.talkMoveId || result.transition.talkMoveName ? (
-                  <span className="rounded-full border border-terracotta/30 bg-white/60 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-terracotta">
-                    {result.transition.talkMoveId} {result.transition.talkMoveName}
-                  </span>
-                ) : null}
-              </div>
-              <p className="mb-2 text-xs text-ink-muted">{t('primer.transitionHint')}</p>
-              <SayLine label={t('live.sayEnglish')} value={result.transition.teacherLineEnglish} />
-              <SayLine label={t('live.sayBridge')} value={result.transition.teacherLineBridge} />
-              {result.transition.sentenceFrames.length > 0 ? (
-                <div className="mt-2">
-                  <p className="mb-1 text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
-                    {t('lesson.frames')}
-                  </p>
-                  <ul className="space-y-1.5">
-                    {result.transition.sentenceFrames.map((frame, idx) => (
-                      <li
-                        key={`tframe-${idx}`}
-                        className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/60 px-3 py-2 text-sm text-ink-soft"
-                      >
-                        <span className="flex-1">{frame}</span>
-                        <CopyButton value={frame} />
-                      </li>
-                    ))}
-                  </ul>
+                  ))}
                 </div>
-              ) : null}
+              )}
             </section>
-          ) : null}
+          </div>
+
+          {/* TAB 3: Talk Move Transition */}
+          <div className={outputTab === 'talk' ? '' : 'hidden print:block'}>
+            {result.transition.teacherLineEnglish ? (
+              <section className="rounded-2xl border-2 border-terracotta/45 bg-terracotta-bg/60 p-4 sm:p-5">
+                <div className="mb-1 flex flex-wrap items-center gap-2">
+                  <p className="label-section">{t('primer.transition')}</p>
+                  {result.transition.talkMoveId || result.transition.talkMoveName ? (
+                    <span className="pill-terracotta">
+                      {result.transition.talkMoveId} {result.transition.talkMoveName}
+                    </span>
+                  ) : null}
+                </div>
+                <p className="mb-2 text-xs font-semibold text-ink-muted">{t('primer.transitionHint')}</p>
+                {showEn ? (
+                  <SayLine label={t('live.sayEnglish')} value={result.transition.teacherLineEnglish} tone="en" />
+                ) : null}
+                {showL1 ? (
+                  <SayLine label={t('live.sayBridge')} value={result.transition.teacherLineBridge} tone="l1" />
+                ) : null}
+                {result.transition.sentenceFrames.length > 0 ? (
+                  <div className="mt-3">
+                    <p className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+                      {t('lesson.frames')}
+                    </p>
+                    <ul className="space-y-2">
+                      {result.transition.sentenceFrames.map((frame, idx) => (
+                        <li
+                          key={`tframe-${idx}`}
+                          className="flex items-start justify-between gap-2 rounded-2xl border-2 border-ink/10 bg-white px-3.5 py-2.5 text-sm font-semibold text-ink"
+                        >
+                          <span className="flex-1">{frame}</span>
+                          <CopyButton value={frame} />
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+          </div>
         </motion.div>
       ) : null}
 
@@ -540,23 +537,15 @@ function Flashcard({ card, leadFace }: { card: WordCard; leadFace: 'word' | 'def
 
   const wordFace = (
     <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-      <p className="text-2xl font-extrabold uppercase tracking-wide text-ink sm:text-3xl">{card.word}</p>
-      {card.isCognate ? (
-        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-emerald-700">
-          {t('primer.cognate')}
-        </span>
-      ) : null}
+      <p className="font-display text-2xl font-bold text-ink sm:text-3xl">{card.word}</p>
+      {card.isCognate ? <span className="pill-sage">{t('primer.cognate')}</span> : null}
     </div>
   );
 
   const meaningFace = (
     <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-      <p className="text-base leading-snug text-ink-soft sm:text-lg">{card.kidDefinition}</p>
-      {card.bridgeWord ? (
-        <p className="rounded-full border border-terracotta/40 bg-terracotta/10 px-3 py-1 text-sm font-bold text-terracotta">
-          {card.bridgeWord}
-        </p>
-      ) : null}
+      <p className="text-base font-semibold leading-snug text-ink-soft sm:text-lg">{card.kidDefinition}</p>
+      {card.bridgeWord ? <span className="pill-terracotta text-sm">{card.bridgeWord}</span> : null}
     </div>
   );
 
@@ -572,14 +561,14 @@ function Flashcard({ card, leadFace }: { card: WordCard; leadFace: 'word' | 'def
       title={flipped ? t('primer.flipBack') : t('primer.tapToFlip')}
     >
       <div
-        className={`relative h-full w-full rounded-xl transition-transform duration-500 [transform-style:preserve-3d] ${
+        className={`relative h-full w-full rounded-2xl transition-transform duration-500 [transform-style:preserve-3d] ${
           flipped ? '[transform:rotateY(180deg)]' : ''
         }`}
       >
-        <div className="absolute inset-0 rounded-xl border-2 border-ink/15 bg-white/70 p-4 [backface-visibility:hidden]">
+        <div className="absolute inset-0 rounded-2xl border-2 border-ink/15 bg-white p-4 shadow-[0_3px_0_rgba(39,34,32,0.08)] [backface-visibility:hidden]">
           {front}
         </div>
-        <div className="absolute inset-0 rounded-xl border-2 border-terracotta/30 bg-parchment-light p-4 [backface-visibility:hidden] [transform:rotateY(180deg)]">
+        <div className="absolute inset-0 rounded-2xl border-2 border-terracotta/40 bg-terracotta-bg/60 p-4 shadow-[0_3px_0_rgba(217,93,57,0.16)] [backface-visibility:hidden] [transform:rotateY(180deg)]">
           {back}
         </div>
       </div>

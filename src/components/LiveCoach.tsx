@@ -1,3 +1,4 @@
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import {
   useEffect,
   useRef,
@@ -11,6 +12,7 @@ import {
   ArrowRight,
   Camera,
   CheckCircle2,
+  ChevronRight,
   Hand,
   ImageIcon,
   Layers3,
@@ -32,16 +34,15 @@ import {
 } from 'lucide-react';
 import { useLang, type TranslateFn } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
+import { ClassContextBar, useClassContext } from '../lib/class-context';
 import {
   CopyButton,
+  LanguageLensToggle,
   NeedBadge,
   SayLine,
-  SelectField,
   StartNewButton,
-  languages,
   subjectLabel,
-  subjects,
-  yearLevels,
+  type LangLens,
   type NeedCategory,
 } from './coach-ui';
 
@@ -223,12 +224,8 @@ const MODE_ICON: Record<ActionMode, typeof Lightbulb> = {
 
 export default function LiveCoach() {
   const { t } = useLang();
-  const [yearLevel, setYearLevel, resetYearLevel] = usePersistentState('tmb.live.yearLevel', '4');
-  const [subject, setSubject, resetSubject] = usePersistentState('tmb.live.subject', 'science');
-  const [dominantLanguage, setDominantLanguage, resetDominantLanguage] = usePersistentState(
-    'tmb.live.dominantLanguage',
-    'iban',
-  );
+  const { yearLevel, subject, dominantLanguage, setYearLevel, setSubject, setDominantLanguage } =
+    useClassContext();
   const [messages, setMessages, resetMessages] = usePersistentState<ChatMessage[]>(
     'tmb.live.messages.v3',
     [],
@@ -243,7 +240,7 @@ export default function LiveCoach() {
   const [loading, setLoading] = useState(false);
   const [processingImage, setProcessingImage] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -253,10 +250,10 @@ export default function LiveCoach() {
   const busy = loading || processingImage;
 
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
+    if (hasConversation) {
+      endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
-  }, [messages, loading]);
+  }, [messages.length, loading, hasConversation]);
 
   const attachImage = async (file: Blob, name: string) => {
     setError(null);
@@ -298,9 +295,6 @@ export default function LiveCoach() {
   };
 
   const clearTab = () => {
-    resetYearLevel();
-    resetSubject();
-    resetDominantLanguage();
     resetMessages();
     removeImage();
     setDraft('');
@@ -366,7 +360,6 @@ export default function LiveCoach() {
       setError(requestError instanceof Error ? requestError.message : t('live.errors.failed'));
     } finally {
       setLoading(false);
-      draftRef.current?.focus();
     }
   };
 
@@ -444,61 +437,65 @@ export default function LiveCoach() {
   };
 
   return (
-    <div onPaste={handlePaste} onDragOver={(event) => event.preventDefault()} onDrop={handleDrop}>
-      <div className="mb-3 flex flex-wrap items-end justify-between gap-2 print:hidden">
-        <p className="max-w-xl text-xs text-ink-muted">{t('live.threadHint')}</p>
-        <StartNewButton onClear={clearTab} />
+    <div
+      onPaste={handlePaste}
+      onDragOver={(event) => event.preventDefault()}
+      onDrop={handleDrop}
+      className="space-y-3"
+    >
+      {/* Hidden file/camera inputs shared by hero & composer */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void attachImage(file, file.name);
+          event.currentTarget.value = '';
+        }}
+      />
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(event) => {
+          const file = event.target.files?.[0];
+          if (file) void attachImage(file, file.name || `page-${Date.now()}.jpg`);
+          event.currentTarget.value = '';
+        }}
+      />
+
+      <div className="flex items-center justify-between gap-2 print:hidden">
+        <h1 className="heading-editorial">{t('coach.tab.live')}</h1>
+        {hasConversation || currentImage ? <StartNewButton onClear={clearTab} /> : null}
       </div>
 
-      <div className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <SelectField
-            label={t('live.yearLabel')}
-            value={yearLevel}
-            onChange={setYearLevel}
-            options={yearLevels.map((year) => ({ value: year, label: `Year ${year}` }))}
-          />
-          <SelectField
-            label={t('live.subjectLabel')}
-            value={subject}
-            onChange={setSubject}
-            options={subjects.map((item) => ({ value: item, label: subjectLabel(item) }))}
-          />
-          <SelectField
-            label={t('live.languageLabel')}
-            value={dominantLanguage}
-            onChange={setDominantLanguage}
-            options={languages.map((language) => ({
-              value: language,
-              label: language
-                .split(' ')
-                .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                .join(' '),
-            }))}
-          />
-        </div>
-      </div>
+      <ClassContextBar />
 
+      {/* Pinned offline cards rail */}
       {savedCards.length > 0 ? (
-        <section className="card-warm mt-3 p-4 print:hidden">
+        <section className="card-warm p-3 print:hidden">
           <p className="label-section mb-2">{t('live.pinnedTitle')}</p>
-          <div className="flex gap-2 overflow-x-auto pb-1">
+          <div className="no-scrollbar flex gap-2 overflow-x-auto pb-1">
             {savedCards.map((card) => (
               <div
                 key={card.id}
-                className="min-w-56 max-w-64 rounded-lg border border-ink/10 bg-white/60 p-2"
+                className="min-w-52 max-w-60 shrink-0 rounded-2xl border-2 border-ink/10 bg-white p-2.5"
               >
-                <p className="truncate text-xs font-semibold text-ink">
+                <p className="truncate font-display text-xs font-bold text-ink">
                   Year {card.yearLevel} · {subjectLabel(card.subject)}
                 </p>
-                <p className="mt-0.5 line-clamp-2 min-h-8 text-[11px] text-ink-muted">
+                <p className="mt-0.5 line-clamp-2 min-h-8 text-xs text-ink-muted">
                   {card.result.prepCard?.detectedVisualContext.pageSummary || card.result.teacherMirror}
                 </p>
                 <div className="mt-2 flex gap-1.5">
                   <button
                     type="button"
                     onClick={() => loadPinnedCard(card)}
-                    className="flex-1 rounded-md border border-terracotta/30 bg-terracotta/10 px-2 py-1.5 text-[11px] font-semibold text-terracotta"
+                    className="flex-1 rounded-xl border-2 border-terracotta/35 bg-terracotta-bg px-2.5 py-1.5 font-display text-xs font-semibold text-terracotta touch-target"
                   >
                     {t('live.openPinned')}
                   </button>
@@ -506,9 +503,9 @@ export default function LiveCoach() {
                     type="button"
                     aria-label={t('live.unpin')}
                     onClick={() => setSavedCards((prev) => prev.filter((saved) => saved.id !== card.id))}
-                    className="rounded-md border border-ink/15 px-2 py-1.5 text-ink-muted hover:text-red-700"
+                    className="rounded-xl border-2 border-ink/12 px-2.5 py-1.5 text-ink-muted hover:text-red-700 touch-target"
                   >
-                    <Trash2 className="h-3.5 w-3.5" />
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
               </div>
@@ -517,158 +514,109 @@ export default function LiveCoach() {
         </section>
       ) : null}
 
-      <section className="card-warm mt-3 p-4 sm:p-5 print:hidden">
-        <p className="label-section mb-1">{t('live.screenshotTitle')}</p>
-        <p className="mb-2 text-xs text-ink-muted">{t('live.screenshotHint')}</p>
-        <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
-          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-          <p className="text-xs font-semibold text-amber-900">{t('coach.piiWarning')}</p>
-        </div>
-
-        <div className="rounded-xl border-2 border-dashed border-terracotta/30 bg-white/40 p-3">
-          {currentImage ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <img
-                src={currentImage.thumbnailDataUrl}
-                alt={currentImage.name}
-                className="h-24 w-32 rounded-lg border border-ink/10 bg-white object-contain"
-              />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-ink">{currentImage.name}</p>
-                <p className="mt-1 text-xs text-ink-muted">
-                  {currentImage.base64Data ? '1024px JPEG · ready to analyse' : t('live.pinnedBadge')}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={removeImage}
-                className="inline-flex items-center gap-1 rounded-lg border border-ink/15 px-2.5 py-2 text-xs font-semibold text-ink-muted hover:text-ink"
-              >
-                <X className="h-3.5 w-3.5" />
-                {t('live.removeImage')}
-              </button>
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => fileInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink hover:bg-white touch-target"
-              >
-                <Upload className="h-4 w-4" />
-                {t('live.uploadImage')}
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => cameraInputRef.current?.click()}
-                className="inline-flex items-center gap-2 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink hover:bg-white touch-target"
-              >
-                <Camera className="h-4 w-4" />
-                {t('live.takePhoto')}
-              </button>
-            </div>
-          )}
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void attachImage(file, file.name);
-              event.currentTarget.value = '';
-            }}
-          />
-          <input
-            ref={cameraInputRef}
-            type="file"
-            accept="image/*"
-            capture="environment"
-            className="hidden"
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              if (file) void attachImage(file, file.name || `page-${Date.now()}.jpg`);
-              event.currentTarget.value = '';
-            }}
-          />
-        </div>
-
-        {processingImage ? (
-          <p className="mt-2 flex items-center gap-2 text-xs text-ink-muted">
-            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
-            {t('live.processingImage')}
-          </p>
-        ) : null}
-
-        {canBuildFromVisual ? (
-          <div className="mt-3 space-y-2">
+      {/* Compact empty-state starter (hidden once conversation starts) */}
+      {!hasConversation ? (
+        <section className="card-warm p-4 sm:p-5 print:hidden">
+          <p className="card-title mb-1">{t('live.screenshotTitle')}</p>
+          <p className="mb-3 text-sm text-ink-soft">{t('live.screenshotHint')}</p>
+          <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
               disabled={busy}
-              onClick={() => runQuickIntent('build_reasoning_prep')}
-              className="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm touch-target disabled:opacity-70"
+              onClick={() => cameraInputRef.current?.click()}
+              className="btn-primary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm touch-target"
             >
-              {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-              {t('live.buildPrepCta')}
+              <Camera className="h-4 w-4 shrink-0" />
+              <span className="truncate">{t('live.takePhoto')}</span>
             </button>
-            <div className="grid grid-cols-1 gap-2 md:grid-cols-3">
-              {(
-                [
-                  ['competing_claims_debate', 'live.quickIntent.debate'],
-                  ['spot_mistake', 'live.quickIntent.mistake'],
-                  ['simplify_bridge', 'live.quickIntent.simplify'],
-                ] as Array<[QuickIntent, string]>
-              ).map(([intent, labelKey]) => (
-                <button
-                  key={intent}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => runQuickIntent(intent)}
-                  className="rounded-lg border border-ink/15 bg-white/60 px-3 py-2 text-left text-xs font-semibold text-ink-soft hover:bg-white touch-target disabled:opacity-60"
-                >
-                  {t(labelKey)}
-                </button>
-              ))}
-            </div>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => fileInputRef.current?.click()}
+              className="btn-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm touch-target"
+            >
+              <Upload className="h-4 w-4 shrink-0 text-terracotta" />
+              <span className="truncate">{t('live.uploadImage')}</span>
+            </button>
           </div>
-        ) : null}
-      </section>
-
-      {!hasConversation ? (
-        <form onSubmit={handleSubmit} className="card-warm mt-3 p-4 sm:p-5 print:hidden">
-          <label className="block">
-            <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
-              {t('live.observationLabel')}
-            </span>
-            <textarea
-              ref={draftRef}
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              className="min-h-24 w-full rounded-lg border border-ink/15 bg-white/70 px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-              placeholder={t('live.observationPlaceholder')}
-            />
-          </label>
-          <p className="mt-1 text-xs text-ink-muted">{t('live.observationHint')}</p>
-          <button
-            type="submit"
-            disabled={busy || !draft.trim()}
-            className="btn-primary mt-4 inline-flex items-center gap-2 rounded-lg touch-target disabled:opacity-70"
-          >
-            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
-            {loading ? t('live.coaching') : t('live.coachMe')}
-          </button>
-        </form>
+          <p className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-[#9e5f06]">
+            <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
+            {t('coach.piiWarning')}
+          </p>
+        </section>
       ) : null}
 
-      {error ? <p className="mt-3 text-sm text-red-700 print:hidden">{error}</p> : null}
+      {/* Active visual preview + quick-action chips */}
+      {currentImage || processingImage ? (
+        <section className="card-warm p-3.5 print:hidden">
+          {processingImage ? (
+            <p className="flex items-center gap-2 text-xs font-semibold text-ink-muted">
+              <LoaderCircle className="h-4 w-4 animate-spin text-terracotta" />
+              {t('live.processingImage')}
+            </p>
+          ) : currentImage ? (
+            <>
+              <div className="flex items-center gap-3">
+                <img
+                  src={currentImage.thumbnailDataUrl}
+                  alt={currentImage.name}
+                  className="h-16 w-20 shrink-0 rounded-xl border-2 border-ink/10 bg-white object-contain"
+                />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-bold text-ink">{currentImage.name}</p>
+                  <p className="text-xs font-semibold text-ink-muted">
+                    {currentImage.base64Data ? 'Ready to build' : t('live.pinnedBadge')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  aria-label={t('live.removeImage')}
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-2 border-ink/12 bg-white text-ink-muted hover:text-ink"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+              {canBuildFromVisual ? (
+                <div className="mt-3 space-y-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => runQuickIntent('build_reasoning_prep')}
+                    className="btn-primary inline-flex w-full items-center justify-center gap-2 text-sm touch-target disabled:opacity-70"
+                  >
+                    {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Zap className="h-4 w-4" />}
+                    {t('live.buildPrepCta')}
+                  </button>
+                  <div className="no-scrollbar flex gap-2 overflow-x-auto pb-0.5 sm:grid sm:grid-cols-3">
+                    {(
+                      [
+                        ['competing_claims_debate', 'live.quickIntent.debate'],
+                        ['spot_mistake', 'live.quickIntent.mistake'],
+                        ['simplify_bridge', 'live.quickIntent.simplify'],
+                      ] as Array<[QuickIntent, string]>
+                    ).map(([intent, labelKey]) => (
+                      <button
+                        key={intent}
+                        type="button"
+                        disabled={busy}
+                        onClick={() => runQuickIntent(intent)}
+                        className="shrink-0 rounded-xl border-2 border-ink/12 bg-white px-3 py-2 text-left text-xs font-bold text-ink-soft hover:border-terracotta/40 hover:text-ink touch-target disabled:opacity-60 sm:shrink"
+                      >
+                        {t(labelKey)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
+            </>
+          ) : null}
+        </section>
+      ) : null}
 
+      {/* Natural page-level conversation thread (no nested scroll trap) */}
       {hasConversation ? (
-        <div
-          ref={scrollRef}
-          className="mt-3 max-h-[75vh] space-y-4 overflow-y-auto pr-1 print:max-h-none print:overflow-visible"
-        >
+        <div className="space-y-4">
           {messages.map((message) => (
             <div key={message.id}>
               {message.role === 'teacher' ? (
@@ -687,43 +635,66 @@ export default function LiveCoach() {
             </div>
           ))}
           {loading ? (
-            <div className="flex items-center gap-2 text-sm text-ink-muted">
-              <LoaderCircle className="h-4 w-4 animate-spin" />
+            <div className="flex items-center gap-2 rounded-2xl border-2 border-ink/10 bg-white px-4 py-3 text-sm font-bold text-ink-muted">
+              <LoaderCircle className="h-4 w-4 animate-spin text-terracotta" />
               {t('live.coaching')}
             </div>
           ) : null}
+          <div ref={endRef} />
         </div>
       ) : null}
 
-      {hasConversation ? (
-        <form onSubmit={handleSubmit} className="card-warm mt-3 p-3 sm:p-4 print:hidden">
-          <div className="flex items-end gap-2">
-            <textarea
-              ref={draftRef}
-              value={draft}
-              onChange={(event) => setDraft(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-                  event.preventDefault();
-                  void send(draft);
-                }
-              }}
-              rows={2}
-              className="min-h-12 flex-1 rounded-lg border border-ink/15 bg-white/70 px-3 py-2 text-sm text-ink outline-none transition focus:border-terracotta/50 focus:ring-2 focus:ring-terracotta/20"
-              placeholder={t('live.replyPlaceholder')}
-            />
-            <button
-              type="submit"
-              disabled={busy || !draft.trim()}
-              className="btn-primary inline-flex h-12 items-center gap-2 rounded-lg px-4 touch-target disabled:opacity-70"
-            >
-              <Send className="h-4 w-4" />
-              <span className="hidden sm:inline">{t('live.send')}</span>
-            </button>
-          </div>
-          <p className="mt-1 text-[11px] text-ink-muted">{t('live.replyHint')}</p>
-        </form>
-      ) : null}
+      {error ? <p className="text-sm font-bold text-red-700 print:hidden">{error}</p> : null}
+
+      {/* Unified bottom composer (works both before and during conversation) */}
+      <form
+        onSubmit={handleSubmit}
+        className="card-warm sticky bottom-[4.5rem] z-20 p-3 shadow-md sm:bottom-3 print:hidden"
+      >
+        <div className="flex items-end gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => cameraInputRef.current?.click()}
+            aria-label={t('live.takePhoto')}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta"
+          >
+            <Camera className="h-5 w-5" />
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => fileInputRef.current?.click()}
+            aria-label={t('live.uploadImage')}
+            className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta sm:inline-flex"
+          >
+            <Upload className="h-5 w-5" />
+          </button>
+          <textarea
+            ref={draftRef}
+            value={draft}
+            onChange={(event) => setDraft(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                event.preventDefault();
+                void send(draft);
+              }
+            }}
+            rows={1}
+            className="min-h-[44px] max-h-28 flex-1 resize-none rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+            placeholder={hasConversation ? t('live.replyPlaceholder') : t('live.observationLabel')}
+          />
+          <button
+            type="submit"
+            disabled={busy || (!draft.trim() && !currentImage?.base64Data)}
+            aria-label={t('live.send')}
+            className="btn-primary inline-flex h-11 shrink-0 items-center justify-center gap-1.5 px-3.5 text-sm disabled:opacity-60"
+          >
+            {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+            <span className="hidden sm:inline">{hasConversation ? t('live.send') : t('live.coachMe')}</span>
+          </button>
+        </div>
+      </form>
     </div>
   );
 }
@@ -731,8 +702,8 @@ export default function LiveCoach() {
 function TeacherBubble({ text, image }: { text: string; image?: string }) {
   return (
     <div className="flex justify-end">
-      <div className="max-w-[85%] rounded-2xl rounded-br-sm border border-terracotta/20 bg-terracotta/10 px-4 py-2.5 text-sm text-ink">
-        {image ? <img src={image} alt="" className="mb-2 max-h-32 rounded-lg object-contain" /> : null}
+      <div className="max-w-[88%] rounded-2xl rounded-br-md border-2 border-terracotta/30 bg-terracotta-bg px-4 py-2.5 text-sm font-semibold text-ink">
+        {image ? <img src={image} alt="" className="mb-2 max-h-28 rounded-xl object-contain" /> : null}
         <p className="whitespace-pre-wrap">{text}</p>
       </div>
     </div>
@@ -763,24 +734,21 @@ function CoachReply({
   const isPrepCard = mode === 'prep_card' && Boolean(result.prepCard);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 6 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="flex justify-start"
-    >
-      <div className="w-full max-w-[96%] space-y-3 rounded-2xl rounded-bl-sm border border-ink/10 bg-parchment-light/70 p-3 sm:p-5">
-        <div className="flex flex-wrap items-center gap-2">
-          <Sparkles className="h-4 w-4 text-terracotta" />
-          {!isPrepCard ? <p className="flex-1 text-sm font-semibold text-ink">{message.text}</p> : null}
-          <ModeBadge mode={mode} icon={ModeIcon} t={t} />
+    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
+      <div className="card-warm w-full space-y-3 p-3.5 sm:p-5">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <ModeBadge mode={mode} icon={ModeIcon} t={t} />
+            <NeedBadge category={result.readBack.needCategory} />
+          </div>
           {isPrepCard ? (
             <button
               type="button"
               onClick={onPin}
               disabled={pinned}
-              className="inline-flex items-center gap-1.5 rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-[10px] font-bold text-terracotta disabled:opacity-70 print:hidden"
+              className="inline-flex items-center gap-1.5 rounded-full border-2 border-terracotta/35 bg-terracotta-bg px-3 py-1 font-display text-xs font-semibold text-terracotta disabled:opacity-70 print:hidden"
             >
-              <Pin className="h-3 w-3" />
+              <Pin className="h-3.5 w-3.5" />
               {pinned ? t('live.pinnedBadge') : t('live.pinCard')}
             </button>
           ) : null}
@@ -796,43 +764,19 @@ function CoachReply({
           />
         ) : (
           <>
-            <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-              <div className="mb-2 flex flex-wrap items-center gap-2">
-                <p className="label-section">{t('live.readBack')}</p>
-                <NeedBadge category={result.readBack.needCategory} />
-                {result.readBack.detectedLanguage ? (
-                  <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
-                    {t('live.detectedLanguage')}: {result.readBack.detectedLanguage}
-                  </span>
-                ) : null}
-              </div>
-              <p className="text-sm text-ink-soft">{result.readBack.summaryEnglish}</p>
-              {result.readBack.summaryBridge ? (
-                <p className="mt-1 text-sm italic text-ink-muted">{result.readBack.summaryBridge}</p>
-              ) : null}
-            </section>
-
-            {result.diagnosis ? (
-              <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-                <p className="label-section mb-2">{t('live.diagnosisTitle')}</p>
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
-                    {t('live.barrier')}: {result.diagnosis.barrier}
-                  </span>
-                  <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-semibold text-ink-muted">
-                    {t('live.confidence')}: {Math.round(result.diagnosis.confidence * 100)}%
-                  </span>
+            {/* ACTION FIRST: Regain Focus + Active Mode Block */}
+            {result.regainFocusLine ? (
+              <section className="rounded-2xl border-2 border-terracotta/45 bg-terracotta-bg/70 p-3.5">
+                <p className="label-section mb-1 text-terracotta">{t('live.regainFocus')}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="flex-1 text-base font-bold text-ink">{result.regainFocusLine}</p>
+                  <CopyButton value={result.regainFocusLine} />
                 </div>
-                {result.diagnosis.evidence ? (
-                  <p className="mt-2 text-xs text-ink-muted">{result.diagnosis.evidence}</p>
+                {result.ifItFails ? (
+                  <p className="mt-2 text-xs font-semibold text-ink-soft">
+                    {t('live.ifItFails')}: {result.ifItFails}
+                  </p>
                 ) : null}
-              </section>
-            ) : null}
-
-            {result.teacherMirror ? (
-              <section className="rounded-lg border border-ink/10 bg-white/60 p-3">
-                <p className="label-section mb-1">{t('live.teacherMirror')}</p>
-                <p className="text-sm text-ink-soft">{result.teacherMirror}</p>
               </section>
             ) : null}
 
@@ -841,58 +785,63 @@ function CoachReply({
             ) : null}
             {mode === 'reset' && result.reset ? <ResetBlock reset={result.reset} t={t} /> : null}
             {mode === 'firm_up' && result.firmUp ? <FirmUpBlock firmUp={result.firmUp} t={t} /> : null}
+
+            {result.observeNext ? (
+              <div className="rounded-2xl border-2 border-sage/30 bg-sage-bg/50 px-3.5 py-2.5">
+                <p className="text-[11px] font-extrabold uppercase tracking-wide text-[#1f6b4a]">
+                  {t('live.observeNext')}
+                </p>
+                <p className="mt-0.5 text-sm font-bold text-ink">{result.observeNext}</p>
+              </div>
+            ) : null}
+
+            {/* Progressive disclosure for diagnostic context & alternative ideas */}
+            <details className="rounded-2xl border-2 border-ink/10 bg-white px-3.5 py-2.5">
+              <summary className="cursor-pointer list-none font-display text-xs font-semibold text-ink-muted [&::-webkit-details-marker]:hidden touch-target flex items-center justify-between">
+                <span>{t('ui.whyThisMove')}</span>
+                <ChevronRight className="h-4 w-4" />
+              </summary>
+              <div className="mt-2.5 space-y-2.5 border-t border-ink/10 pt-2.5 text-sm">
+                {result.teacherMirror ? (
+                  <p className="font-semibold text-ink">{result.teacherMirror}</p>
+                ) : null}
+                {result.diagnosis ? (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="pill-terracotta">
+                      {t('live.barrier')}: {result.diagnosis.barrier}
+                    </span>
+                    <span className="pill-amber">
+                      {t('live.confidence')}: {Math.round(result.diagnosis.confidence * 100)}%
+                    </span>
+                  </div>
+                ) : null}
+                {result.readBack.summaryEnglish ? (
+                  <p className="text-xs text-ink-soft">{result.readBack.summaryEnglish}</p>
+                ) : null}
+                {result.rationaleNote ? (
+                  <p className="text-xs italic text-ink-muted">
+                    {t('live.rationaleNote')}: {result.rationaleNote}
+                  </p>
+                ) : null}
+                {result.ideas && result.ideas.length > 0 ? (
+                  <div className="space-y-2 pt-1">
+                    <p className="label-section">{t('live.ideasTitle')}</p>
+                    {result.ideas.map((idea, index) => (
+                      <button
+                        key={`${idea.kind}-${index}`}
+                        type="button"
+                        onClick={() => onChip(idea.headline)}
+                        className="w-full text-left"
+                      >
+                        <IdeaCard idea={idea} t={t} />
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </details>
           </>
         )}
-
-        {!isPrepCard && result.rationaleNote ? (
-          <p className="text-xs italic text-ink-muted">
-            {t('live.rationaleNote')}: {result.rationaleNote}
-          </p>
-        ) : null}
-
-        {!isPrepCard && result.ideas && result.ideas.length > 0 ? (
-          <section className="rounded-lg border border-amber-200/60 bg-amber-50/40 p-3">
-            <p className="label-section mb-1 flex items-center gap-1.5">
-              <Lightbulb className="h-3.5 w-3.5 text-amber-600" />
-              {t('live.ideasTitle')}
-            </p>
-            <p className="mb-2 text-[11px] text-ink-muted">{t('live.ideasHint')}</p>
-            <div className="space-y-2">
-              {result.ideas.map((idea, index) => (
-                <button
-                  key={`${idea.kind}-${index}`}
-                  type="button"
-                  onClick={() => onChip(idea.headline)}
-                  className="w-full text-left"
-                >
-                  <IdeaCard idea={idea} t={t} />
-                </button>
-              ))}
-            </div>
-          </section>
-        ) : null}
-
-        {!isPrepCard && result.observeNext ? (
-          <section className="rounded-lg border border-ink/10 bg-white/50 p-3">
-            <p className="label-section mb-1">{t('live.observeNext')}</p>
-            <p className="text-sm font-semibold text-ink">{result.observeNext}</p>
-          </section>
-        ) : null}
-
-        {!isPrepCard && result.regainFocusLine ? (
-          <section className="rounded-lg border-2 border-terracotta/40 bg-terracotta/5 p-3">
-            <p className="label-section mb-1">{t('live.regainFocus')}</p>
-            <div className="flex items-start justify-between gap-2">
-              <p className="flex-1 text-base font-semibold text-ink">{result.regainFocusLine}</p>
-              <CopyButton value={result.regainFocusLine} />
-            </div>
-            {result.ifItFails ? (
-              <p className="mt-2 text-xs text-ink-muted">
-                {t('live.ifItFails')}: {result.ifItFails}
-              </p>
-            ) : null}
-          </section>
-        ) : null}
       </div>
     </motion.div>
   );
@@ -911,6 +860,13 @@ function ReasoningPrepCardView({
   loading: boolean;
   onFollowUp: (label: string, trigger: string) => void;
 }) {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [showAll, setShowAll] = useState(false);
+  const [langLens, setLangLens] = useState<LangLens>('both');
+
+  const showEn = langLens === 'both' || langLens === 'en';
+  const showL1 = langLens === 'both' || langLens === 'l1';
+
   const context = card.detectedVisualContext;
   const strand1 = card.strand1_dialogicReasoning;
   const strand2 = card.strand2_vocabularyAndEalLadder;
@@ -923,50 +879,99 @@ function ReasoningPrepCardView({
     ladder.rung3_causalFrameEn,
   ].filter(Boolean);
 
+  const steps: Array<{ num: 1 | 2 | 3; label: string; time: string }> = [
+    { num: 1, label: t('live.stepDiscuss'), time: t('live.twoMinutes') },
+    { num: 2, label: t('live.stepBoard'), time: t('live.twoMinutes') },
+    { num: 3, label: t('live.stepCheck'), time: t('live.oneMinute') },
+  ];
+
   return (
     <div className="space-y-3">
-      <section className="rounded-xl border border-ink/10 bg-white/70 p-3">
-        <div className="flex items-start gap-3">
-          {image ? (
-            <img
-              src={image}
-              alt={context.pageSummary}
-              className="hidden h-16 w-20 shrink-0 rounded-lg border border-ink/10 bg-white object-contain sm:block"
-            />
+      {/* Compact Goal + Watch Out pills */}
+      <div className="flex items-start gap-3">
+        {image ? (
+          <img
+            src={image}
+            alt={context.pageSummary}
+            className="hidden h-16 w-20 shrink-0 rounded-xl border-2 border-ink/10 bg-white object-contain sm:block"
+          />
+        ) : null}
+        <div className="min-w-0 flex-1 space-y-1.5">
+          {goal ? (
+            <div className="flex items-start gap-2 rounded-2xl border-2 border-sky/30 bg-sky-bg px-3 py-2">
+              <Target className="mt-0.5 h-4 w-4 shrink-0 text-[#1c5f8d]" />
+              <p className="text-sm font-bold text-ink">
+                <span className="text-[#1c5f8d]">{t('live.goal')}:</span> {goal}
+              </p>
+            </div>
           ) : null}
-          <div className="min-w-0 flex-1 space-y-2">
-            {goal ? (
-              <div className="flex items-start gap-2 rounded-full border border-sky-200 bg-sky-50 px-3 py-2">
-                <Target className="mt-0.5 h-4 w-4 shrink-0 text-sky-700" />
-                <p className="text-sm font-semibold text-ink">
-                  <span className="text-sky-800">{t('live.goal')}:</span> {goal}
-                </p>
-              </div>
-            ) : null}
-            {context.commonMisconception ? (
-              <div className="flex items-start gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-2">
-                <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
-                <p className="text-sm font-semibold text-ink">
-                  <span className="text-amber-800">{t('live.watchOut')}:</span>{' '}
-                  {context.commonMisconception}
-                </p>
-              </div>
-            ) : null}
-          </div>
+          {context.commonMisconception ? (
+            <div className="flex items-start gap-2 rounded-2xl border-2 border-amber/35 bg-amber-bg px-3 py-2">
+              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#9e5f06]" />
+              <p className="text-sm font-bold text-ink">
+                <span className="text-[#9e5f06]">{t('live.watchOut')}:</span> {context.commonMisconception}
+              </p>
+            </div>
+          ) : null}
         </div>
-      </section>
+      </div>
 
-      <section className="rounded-xl border border-violet-200 bg-violet-50/50 p-3 sm:p-4">
+      {/* Controls: Stepper + Language Lens + All-Steps Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-2 print:hidden">
+        <LanguageLensToggle value={langLens} onChange={setLangLens} />
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          className="rounded-full border-2 border-ink/12 bg-white px-3 py-1.5 font-display text-xs font-semibold text-ink-soft hover:text-ink"
+        >
+          {showAll ? t('ui.stepView') : t('ui.showAllSteps')}
+        </button>
+      </div>
+
+      {!showAll ? (
+        <div
+          role="tablist"
+          aria-label="Lesson routine steps"
+          className="grid grid-cols-3 gap-1.5 rounded-2xl border-2 border-ink/10 bg-parchment-dark/65 p-1 print:hidden"
+        >
+          {steps.map((item) => {
+            const active = step === item.num;
+            return (
+              <button
+                key={item.num}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                onClick={() => setStep(item.num)}
+                className={`flex min-h-[44px] flex-col items-center justify-center rounded-xl px-2 py-1.5 text-center transition ${
+                  active
+                    ? 'bg-white text-terracotta shadow-sm'
+                    : 'text-ink-muted hover:text-ink'
+                }`}
+              >
+                <span className="font-display text-xs font-bold sm:text-sm">
+                  {item.num}. {item.label}
+                </span>
+                <span className="text-[10px] font-bold opacity-75">{item.time}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      {/* STEP 1: Discuss */}
+      <section
+        className={`rounded-2xl border-2 border-berry/30 bg-berry-bg/50 p-3.5 sm:p-4 ${
+          showAll || step === 1 ? '' : 'hidden print:block'
+        }`}
+      >
         <StepHeader
           number="1"
           title={t('live.stepDiscuss')}
           minutes={t('live.twoMinutes')}
           icon={Layers3}
-          tone="bg-violet-100 text-violet-800"
+          tone="bg-berry-bg text-[#5a379c] border-berry/30"
         />
-        <p className="mb-3 text-[10px] font-bold uppercase tracking-wide text-violet-700">
-          {strand1.talkMoveId}
-        </p>
         <div className="space-y-2">
           <DoLine t={t}>{strand1.visualHookInstruction}</DoLine>
           <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -974,18 +979,33 @@ function ReasoningPrepCardView({
             <SayAloud t={t} value={strand1.competingClaims.claimB} />
           </div>
           <DoLine t={t}>{strand1.waitTimeCue}</DoLine>
-          <SayAloud t={t} label={t('live.englishShort')} value={strand1.teacherScriptEn} />
-          <SayAloud t={t} label={t('live.bridgeShort')} value={strand1.teacherScriptBridge} />
+          {showEn ? <SayAloud t={t} label={t('live.englishShort')} value={strand1.teacherScriptEn} /> : null}
+          {showL1 ? <SayAloud t={t} label={t('live.bridgeShort')} value={strand1.teacherScriptBridge} /> : null}
         </div>
+        {!showAll ? (
+          <button
+            type="button"
+            onClick={() => setStep(2)}
+            className="btn-primary mt-3 inline-flex w-full items-center justify-center gap-2 text-sm print:hidden"
+          >
+            {t('ui.nextStep')}: 2. {t('live.stepBoard')}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        ) : null}
       </section>
 
-      <section className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 sm:p-4">
+      {/* STEP 2: Board Words */}
+      <section
+        className={`rounded-2xl border-2 border-sky/30 bg-sky-bg/50 p-3.5 sm:p-4 ${
+          showAll || step === 2 ? '' : 'hidden print:block'
+        }`}
+      >
         <StepHeader
           number="2"
           title={t('live.stepBoard')}
           minutes={t('live.twoMinutes')}
           icon={PencilLine}
-          tone="bg-sky-100 text-sky-800"
+          tone="bg-sky-bg text-[#1c5f8d] border-sky/30"
         />
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {[
@@ -993,16 +1013,20 @@ function ReasoningPrepCardView({
             { title: t('live.wordsForReasons'), words: strand2.relationalConnectors },
           ].map((group) =>
             group.words.length > 0 ? (
-              <div key={group.title} className="rounded-lg border border-sky-200 bg-white/70 p-3">
-                <p className="mb-2 text-[10px] font-bold uppercase tracking-wide text-sky-800">
+              <div key={group.title} className="rounded-2xl border-2 border-sky/20 bg-white p-3">
+                <p className="mb-2 text-[11px] font-extrabold uppercase tracking-wide text-[#1c5f8d]">
                   {group.title}
                 </p>
                 <div className="space-y-1.5">
                   {group.words.map((word) => (
-                    <p key={`${word.en}-${word.l1Bridge}`} className="text-base font-bold text-ink">
-                      {word.en}
-                      {word.l1Bridge ? (
-                        <span className="ml-2 text-sm font-normal text-sky-800">↔ {word.l1Bridge}</span>
+                    <p key={`${word.en}-${word.l1Bridge}`} className="font-display text-base font-bold text-ink">
+                      {showEn ? word.en : null}
+                      {showEn && showL1 && word.l1Bridge ? (
+                        <span className="ml-2 font-body text-sm font-semibold text-[#1c5f8d]">
+                          ↔ {word.l1Bridge}
+                        </span>
+                      ) : !showEn && showL1 ? (
+                        word.l1Bridge || word.en
                       ) : null}
                     </p>
                   ))}
@@ -1011,23 +1035,23 @@ function ReasoningPrepCardView({
             ) : null,
           )}
         </div>
-        <div className="mt-3">
+        <div className="mt-2.5">
           <DoLine t={t}>{t('live.boardDo')}</DoLine>
         </div>
-        <div className="mt-2 rounded-xl border border-emerald-950 bg-emerald-950 p-3 text-emerald-50 shadow-inner sm:p-4">
-          <p className="mb-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-200">
+        <div className="mt-2.5 rounded-2xl border-2 border-emerald-900 bg-emerald-950 p-3.5 text-emerald-50 shadow-inner">
+          <p className="mb-2.5 flex items-center gap-2 font-display text-xs font-bold uppercase tracking-wider text-emerald-200">
             <PencilLine className="h-4 w-4" />
             {t('live.writeOnBoard')}
           </p>
-          <ol className="space-y-3">
+          <ol className="space-y-2.5">
             {boardLines.map((line, index) => (
-              <li key={`${index}-${line}`} className="flex items-start gap-3">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-emerald-600 text-sm font-bold text-emerald-200">
+              <li key={`${index}-${line}`} className="flex items-start gap-2.5">
+                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-emerald-500 font-display text-sm font-bold text-emerald-200">
                   {index + 1}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-semibold leading-snug text-white sm:text-lg">{line}</p>
-                  {index === 2 && ladder.rung3_causalFrameL1 ? (
+                  {showEn ? <p className="text-base font-bold leading-snug text-white">{line}</p> : null}
+                  {showL1 && index === 2 && ladder.rung3_causalFrameL1 ? (
                     <p className="mt-1 border-t border-emerald-800 pt-1 text-sm text-emerald-100">
                       {ladder.rung3_causalFrameL1}
                     </p>
@@ -1037,40 +1061,57 @@ function ReasoningPrepCardView({
             ))}
           </ol>
         </div>
+        {!showAll ? (
+          <button
+            type="button"
+            onClick={() => setStep(3)}
+            className="btn-primary mt-3 inline-flex w-full items-center justify-center gap-2 text-sm print:hidden"
+          >
+            {t('ui.nextStep')}: 3. {t('live.stepCheck')}
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        ) : null}
       </section>
 
-      <section className="rounded-xl border border-emerald-200 bg-emerald-50/50 p-3 sm:p-4">
+      {/* STEP 3: Finger Check */}
+      <section
+        className={`rounded-2xl border-2 border-sage/35 bg-sage-bg/55 p-3.5 sm:p-4 ${
+          showAll || step === 3 ? '' : 'hidden print:block'
+        }`}
+      >
         <StepHeader
           number="3"
           title={t('live.stepCheck')}
           minutes={t('live.oneMinute')}
           icon={Hand}
-          tone="bg-emerald-100 text-emerald-800"
+          tone="bg-sage-bg text-[#1f6b4a] border-sage/35"
         />
         <div className="space-y-2">
           <DoLine t={t}>{t('live.fingerVoteDo')}</DoLine>
           <SayAloud t={t} value={strand3.fingerVotePrompt} />
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {strand3.options.map((option) => {
               const isCorrect = option.diagnosticTag === 'correct_reasoning';
               return (
                 <div
                   key={`${option.finger}-${option.text}`}
-                  className={`flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 ${
+                  className={`flex flex-wrap items-center gap-2.5 rounded-2xl border-2 px-3 py-2.5 ${
                     isCorrect
-                      ? 'border-emerald-500 bg-emerald-100 ring-1 ring-emerald-400'
-                      : 'border-ink/10 bg-white/70'
+                      ? 'border-sage bg-sage-bg'
+                      : 'border-ink/10 bg-white'
                   }`}
                 >
-                  <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-base font-bold ${
-                    isCorrect ? 'bg-emerald-600 text-white' : 'bg-ink/5 text-ink-muted'
-                  }`}>
+                  <span
+                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full font-display text-base font-bold ${
+                      isCorrect ? 'bg-sage text-white' : 'bg-parchment-dark text-ink-muted'
+                    }`}
+                  >
                     {option.finger}
                   </span>
-                  <p className="min-w-40 flex-1 text-base font-semibold text-ink">{option.text}</p>
+                  <p className="min-w-40 flex-1 text-base font-bold text-ink">{option.text}</p>
                   {isCorrect ? (
-                    <span className="inline-flex items-center gap-1.5 text-sm font-bold uppercase tracking-wide text-emerald-800">
-                      <CheckCircle2 className="h-5 w-5" />
+                    <span className="inline-flex items-center gap-1 font-display text-xs font-bold text-[#1f6b4a]">
+                      <CheckCircle2 className="h-4 w-4" />
                       {t('live.correctFinger', { count: String(option.finger) })}
                     </span>
                   ) : null}
@@ -1080,16 +1121,20 @@ function ReasoningPrepCardView({
           </div>
         </div>
         {strand3.whatIfTransferTwist.promptEn ? (
-          <details className="mt-3 rounded-lg border border-emerald-300 bg-white/70 p-3">
-            <summary className="cursor-pointer text-sm font-bold text-emerald-800">
+          <details className="mt-3 rounded-2xl border-2 border-sage/30 bg-white p-3">
+            <summary className="cursor-pointer font-display text-sm font-bold text-[#1f6b4a]">
               {t('live.earlyFinishers')}
             </summary>
             <div className="mt-2 space-y-2">
-              <SayAloud t={t} label={t('live.englishShort')} value={strand3.whatIfTransferTwist.promptEn} />
-              <SayAloud t={t} label={t('live.bridgeShort')} value={strand3.whatIfTransferTwist.promptBridge} />
+              {showEn ? (
+                <SayAloud t={t} label={t('live.englishShort')} value={strand3.whatIfTransferTwist.promptEn} />
+              ) : null}
+              {showL1 ? (
+                <SayAloud t={t} label={t('live.bridgeShort')} value={strand3.whatIfTransferTwist.promptBridge} />
+              ) : null}
               {strand3.whatIfTransferTwist.expectedReasoning ? (
-                <p className="text-xs text-ink-soft">
-                  <span className="font-bold">{t('live.listenFor')}:</span>{' '}
+                <p className="text-xs font-semibold text-ink-soft">
+                  <span className="font-extrabold">{t('live.listenFor')}:</span>{' '}
                   {strand3.whatIfTransferTwist.expectedReasoning}
                 </p>
               ) : null}
@@ -1099,16 +1144,16 @@ function ReasoningPrepCardView({
       </section>
 
       {card.followUpChips.length > 0 ? (
-        <section className="rounded-xl border border-terracotta/30 bg-terracotta/5 p-3 print:hidden">
+        <section className="rounded-2xl border-2 border-terracotta/30 bg-terracotta-bg/50 p-3 print:hidden">
           <p className="label-section mb-2">{t('live.followUpTitle')}</p>
-          <div className="grid grid-cols-1 gap-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
             {card.followUpChips.map((chip) => (
               <button
                 key={chip.id}
                 type="button"
                 disabled={loading}
                 onClick={() => onFollowUp(chip.label, chip.id)}
-                className="rounded-lg border border-terracotta/30 bg-white/70 px-3 py-2 text-left text-xs font-semibold text-ink hover:bg-white touch-target disabled:opacity-60"
+                className="rounded-xl border-2 border-terracotta/30 bg-white px-3 py-2 text-left text-xs font-bold text-ink hover:border-terracotta touch-target disabled:opacity-60"
               >
                 {chip.label}
               </button>
@@ -1134,15 +1179,17 @@ function StepHeader({
   tone: string;
 }) {
   return (
-    <div className="mb-3 flex items-center gap-2">
-      <span className={`flex h-10 w-10 items-center justify-center rounded-xl ${tone}`}>
-        <Icon className="h-5 w-5" />
+    <div className="mb-3 flex items-center gap-2.5">
+      <span className={`flex h-9 w-9 items-center justify-center rounded-xl border-2 ${tone}`}>
+        <Icon className="h-4 w-4" />
       </span>
-      <p className="flex-1 text-lg font-bold text-ink">
-        <span className="mr-2 text-ink-muted">{number}</span>
+      <p className="flex-1 font-display text-lg font-bold text-ink">
+        <span className="mr-1.5 text-ink-muted">{number}.</span>
         {title}
       </p>
-      <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${tone}`}>{minutes}</span>
+      <span className={`rounded-full border-2 px-2.5 py-0.5 font-display text-xs font-bold tabular-nums ${tone}`}>
+        {minutes}
+      </span>
     </div>
   );
 }
@@ -1150,12 +1197,12 @@ function StepHeader({
 function DoLine({ children, t }: { children: string; t: TranslateFn }) {
   if (!children) return null;
   return (
-    <div className="flex items-start gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
-      <span className="inline-flex shrink-0 items-center gap-1 rounded bg-ink/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
+    <div className="flex items-start gap-2 rounded-2xl border-2 border-ink/10 bg-white/80 px-3 py-2">
+      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink px-2.5 py-0.5 font-display text-[11px] font-bold uppercase text-white">
         <ArrowRight className="h-3 w-3" />
         {t('live.do')}
       </span>
-      <p className="pt-0.5 text-sm font-semibold text-ink-soft">{children}</p>
+      <p className="text-sm font-bold text-ink-soft">{children}</p>
     </div>
   );
 }
@@ -1163,13 +1210,13 @@ function DoLine({ children, t }: { children: string; t: TranslateFn }) {
 function SayAloud({ value, label, t }: { value: string; label?: string; t: TranslateFn }) {
   if (!value) return null;
   return (
-    <div className="rounded-xl border border-ink/20 bg-white p-3 text-ink shadow-sm">
-      <p className="mb-1 flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wide text-ink-muted">
-        <Volume2 className="h-4 w-4 text-terracotta" />
+    <div className="rounded-2xl border-2 border-ink/15 bg-white p-3 text-ink shadow-[0_2px_0_rgba(39,34,32,0.06)]">
+      <p className="mb-1 flex items-center gap-1.5 font-display text-xs font-bold uppercase text-terracotta">
+        <Volume2 className="h-4 w-4" />
         {t('live.say')}
-        {label ? <span>· {label}</span> : null}
+        {label ? <span className="text-ink-muted">· {label}</span> : null}
       </p>
-      <p className="text-base font-semibold leading-snug sm:text-lg">{value}</p>
+      <p className="text-base font-bold leading-snug sm:text-lg">{value}</p>
     </div>
   );
 }
@@ -1185,31 +1232,24 @@ function DiagnoseBlock({
 }) {
   const options = (diagnose.clarifyingOptions || []).filter(Boolean);
   return (
-    <section className="rounded-lg border border-sky-200/60 bg-sky-50/40 p-3">
-      <p className="label-section mb-2 flex items-center gap-1.5">
-        <Stethoscope className="h-3.5 w-3.5 text-sky-700" />
-        {t('live.mode.diagnose')}
-      </p>
-      {diagnose.hypothesis ? <p className="text-sm text-ink-soft">{diagnose.hypothesis}</p> : null}
+    <section className="rounded-2xl border-2 border-sky/30 bg-sky-bg/50 p-3.5">
+      {diagnose.hypothesis ? <p className="text-sm font-semibold text-ink-soft">{diagnose.hypothesis}</p> : null}
       {diagnose.clarifyingQuestion ? (
-        <p className="mt-2 text-sm font-semibold text-ink">{diagnose.clarifyingQuestion}</p>
+        <p className="mt-1.5 text-base font-bold text-ink">{diagnose.clarifyingQuestion}</p>
       ) : null}
       {options.length ? (
-        <>
-          <p className="mt-2 text-[11px] text-ink-muted">{t('live.tapHint')}</p>
-          <div className="mt-1 flex flex-wrap gap-2">
-            {options.map((option, index) => (
-              <button
-                key={`${option}-${index}`}
-                type="button"
-                onClick={() => onChip(option)}
-                className="rounded-full border border-sky-300 bg-white px-3 py-1.5 text-xs font-medium text-sky-800 transition hover:bg-sky-100 touch-target"
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-        </>
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {options.map((option, index) => (
+            <button
+              key={`${option}-${index}`}
+              type="button"
+              onClick={() => onChip(option)}
+              className="rounded-full border-2 border-sky/40 bg-white px-3.5 py-2 font-display text-xs font-semibold text-[#1c5f8d] transition hover:bg-sky-bg touch-target"
+            >
+              {option}
+            </button>
+          ))}
+        </div>
       ) : null}
     </section>
   );
@@ -1217,27 +1257,13 @@ function DiagnoseBlock({
 
 function ResetBlock({ reset, t }: { reset: NonNullable<LiveCoachResult['reset']>; t: TranslateFn }) {
   return (
-    <section className="rounded-lg border border-emerald-200/60 bg-emerald-50/40 p-3">
-      <p className="label-section mb-2 flex items-center gap-1.5">
-        <RefreshCw className="h-3.5 w-3.5 text-emerald-700" />
-        {t('live.mode.reset')}
-      </p>
-      {reset.eefPrinciple?.principleId ? (
-        <div className="mb-2 flex flex-wrap items-center gap-2">
-          <span className="rounded-full border border-ink/10 bg-white/60 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-ink-muted">
-            {reset.eefPrinciple.principleId}
-          </span>
-          {reset.eefPrinciple.checkAdaptAction ? (
-            <span className="rounded-full border border-terracotta/30 bg-terracotta/10 px-2.5 py-1 text-xs font-bold text-ink">
-              {reset.eefPrinciple.checkAdaptAction}
-            </span>
-          ) : null}
-        </div>
+    <section className="rounded-2xl border-2 border-sage/35 bg-sage-bg/50 p-3.5">
+      <p className="label-section mb-1.5 text-[#1f6b4a]">{t('live.mode.reset')}</p>
+      {reset.eefPrinciple?.principle ? (
+        <p className="text-sm font-bold text-ink">{reset.eefPrinciple.principle}</p>
       ) : null}
-      {reset.eefPrinciple?.principle ? <p className="text-sm font-semibold text-ink">{reset.eefPrinciple.principle}</p> : null}
-      {reset.eefPrinciple?.whyThisFits ? <p className="mt-1 text-xs text-ink-muted">{reset.eefPrinciple.whyThisFits}</p> : null}
       {(reset.resetActionSteps || []).filter(Boolean).length ? (
-        <ol className="mt-2 list-decimal space-y-1 pl-4 text-sm text-ink-soft">
+        <ol className="mt-2 list-decimal space-y-1.5 pl-5 text-sm font-semibold text-ink-soft">
           {reset.resetActionSteps.filter(Boolean).map((step, index) => (
             <li key={`${step}-${index}`}>{step}</li>
           ))}
@@ -1251,32 +1277,30 @@ function FirmUpBlock({ firmUp, t }: { firmUp: NonNullable<LiveCoachResult['firmU
   const move = firmUp.talkMove;
   const frames = (firmUp.bilingualSentenceFrames || []).filter((frame) => frame && (frame.en || frame.bridge));
   return (
-    <section className="rounded-lg border border-violet-200/60 bg-violet-50/40 p-3">
-      <p className="label-section mb-2 flex items-center gap-1.5">
-        <Sparkles className="h-3.5 w-3.5 text-violet-700" />
-        {t('live.mode.firm_up')}
-      </p>
-      {firmUp.eefRationale ? <p className="text-xs italic text-ink-muted">{firmUp.eefRationale}</p> : null}
+    <section className="rounded-2xl border-2 border-berry/30 bg-berry-bg/45 p-3.5">
       {move ? (
-        <div className="mt-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2">
-          <p className="text-sm font-semibold text-ink">
-            {move.talkMoveId ? <span className="font-mono text-xs text-ink-muted">{move.talkMoveId} </span> : null}
+        <div>
+          <p className="font-display text-base font-bold text-ink">
             {move.talkMoveName}
             {move.offPalette ? <OffPaletteTag t={t} /> : null}
           </p>
-          {move.why ? <p className="mt-1 text-xs text-ink-muted">{move.why}</p> : null}
-          <SayLine label={t('live.sayEnglish')} value={move.sayNowEnglish} />
-          <SayLine label={t('live.sayBridge')} value={move.sayNowBridge} />
+          <SayLine label={t('live.sayEnglish')} value={move.sayNowEnglish} tone="en" />
+          <SayLine label={t('live.sayBridge')} value={move.sayNowBridge} tone="l1" />
         </div>
       ) : null}
       {frames.length ? (
-        <div className="mt-2">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-muted">{t('live.bilingualFrames')}</p>
+        <div className="mt-3">
+          <p className="mb-1.5 text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+            {t('live.bilingualFrames')}
+          </p>
           <ul className="space-y-1.5">
             {frames.map((frame, index) => (
-              <li key={`${frame.en}-${index}`} className="flex items-start justify-between gap-2 rounded-lg border border-ink/10 bg-white/50 px-3 py-2 text-sm text-ink-soft">
+              <li
+                key={`${frame.en}-${index}`}
+                className="flex items-start justify-between gap-2 rounded-2xl border-2 border-ink/10 bg-white px-3 py-2 text-sm text-ink-soft"
+              >
                 <span className="flex-1">
-                  <span className="font-semibold text-ink">{frame.en}</span>
+                  <span className="font-bold text-ink">{frame.en}</span>
                   {frame.bridge ? <span className="text-ink-muted"> · {frame.bridge}</span> : null}
                 </span>
                 <CopyButton value={frame.en + (frame.bridge ? ` — ${frame.bridge}` : '')} />
@@ -1287,8 +1311,8 @@ function FirmUpBlock({ firmUp, t }: { firmUp: NonNullable<LiveCoachResult['firmU
       ) : null}
       {firmUp.phrasingTip && (firmUp.phrasingTip.tipMalay || firmUp.phrasingTip.tipIban) ? (
         <div className="mt-2">
-          {firmUp.phrasingTip.tipMalay ? <SayLine label={t('live.tipMalay')} value={firmUp.phrasingTip.tipMalay} /> : null}
-          {firmUp.phrasingTip.tipIban ? <SayLine label={t('live.tipIban')} value={firmUp.phrasingTip.tipIban} /> : null}
+          {firmUp.phrasingTip.tipMalay ? <SayLine label={t('live.tipMalay')} value={firmUp.phrasingTip.tipMalay} tone="l1" /> : null}
+          {firmUp.phrasingTip.tipIban ? <SayLine label={t('live.tipIban')} value={firmUp.phrasingTip.tipIban} tone="l1" /> : null}
         </div>
       ) : null}
     </section>
@@ -1296,25 +1320,25 @@ function FirmUpBlock({ firmUp, t }: { firmUp: NonNullable<LiveCoachResult['firmU
 }
 
 const IDEA_META: Record<Idea['kind'], { icon: typeof Lightbulb; tone: string; labelKey: string }> = {
-  'alternative-move': { icon: Sparkles, tone: 'border-sky-200 bg-sky-50 text-sky-700', labelKey: 'live.ideaKind.alternative-move' },
-  'root-cause': { icon: Lightbulb, tone: 'border-emerald-200 bg-emerald-50 text-emerald-700', labelKey: 'live.ideaKind.root-cause' },
-  'missed-angle': { icon: Lightbulb, tone: 'border-violet-200 bg-violet-50 text-violet-700', labelKey: 'live.ideaKind.missed-angle' },
-  risk: { icon: TriangleAlert, tone: 'border-amber-200 bg-amber-50 text-amber-700', labelKey: 'live.ideaKind.risk' },
-  'beyond-palette': { icon: Lightbulb, tone: 'border-teal-200 bg-teal-50 text-teal-700', labelKey: 'live.ideaKind.beyond-palette' },
+  'alternative-move': { icon: Sparkles, tone: 'border-sky/35 bg-sky-bg text-[#1c5f8d]', labelKey: 'live.ideaKind.alternative-move' },
+  'root-cause': { icon: Lightbulb, tone: 'border-sage/35 bg-sage-bg text-[#1f6b4a]', labelKey: 'live.ideaKind.root-cause' },
+  'missed-angle': { icon: Lightbulb, tone: 'border-berry/35 bg-berry-bg text-[#5a379c]', labelKey: 'live.ideaKind.missed-angle' },
+  risk: { icon: TriangleAlert, tone: 'border-amber/40 bg-amber-bg text-[#9e5f06]', labelKey: 'live.ideaKind.risk' },
+  'beyond-palette': { icon: Lightbulb, tone: 'border-teal-300 bg-teal-50 text-teal-800', labelKey: 'live.ideaKind.beyond-palette' },
 };
 
 function ModeBadge({ mode, icon: Icon, t }: { mode: ActionMode; icon: typeof Lightbulb; t: TranslateFn }) {
   const tone =
     mode === 'diagnose'
-      ? 'border-sky-200 bg-sky-50 text-sky-700'
+      ? 'border-sky/35 bg-sky-bg text-[#1c5f8d]'
       : mode === 'reset'
-        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+        ? 'border-sage/35 bg-sage-bg text-[#1f6b4a]'
         : mode === 'prep_card'
-          ? 'border-terracotta/30 bg-terracotta/10 text-terracotta'
-          : 'border-violet-200 bg-violet-50 text-violet-700';
+          ? 'border-terracotta/35 bg-terracotta-bg text-terracotta'
+          : 'border-berry/35 bg-berry-bg text-[#5a379c]';
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wide ${tone}`}>
-      <Icon className="h-3 w-3" />
+    <span className={`inline-flex items-center gap-1.5 rounded-full border-2 px-2.5 py-0.5 font-display text-xs font-semibold ${tone}`}>
+      <Icon className="h-3.5 w-3.5" />
       {t(`live.mode.${mode}`)}
     </span>
   );
@@ -1322,7 +1346,7 @@ function ModeBadge({ mode, icon: Icon, t }: { mode: ActionMode; icon: typeof Lig
 
 function OffPaletteTag({ t }: { t: TranslateFn }) {
   return (
-    <span className="ml-2 inline-block rounded-full border border-teal-200 bg-teal-50 px-2 py-0.5 align-middle text-[9px] font-bold uppercase tracking-wide text-teal-700">
+    <span className="ml-2 inline-block rounded-full border border-teal-300 bg-teal-50 px-2 py-0.5 align-middle font-display text-[10px] font-bold uppercase text-teal-800">
       {t('live.offPalette')}
     </span>
   );
@@ -1332,23 +1356,13 @@ function IdeaCard({ idea, t }: { idea: Idea; t: TranslateFn }) {
   const meta = IDEA_META[idea.kind] || IDEA_META['missed-angle'];
   const Icon = meta.icon;
   return (
-    <div className="rounded-lg border border-ink/10 bg-white/70 px-3 py-2">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${meta.tone}`}>
-          <Icon className="h-3 w-3" />
-          {t(meta.labelKey)}
-        </span>
-        {idea.talkMoveId ? (
-          <span className="font-mono text-[11px] text-ink-muted">
-            {idea.talkMoveId}
-            {idea.offPalette ? <OffPaletteTag t={t} /> : null}
-          </span>
-        ) : null}
-      </div>
-      <p className="mt-1 text-sm font-semibold text-ink">{idea.headline}</p>
+    <div className="rounded-2xl border-2 border-ink/10 bg-parchment-light p-3">
+      <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 font-display text-[11px] font-semibold ${meta.tone}`}>
+        <Icon className="h-3 w-3" />
+        {t(meta.labelKey)}
+      </span>
+      <p className="mt-1.5 text-sm font-bold text-ink">{idea.headline}</p>
       {idea.detail ? <p className="mt-0.5 text-xs text-ink-soft">{idea.detail}</p> : null}
-      {idea.sayNowEnglish ? <SayLine label={t('live.sayEnglish')} value={idea.sayNowEnglish} /> : null}
-      {idea.sayNowBridge ? <SayLine label={t('live.sayBridge')} value={idea.sayNowBridge} /> : null}
     </div>
   );
 }
