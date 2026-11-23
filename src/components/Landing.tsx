@@ -1,7 +1,8 @@
 // Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { motion } from 'motion/react';
-import { ArrowRight, Mail, Sparkles } from 'lucide-react';
+import { ArrowRight, Mail } from 'lucide-react';
 import { useLang } from '../lib/i18n';
+import TalkMovesLogo from './TalkMovesLogo';
 
 const EMAIL = 'gstanyard@gmail.com';
 
@@ -49,7 +50,7 @@ export default function Landing({ onEnter }: LandingProps) {
         className="card-warm mx-auto w-full max-w-md p-6 text-center sm:p-8"
       >
         <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-3xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_4px_0_#a33a1b]">
-          <Sparkles className="h-8 w-8" aria-hidden />
+          <TalkMovesLogo className="h-9 w-9" />
         </div>
 
         <p className="pill-amber mb-3 inline-block">{t('landing.tagline')}</p>

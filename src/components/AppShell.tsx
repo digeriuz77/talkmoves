@@ -4,24 +4,26 @@ import {
   Dices,
   Gamepad2,
   Info,
+  LayoutGrid,
   Mail,
   MessageSquareText,
-  Sparkles,
   X,
   Zap,
 } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import type { AppRoute } from '../lib/router';
+import TalkMovesLogo from './TalkMovesLogo';
 
 const CONTACT_EMAIL = 'gstanyard@gmail.com';
 
-type PrimaryTab = 'play' | 'live' | 'primer' | 'plan';
+type PrimaryTab = 'home' | 'live' | 'primer' | 'plan' | 'play';
 
 function getActiveTab(route: AppRoute): PrimaryTab {
   if (route.name === 'live') return 'live';
   if (route.name === 'primer') return 'primer';
   if (route.name === 'plan' || route.name === 'lesson') return 'plan';
-  return 'play';
+  if (route.name === 'play' || route.name === 'game') return 'play';
+  return 'home';
 }
 
 export default function AppShell({
@@ -40,16 +42,16 @@ export default function AppShell({
   const navItems: Array<{
     id: PrimaryTab;
     label: string;
-    icon: typeof Gamepad2;
+    icon: typeof LayoutGrid;
     target: AppRoute;
     activeClass: string;
   }> = [
     {
-      id: 'play',
-      label: t('nav.play'),
-      icon: Gamepad2,
-      target: { name: 'play' },
-      activeClass: 'bg-terracotta-bg text-terracotta border-terracotta/40',
+      id: 'home',
+      label: t('nav.home'),
+      icon: LayoutGrid,
+      target: { name: 'home' },
+      activeClass: 'bg-parchment-dark text-ink border-ink/25',
     },
     {
       id: 'live',
@@ -72,6 +74,13 @@ export default function AppShell({
       target: { name: 'plan' },
       activeClass: 'bg-sky-bg text-[#1c5f8d] border-sky/40',
     },
+    {
+      id: 'play',
+      label: t('nav.play'),
+      icon: Gamepad2,
+      target: { name: 'play' },
+      activeClass: 'bg-terracotta-bg text-terracotta border-terracotta/40',
+    },
   ];
 
   return (
@@ -81,11 +90,12 @@ export default function AppShell({
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-2 px-3 py-2 sm:px-6 sm:py-2.5">
           <button
             type="button"
-            onClick={() => onNavigate({ name: 'play' })}
-            className="flex min-w-0 items-center gap-2 rounded-xl pr-2 text-left touch-target"
+            onClick={() => onNavigate({ name: 'welcome' })}
+            title={t('landing.title')}
+            className="flex min-w-0 items-center gap-2 rounded-xl pr-2 text-left transition hover:opacity-85 touch-target"
           >
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_2px_0_#a33a1b]">
-              <Sparkles className="h-4 w-4" aria-hidden />
+              <TalkMovesLogo className="h-5 w-5" />
             </span>
             <span className="truncate font-display text-lg font-bold tracking-tight text-ink sm:text-xl">
               {t('landing.title')}
@@ -95,7 +105,7 @@ export default function AppShell({
           {/* Desktop Navigation Pills */}
           <nav
             aria-label={t('nav.primaryAria')}
-            className="hidden items-center gap-1.5 sm:flex"
+            className="hidden items-center gap-1 sm:flex"
           >
             {navItems.map((item) => {
               const Icon = item.icon;
@@ -106,7 +116,7 @@ export default function AppShell({
                   type="button"
                   onClick={() => onNavigate(item.target)}
                   aria-current={active ? 'page' : undefined}
-                  className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-2 font-display text-sm font-semibold transition touch-target ${
+                  className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-2 font-display text-sm font-semibold transition touch-target ${
                     active
                       ? `${item.activeClass} shadow-[0_2px_0_rgba(39,34,32,0.08)]`
                       : 'border-transparent text-ink-soft hover:bg-parchment-dark/60 hover:text-ink'
@@ -167,9 +177,9 @@ export default function AppShell({
       {/* Fixed Mobile Bottom Navigation (thumb zone) */}
       <nav
         aria-label={t('nav.primaryAria')}
-        className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink/10 bg-parchment-light/95 px-2 pt-1.5 backdrop-blur-md pb-safe sm:hidden print:hidden"
+        className="fixed inset-x-0 bottom-0 z-40 border-t-2 border-ink/10 bg-parchment-light/95 px-1.5 pt-1.5 backdrop-blur-md pb-safe sm:hidden print:hidden"
       >
-        <div className="mx-auto grid max-w-md grid-cols-4 gap-1">
+        <div className="mx-auto grid max-w-md grid-cols-5 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = activeTab === item.id;
@@ -185,8 +195,8 @@ export default function AppShell({
                     : 'border-transparent text-ink-muted'
                 }`}
               >
-                <Icon className="h-5 w-5" aria-hidden />
-                <span className="font-display text-[11px] font-semibold leading-none">
+                <Icon className="h-4 w-4" aria-hidden />
+                <span className="font-display text-[10px] font-semibold leading-none">
                   {item.label}
                 </span>
               </button>

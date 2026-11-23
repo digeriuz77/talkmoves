@@ -6,7 +6,19 @@
 // Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
-import { ArrowRight, BookOpen, ChevronDown, Layers, Sparkles, Trophy } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  ChevronDown,
+  Dices,
+  FileSearch,
+  Gamepad2,
+  Layers,
+  MessageSquareText,
+  Sparkles,
+  Trophy,
+  Zap,
+} from 'lucide-react';
 import AppShell from './components/AppShell';
 import Game from './components/Game';
 import TalkMovesGame from './components/TalkMovesGame';
@@ -22,7 +34,7 @@ import {
   type LevelProgressMap,
 } from './lib/level-progress';
 import { useLang } from './lib/i18n';
-import { useAppRoute } from './lib/router';
+import { useAppRoute, type AppRoute } from './lib/router';
 import { ClassContextProvider } from './lib/class-context';
 
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
@@ -63,7 +75,7 @@ export default function App() {
   }, [navigate, route, selectedGame]);
 
   if (route.name === 'welcome') {
-    return <Landing onEnter={() => navigate({ name: 'play' })} />;
+    return <Landing onEnter={() => navigate({ name: 'home' })} />;
   }
 
   if (route.name === 'game') {
@@ -95,7 +107,9 @@ export default function App() {
   return (
     <ClassContextProvider>
       <AppShell route={route} onNavigate={navigate}>
-        {route.name === 'live' ? (
+        {route.name === 'home' ? (
+          <HomeHub levelProgress={levelProgress} onNavigate={navigate} />
+        ) : route.name === 'live' ? (
           <LiveCoach />
         ) : route.name === 'primer' ? (
           <Primer />
@@ -112,6 +126,159 @@ export default function App() {
         )}
       </AppShell>
     </ClassContextProvider>
+  );
+}
+
+function HomeHub({
+  levelProgress,
+  onNavigate,
+}: {
+  levelProgress: LevelProgressMap;
+  onNavigate: (next: AppRoute) => void;
+}) {
+  const { t } = useLang();
+  const completedCount = useMemo(
+    () => gameCatalog.filter((g) => getLevelStatus(levelProgress, g.id).statusKey === 'completed').length,
+    [levelProgress],
+  );
+
+  const secondaryTools: Array<{
+    id: string;
+    title: string;
+    body: string;
+    icon: typeof Gamepad2;
+    iconWrap: string;
+    badge?: string;
+    target: AppRoute;
+  }> = [
+    {
+      id: 'primer',
+      title: t('coach.tab.primer'),
+      body: t('home.primerBody'),
+      icon: Dices,
+      iconWrap: 'bg-sage-bg text-[#1f6b4a] border-sage/35',
+      target: { name: 'primer' },
+    },
+    {
+      id: 'plan',
+      title: t('coach.tab.plan'),
+      body: t('home.planBody'),
+      icon: MessageSquareText,
+      iconWrap: 'bg-sky-bg text-[#1c5f8d] border-sky/35',
+      target: { name: 'plan' },
+    },
+    {
+      id: 'lesson',
+      title: t('coach.tab.lesson'),
+      body: t('home.lessonBody'),
+      icon: FileSearch,
+      iconWrap: 'bg-berry-bg text-[#5a379c] border-berry/35',
+      target: { name: 'lesson' },
+    },
+    {
+      id: 'play',
+      title: t('home.playTitle'),
+      body: t('home.playBody'),
+      icon: Gamepad2,
+      iconWrap: 'bg-terracotta-bg text-terracotta border-terracotta/35',
+      badge: `${completedCount}/${gameCatalog.length}`,
+      target: { name: 'play' },
+    },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 6 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+      className="space-y-4"
+    >
+      <div>
+        <p className="label-section text-terracotta">{t('mode.tagline')}</p>
+        <h1 className="heading-editorial mt-0.5">{t('mode.title')}</h1>
+        <p className="text-body mt-1">{t('home.subtitle')}</p>
+      </div>
+
+      {/* Featured Primary Tool: Live Coach */}
+      <button
+        type="button"
+        onClick={() => onNavigate({ name: 'live' })}
+        className="group card-warm card-warm-interactive w-full border-amber/50 bg-gradient-to-br from-amber-bg via-parchment-light to-terracotta-bg/50 p-5 text-left touch-target sm:p-6"
+      >
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_3px_0_#a33a1b]">
+            <Zap className="h-6 w-6" aria-hidden />
+          </span>
+          <span className="pill-amber">{t('home.featuredBadge')}</span>
+        </div>
+
+        <h2 className="font-display text-xl font-bold text-ink sm:text-2xl">
+          {t('coach.tab.live')}
+        </h2>
+        <p className="mt-1.5 max-w-2xl text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+          {t('home.liveBody')}
+        </p>
+
+        <div className="mt-4 inline-flex items-center gap-1.5 rounded-xl border-2 border-[#b84422] bg-terracotta px-4 py-2 font-display text-sm font-bold text-white shadow-[0_3px_0_#a33a1b] transition group-hover:bg-[#c9502d]">
+          {t('home.liveCta')}
+          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+        </div>
+      </button>
+
+      {/* Secondary Tools Grid */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+        {secondaryTools.map((tool) => {
+          const Icon = tool.icon;
+          return (
+            <button
+              key={tool.id}
+              type="button"
+              onClick={() => onNavigate(tool.target)}
+              className="group card-warm card-warm-interactive flex flex-col justify-between p-4 text-left touch-target sm:p-5"
+            >
+              <div>
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span
+                    className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 ${tool.iconWrap}`}
+                  >
+                    <Icon className="h-5 w-5" aria-hidden />
+                  </span>
+                  {tool.badge ? (
+                    <span className="pill-sage tabular-nums">{tool.badge}</span>
+                  ) : null}
+                </div>
+
+                <h2 className="card-title mb-1">{tool.title}</h2>
+                <p className="text-sm leading-snug text-ink-soft">{tool.body}</p>
+              </div>
+
+              <div className="mt-4 flex items-center gap-1 font-display text-sm font-bold text-terracotta">
+                {t('home.openCta')}
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Collapsible Research Note */}
+      <details className="card-warm group p-4">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden touch-target">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-bg text-navy">
+              <BookOpen className="h-4 w-4" aria-hidden />
+            </span>
+            <span className="font-display text-base font-semibold text-ink">
+              {t('mode.aboutTitle')}
+            </span>
+          </div>
+          <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
+        </summary>
+        <p className="mt-3 border-t border-ink/10 pt-3 text-sm leading-relaxed text-ink-soft">
+          {t('mode.aboutBody')}
+        </p>
+      </details>
+    </motion.div>
   );
 }
 
@@ -154,7 +321,7 @@ function ScenarioLibrary({
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="min-w-0 flex-1">
           <p className="label-section text-terracotta">{t('mode.tagline')}</p>
-          <h1 className="heading-editorial mt-0.5">{t('mode.title')}</h1>
+          <h1 className="heading-editorial mt-0.5">{t('scenarios.title')}</h1>
         </div>
         <div className="inline-flex items-center gap-2 rounded-full border-2 border-sage/35 bg-sage-bg px-3.5 py-1.5 font-display text-sm font-bold tabular-nums text-[#1f6b4a]">
           <Trophy className="h-4 w-4 text-sage" aria-hidden />
@@ -199,24 +366,6 @@ function ScenarioLibrary({
           />
         ))}
       </div>
-
-      {/* Collapsible Research Note */}
-      <details className="card-warm group p-4">
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden touch-target">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-bg text-navy">
-              <BookOpen className="h-4 w-4" aria-hidden />
-            </span>
-            <span className="font-display text-base font-semibold text-ink">
-              {t('mode.aboutTitle')}
-            </span>
-          </div>
-          <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
-        </summary>
-        <p className="mt-3 border-t border-ink/10 pt-3 text-sm leading-relaxed text-ink-soft">
-          {t('mode.aboutBody')}
-        </p>
-      </details>
     </motion.div>
   );
 }

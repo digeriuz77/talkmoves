@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type AppRoute =
   | { name: 'welcome' }
+  | { name: 'home' }
   | { name: 'play' }
   | { name: 'game'; gameId: string }
   | { name: 'live' }
@@ -13,10 +14,17 @@ export type AppRoute =
 const VISITED_KEY = 'dialogic-has-visited-v1';
 const LAST_TAB_KEY = 'dialogic-last-tab-v1';
 
-type TopLevelTab = 'play' | 'live' | 'primer' | 'plan' | 'lesson';
+type TopLevelTab = 'home' | 'play' | 'live' | 'primer' | 'plan' | 'lesson';
 
 function isTopLevelTab(value: string | null): value is TopLevelTab {
-  return value === 'play' || value === 'live' || value === 'primer' || value === 'plan' || value === 'lesson';
+  return (
+    value === 'home' ||
+    value === 'play' ||
+    value === 'live' ||
+    value === 'primer' ||
+    value === 'plan' ||
+    value === 'lesson'
+  );
 }
 
 function readHasVisited(): boolean {
@@ -34,13 +42,15 @@ function readLastTab(): TopLevelTab {
   } catch {
     // storage unavailable
   }
-  return 'play';
+  return 'home';
 }
 
 export function routeToHash(route: AppRoute): string {
   switch (route.name) {
     case 'welcome':
       return '#/welcome';
+    case 'home':
+      return '#/home';
     case 'play':
       return '#/play';
     case 'game':
@@ -63,6 +73,7 @@ export function parseHash(hash: string, hasVisited: boolean): AppRoute {
   }
   const [segment, ...rest] = cleaned.split('/');
   if (segment === 'welcome') return { name: 'welcome' };
+  if (segment === 'home') return { name: 'home' };
   if (segment === 'live') return { name: 'live' };
   if (segment === 'primer') return { name: 'primer' };
   if (segment === 'plan') return { name: 'plan' };
@@ -74,7 +85,7 @@ export function parseHash(hash: string, hasVisited: boolean): AppRoute {
     }
     return { name: 'play' };
   }
-  return { name: 'play' };
+  return { name: 'home' };
 }
 
 export function useAppRoute() {
