@@ -41,6 +41,15 @@ const CHARACTER_STYLES: Record<string, CharacterStyle> = {
     accessory: 'glasses',
     accent: '#cbe8fa',
   },
+  studentD: {
+    skin: '#c9885e',
+    cheek: '#df7668',
+    shirt: '#7652b8',
+    shirtShade: '#593b91',
+    hair: '#241c19',
+    accessory: 'tuft',
+    accent: '#e8dffb',
+  },
 };
 
 const FALLBACK_STYLE: CharacterStyle = {

@@ -1,5 +1,6 @@
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { useEffect, useMemo, useRef, useState, type ReactNode, type TouchEvent } from 'react';
-import { ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RotateCw, X } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 
 export type WordCard = {
@@ -9,6 +10,7 @@ export type WordCard = {
   bridgeWord: string;
   isCognate: boolean;
   cognateNote: string;
+  gesture?: string;
 };
 
 type Transition = {
@@ -60,6 +62,8 @@ function PresentShell({
   onClose,
   onPrev,
   onNext,
+  extraActions,
+  tapStageToAdvance = true,
   children,
 }: {
   label: string;
@@ -68,6 +72,8 @@ function PresentShell({
   onClose: () => void;
   onPrev: () => void;
   onNext: () => void;
+  extraActions?: ReactNode;
+  tapStageToAdvance?: boolean;
   children: ReactNode;
 }) {
   const { t } = useLang();
@@ -75,34 +81,43 @@ function PresentShell({
 
   return (
     <div className="fixed inset-0 z-[200] flex flex-col bg-parchment text-ink" {...swipe}>
-      <div className="flex items-center justify-between px-4 py-3 sm:px-6">
-        <span className="text-xs font-semibold uppercase tracking-wide text-ink-muted">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-6">
+        <span className="font-display text-xs font-bold uppercase tracking-wide text-ink-muted">
           {label} · {t('primer.slideOf', { current: String(current), total: String(total) })}
         </span>
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex items-center gap-1.5 rounded-lg border border-ink/20 bg-white/70 px-3 py-2 text-xs font-semibold text-ink transition hover:bg-white touch-target"
-        >
-          <X className="h-4 w-4" />
-          {t('primer.close')}
-        </button>
+        <div className="flex items-center gap-2">
+          {extraActions}
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-1.5 rounded-xl border-2 border-ink/15 bg-white px-3 py-2 font-display text-xs font-bold text-ink transition hover:border-ink/30 touch-target"
+          >
+            <X className="h-4 w-4" />
+            {t('primer.close')}
+          </button>
+        </div>
       </div>
 
-      <button
-        type="button"
-        onClick={onNext}
-        className="flex flex-1 cursor-pointer items-center justify-center px-4 py-2 text-left sm:px-10"
-        aria-label={t('primer.next')}
-      >
-        <div className="w-full max-w-4xl">{children}</div>
-      </button>
+      {tapStageToAdvance ? (
+        <button
+          type="button"
+          onClick={onNext}
+          className="flex flex-1 cursor-pointer items-center justify-center px-4 py-2 text-left sm:px-10"
+          aria-label={t('primer.next')}
+        >
+          <div className="w-full max-w-4xl">{children}</div>
+        </button>
+      ) : (
+        <div className="flex flex-1 items-center justify-center overflow-y-auto px-4 py-2 sm:px-10">
+          <div className="w-full max-w-4xl">{children}</div>
+        </div>
+      )}
 
-      <div className="flex items-center justify-between gap-3 px-4 py-4 sm:px-6">
+      <div className="flex items-center justify-between gap-3 px-4 py-4 pb-safe sm:px-6">
         <button
           type="button"
           onClick={onPrev}
-          className="inline-flex items-center gap-1.5 rounded-xl border-2 border-ink/15 bg-white/70 px-4 py-3 text-sm font-bold text-ink transition hover:bg-white touch-target"
+          className="btn-secondary inline-flex items-center gap-1.5 px-4 py-2.5 text-sm touch-target"
         >
           <ChevronLeft className="h-5 w-5" />
           {t('primer.prev')}
@@ -110,7 +125,7 @@ function PresentShell({
         <button
           type="button"
           onClick={onNext}
-          className="inline-flex items-center gap-1.5 rounded-xl border-2 border-terracotta/50 bg-terracotta/10 px-5 py-3 text-sm font-bold text-terracotta transition hover:bg-terracotta/20 touch-target"
+          className="btn-primary inline-flex items-center gap-1.5 px-5 py-2.5 text-sm touch-target"
         >
           {t('primer.next')}
           <ChevronRight className="h-5 w-5" />
@@ -135,12 +150,12 @@ export function WordDeckPresent({
   onClose,
 }: {
   cards: WordCard[];
-  transition: Transition;
+  transition?: Transition;
   leadFace: 'word' | 'definition';
   onClose: () => void;
 }) {
   const { t } = useLang();
-  const hasTip = Boolean(transition.teacherLineEnglish);
+  const hasTip = Boolean(transition?.teacherLineEnglish);
   const totalSlides = cards.length + (hasTip ? 1 : 0);
   const [slide, setSlide] = useState(0);
   const [revealed, setRevealed] = useState(1);
@@ -180,15 +195,15 @@ export function WordDeckPresent({
       onPrev={goPrev}
       onNext={goNext}
     >
-      {isTipSlide ? (
+      {isTipSlide && transition ? (
         <div className="text-center">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-[0.2em] text-terracotta">
+          <p className="mb-4 font-display text-sm font-bold uppercase tracking-[0.2em] text-terracotta">
             {t('primer.teachingTip')}
           </p>
           {transition.talkMoveName ? (
-            <p className="mb-4 text-lg font-bold text-ink-muted">{transition.talkMoveName}</p>
+            <p className="mb-4 font-display text-lg font-bold text-ink-muted">{transition.talkMoveName}</p>
           ) : null}
-          <p className="text-3xl font-bold leading-snug text-ink sm:text-5xl">
+          <p className="font-display text-3xl font-bold leading-snug text-ink sm:text-5xl">
             {transition.teacherLineEnglish}
           </p>
           {transition.teacherLineBridge ? (
@@ -201,7 +216,7 @@ export function WordDeckPresent({
               {transition.sentenceFrames.map((frame, idx) => (
                 <li
                   key={`frame-${idx}`}
-                  className="rounded-xl border-2 border-ink/15 bg-white/60 px-5 py-3 text-xl text-ink-soft sm:text-2xl"
+                  className="rounded-2xl border-2 border-ink/15 bg-white px-5 py-3 text-xl font-semibold text-ink-soft sm:text-2xl"
                 >
                   {frame}
                 </li>
@@ -217,7 +232,7 @@ export function WordDeckPresent({
               return (
                 <p
                   key="word"
-                  className="mb-5 text-5xl font-extrabold uppercase tracking-wide text-ink sm:text-7xl"
+                  className="mb-5 font-display text-5xl font-bold uppercase tracking-wide text-ink sm:text-7xl"
                 >
                   {card.word}
                 </p>
@@ -226,10 +241,17 @@ export function WordDeckPresent({
             if (block === 'meaning') {
               return (
                 <div key="meaning" className="mb-5">
-                  <p className="text-2xl leading-snug text-ink-soft sm:text-4xl">{card.kidDefinition}</p>
+                  <p className="text-2xl font-semibold leading-snug text-ink-soft sm:text-4xl">
+                    {card.kidDefinition}
+                  </p>
                   {card.bridgeWord ? (
-                    <p className="mt-4 inline-block rounded-full border-2 border-terracotta/40 bg-terracotta/10 px-5 py-2 text-2xl font-bold text-terracotta sm:text-3xl">
+                    <p className="mt-4 inline-block rounded-full border-2 border-terracotta/40 bg-terracotta-bg px-5 py-2 font-display text-2xl font-bold text-terracotta sm:text-3xl">
                       {card.bridgeWord}
+                    </p>
+                  ) : null}
+                  {card.gesture ? (
+                    <p className="mt-3 text-base font-semibold text-sage sm:text-xl">
+                      {card.gesture}
                     </p>
                   ) : null}
                 </div>
@@ -242,7 +264,7 @@ export function WordDeckPresent({
             );
           })}
           {revealed < maxReveal ? (
-            <p className="mt-10 text-sm font-semibold uppercase tracking-wide text-ink-muted/70">
+            <p className="mt-10 font-display text-sm font-bold uppercase tracking-wide text-ink-muted/70">
               {t('primer.tapToReveal')}
             </p>
           ) : null}
@@ -252,14 +274,47 @@ export function WordDeckPresent({
   );
 }
 
-export function BingoPresent({ grids, onClose }: { grids: string[][]; onClose: () => void }) {
+/**
+ * Flippable Bingo projector view: tap any tile to flip between the target word
+ * and its simple kid definition + L1 bridge word.
+ */
+export function BingoPresent({
+  grids,
+  cardLookup,
+  onClose,
+}: {
+  grids: string[][];
+  cardLookup?: Record<string, WordCard>;
+  onClose: () => void;
+}) {
   const { t } = useLang();
   const [index, setIndex] = useState(0);
-  const goPrev = () => setIndex((i) => (i > 0 ? i - 1 : i));
-  const goNext = () => setIndex((i) => (i < grids.length - 1 ? i + 1 : i));
+  const [flippedCells, setFlippedCells] = useState<Record<number, boolean>>({});
+
+  const goPrev = () => {
+    setIndex((i) => (i > 0 ? i - 1 : i));
+    setFlippedCells({});
+  };
+  const goNext = () => {
+    setIndex((i) => (i < grids.length - 1 ? i + 1 : i));
+    setFlippedCells({});
+  };
 
   if (grids.length === 0) return null;
   const grid = grids[index];
+
+  const allFlipped = grid.every((_, cell) => flippedCells[cell]);
+  const toggleAll = () => {
+    if (allFlipped) {
+      setFlippedCells({});
+    } else {
+      const next: Record<number, boolean> = {};
+      grid.forEach((_, cell) => {
+        next[cell] = true;
+      });
+      setFlippedCells(next);
+    }
+  };
 
   return (
     <PresentShell
@@ -269,16 +324,58 @@ export function BingoPresent({ grids, onClose }: { grids: string[][]; onClose: (
       onClose={onClose}
       onPrev={goPrev}
       onNext={goNext}
+      tapStageToAdvance={false}
+      extraActions={
+        <button
+          type="button"
+          onClick={toggleAll}
+          className="inline-flex items-center gap-1.5 rounded-xl border-2 border-terracotta/40 bg-terracotta-bg px-3 py-2 font-display text-xs font-bold text-terracotta touch-target"
+        >
+          <RotateCw className="h-3.5 w-3.5" />
+          {allFlipped ? t('vocab.showWords') : t('vocab.flipAllMeanings')}
+        </button>
+      }
     >
-      <div className="mx-auto grid w-full max-w-2xl grid-cols-3 gap-2 sm:gap-3">
-        {grid.map((word, cell) => (
-          <div
-            key={`cell-${cell}`}
-            className="flex aspect-square items-center justify-center rounded-xl border-2 border-ink/30 bg-white/70 p-2 text-center text-lg font-bold text-ink sm:text-3xl"
-          >
-            {word}
-          </div>
-        ))}
+      <p className="mb-3 text-center font-display text-xs font-bold uppercase tracking-wider text-ink-muted">
+        {t('vocab.tapBingoToFlip')}
+      </p>
+      <div className="mx-auto grid w-full max-w-3xl grid-cols-3 gap-2.5 sm:gap-3.5">
+        {grid.map((word, cell) => {
+          const flipped = Boolean(flippedCells[cell]);
+          const card = cardLookup?.[word.toLowerCase()];
+          return (
+            <button
+              key={`cell-${cell}`}
+              type="button"
+              aria-pressed={flipped}
+              onClick={() =>
+                setFlippedCells((prev) => ({ ...prev, [cell]: !prev[cell] }))
+              }
+              className={`flex min-h-[104px] flex-col items-center justify-center rounded-2xl border-[3px] p-2.5 text-center shadow-sm transition sm:min-h-[150px] sm:p-4 ${
+                flipped
+                  ? 'border-terracotta bg-terracotta-bg text-ink'
+                  : 'border-ink/25 bg-white text-ink hover:border-terracotta/50'
+              }`}
+            >
+              {flipped && card ? (
+                <>
+                  <span className="text-xs font-bold leading-snug text-ink sm:text-base">
+                    {card.kidDefinition}
+                  </span>
+                  {card.bridgeWord ? (
+                    <span className="mt-1.5 rounded-full bg-white px-2.5 py-0.5 font-display text-[11px] font-bold text-terracotta sm:text-sm">
+                      {card.bridgeWord}
+                    </span>
+                  ) : null}
+                </>
+              ) : (
+                <span className="font-display text-base font-bold text-ink sm:text-2xl">
+                  {word}
+                </span>
+              )}
+            </button>
+          );
+        })}
       </div>
     </PresentShell>
   );
