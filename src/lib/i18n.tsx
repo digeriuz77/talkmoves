@@ -131,6 +131,7 @@ const en: Record<string, string> = {
   'coach.need.mixed': 'Mixed',
   'coach.startNew': 'Start new',
   'coach.clearConfirm': 'Clear this tab? The prepped content saved here will be removed.',
+  'coach.piiWarning': 'Do not include pupil, teacher, or school names.',
 
   // Live Coach
   'live.observationLabel': 'What is happening in your room right now?',
@@ -573,6 +574,7 @@ const ms: Record<string, string> = {
   'coach.need.mixed': 'Campuran',
   'coach.startNew': 'Mula baharu',
   'coach.clearConfirm': 'Kosongkan tab ini? Kandungan persediaan yang disimpan di sini akan dibuang.',
+  'coach.piiWarning': 'Jangan masukkan nama murid, guru, atau sekolah.',
 
   // Live Coach
   'live.observationLabel': 'Apa yang sedang berlaku dalam kelas anda sekarang?',

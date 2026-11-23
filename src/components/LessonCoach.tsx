@@ -1,6 +1,6 @@
 import { FormEvent, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Download, FileText, LoaderCircle, Upload, X } from 'lucide-react';
+import { Download, FileText, LoaderCircle, TriangleAlert, Upload, X } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import {
@@ -221,6 +221,10 @@ export default function LessonCoach() {
         <StartNewButton onClear={clearTab} />
       </div>
       <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5 md:p-6 print:hidden">
+        <div className="mb-3 flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2">
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
+          <p className="text-xs font-semibold text-amber-900">{t('coach.piiWarning')}</p>
+        </div>
         <label className="block">
           <span className="mb-1 block text-xs font-semibold uppercase tracking-wide text-ink-muted">
             {t('lesson.pasteLabel')}
