@@ -141,7 +141,7 @@ export const talkMovesData: TalkMove[] = [
     example: "I'm not sure about this either – let's think it through together.",
     researchTip: 'Alters power relations; encourages exploratory feel to thinking.',
     scoreValue: 9,
-    utterance: "I'm genuinely curious about this too. What do we think is happening at the分子 level?",
+    utterance: "I'm genuinely curious about this too. What do we think is happening at the molecular level?",
     chainLabel: 'Think alongside...',
     effectiveAfter: [],
     comboMultiplier: 1.0,
@@ -377,7 +377,7 @@ const iceMeltScenarioNodes: Record<string, TalkMoveNode> = {
     studentText: "Can we do another one? Maybe evaporation? I want see what else can change state.",
     studentName: "Sam",
     hint: "Curiosity and transfer matter, even when the English is still developing.",
-    availableMoves: ['TM-T05', 'TM-T09', 'TM-T13', 'TM-T14', 'TM-T10'],
+    availableMoves: ['TM-T01', 'TM-T12', 'TM-T05', 'TM-T09', 'TM-T13', 'TM-T14', 'TM-T10'],
   },
 };
 
@@ -428,7 +428,7 @@ const shareOutSamplingNodes: Record<string, TalkMoveNode> = {
     studentName: 'Tariq',
     hint: 'Students are ready to synthesise and refine the claim together.',
     responseType: 'partial-idea',
-    availableMoves: ['TM-T05', 'TM-T06', 'TM-T08', 'TM-T13', 'TM-T14'],
+    availableMoves: ['TM-T03', 'TM-T07', 'TM-T05', 'TM-T06', 'TM-T08', 'TM-T13', 'TM-T14'],
   },
 };
 
@@ -436,10 +436,10 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
   iceMelt: {
     id: 'ice-melt',
     title: 'Why Does Ice Melt?',
-    subtitle: 'Chain Builder Prototype',
+    subtitle: 'Tier 4 · Deep Inquiry',
     description:
       'Build sequences of talk moves that deepen scientific reasoning across an 8-turn inquiry.',
-    recommendedOrder: 11,
+    recommendedOrder: 20,
     focusAreas: ['sequencing', 'reasoning', 'scientific inquiry'],
     reflectionPrompt:
       'Which move combinations helped students reason together instead of waiting for you to finish the explanation?',
@@ -459,10 +459,10 @@ export const talkMoveScenarios: Record<string, TalkMoveScenarioDefinition> = {
   shareOutSampling: {
     id: 'share-out-sampling',
     title: 'Share-Out Sampling',
-    subtitle: 'Priority Level 8',
+    subtitle: 'Tier 3 · Talk Chain',
     description:
       'Use the talk-moves palette to turn pair rehearsal into accountable, student-to-student whole-class discussion.',
-    recommendedOrder: 14,
+    recommendedOrder: 16,
     focusAreas: ['share-out', 'partner reporting', 'uptake'],
     reflectionPrompt:
       'Did your public discussion sample pair thinking in a way that broadened participation and kept ideas moving between students?',

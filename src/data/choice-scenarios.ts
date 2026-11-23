@@ -108,10 +108,10 @@ function inferLegacyMetrics(moveType: string, scoreDelta: number): MetricDelta {
 const crushedCanInquiry: ChoiceScenarioDefinition = {
   id: 'crushed-can-inquiry',
   title: 'Crushed Can Inquiry',
-  subtitle: 'Foundation Prototype',
+  subtitle: 'Tier 4 · Deep Inquiry',
   description:
     'Navigate an 8-turn science discussion and learn how productive teacher moves keep inquiry alive.',
-  recommendedOrder: 10,
+  recommendedOrder: 19,
   focusAreas: ['revoicing', 'wait time', 'reasoning', 'adding on'],
   reflectionPrompt:
     'When did you open the discussion up, and when did you accidentally collapse it back into answer-checking?',
@@ -129,7 +129,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
       text: legacyScenario.dialogueTree.start_node.text,
       responseType: 'partial-idea',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: legacyScenario.dialogueTree.start_node.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -142,7 +142,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
       text: legacyScenario.dialogueTree.turn_2.text,
       responseType: 'prediction',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: legacyScenario.dialogueTree.turn_2.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -154,7 +154,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_3: {
       text: legacyScenario.dialogueTree.turn_3.text,
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: legacyScenario.dialogueTree.turn_3.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -166,7 +166,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_4: {
       text: legacyScenario.dialogueTree.turn_4.text,
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: legacyScenario.dialogueTree.turn_4.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -178,7 +178,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_5: {
       text: legacyScenario.dialogueTree.turn_5.text,
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: legacyScenario.dialogueTree.turn_5.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -190,7 +190,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_6: {
       text: legacyScenario.dialogueTree.turn_6.text,
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: legacyScenario.dialogueTree.turn_6.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -202,7 +202,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_7: {
       text: legacyScenario.dialogueTree.turn_7.text,
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: legacyScenario.dialogueTree.turn_7.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -214,7 +214,7 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
     turn_8: {
       text: legacyScenario.dialogueTree.turn_8.text,
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: legacyScenario.dialogueTree.turn_8.choices.map((choice) => ({
         text: choice.text,
         nextNode: choice.nextNode,
@@ -229,10 +229,10 @@ const crushedCanInquiry: ChoiceScenarioDefinition = {
 const noHandsUp: ChoiceScenarioDefinition = {
   id: 'no-hands-up',
   title: 'No Hands Up',
-  subtitle: 'Priority Level 1',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Practice resisting the one fast correct hand-up while Primary pupils build partial ideas in English.',
-  recommendedOrder: 4,
+  recommendedOrder: 5,
   focusAreas: ['equity', 'think time', 'participation'],
   reflectionPrompt:
     'Which choices widened access to the conversation, and which ones rewarded only speed, confidence, and the one pupil already ready in English?',
@@ -260,7 +260,7 @@ const noHandsUp: ChoiceScenarioDefinition = {
       ],
       responseType: 'echo',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[NO HANDS UP] 'No hands yet. Everyone take ten silent seconds so we can all think first.'",
@@ -293,14 +293,14 @@ const noHandsUp: ChoiceScenarioDefinition = {
       ],
     },
     turn_2: {
-      text: "After the pause, Student B says, 'Maybe... the air inside push out?' It is not polished English, but it is a real idea. Several pupils are now whispering possible explanations to themselves.",
+      text: "After the pause, Bala says, 'Maybe... the air inside push out?' It is not polished English, but it is a real idea. Several pupils are now whispering possible explanations to themselves.",
       alternateTexts: [
-        "After the pause, Student B says, 'I think... air inside go out and make balloon big.' The sentence is rough, but the idea has substance. A few pupils begin murmuring possible reasons to their partners.",
+        "After the pause, Bala says, 'I think... air inside go out and make balloon big.' The sentence is rough, but the idea has substance. A few pupils begin murmuring possible reasons to their partners.",
       ],
       pressureCue: 'Pressure cue: this is the moment many teachers paraphrase quickly and move on.',
       responseType: 'emergent-language',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[PAIR REHEARSAL] 'Turn to your shoulder partner and compare what each of you thinks the trapped gas was doing.'",
@@ -310,7 +310,7 @@ const noHandsUp: ChoiceScenarioDefinition = {
           metricsDelta: { participation: 14, reasoning: 8, ownership: 10 },
         },
         {
-          text: "[SAME STUDENT] 'Okay, Student B, keep going while everyone else listens.'",
+          text: "[SAME STUDENT] 'Okay, Bala, keep going while everyone else listens.'",
           nextNode: 'turn_3',
           moveType: 'Stay Narrow',
           tip: 'One student may deepen, but the room stays spectator-heavy.',
@@ -333,13 +333,13 @@ const noHandsUp: ChoiceScenarioDefinition = {
       ],
     },
     turn_3: {
-      text: "You are ready to bring the class back. Student C has not spoken yet, but you noticed they shared a useful idea during partner talk, partly in Malay and partly in English.",
+      text: "You are ready to bring the class back. Chong has not spoken yet, but you noticed they shared a useful idea during partner talk, partly in Malay and partly in English.",
       responseType: 'partner-report',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
-          text: "[TARGETED INVITE] 'Student C, would you share what you and your partner were thinking?'",
+          text: "[TARGETED INVITE] 'Chong, would you share what you and your partner were thinking?'",
           nextNode: 'turn_4',
           moveType: 'Targeted Invite',
           tip: 'Smart. This keeps the routine equitable and lowers the risk by letting the pupil report pair thinking instead of performing alone.',
@@ -369,9 +369,9 @@ const noHandsUp: ChoiceScenarioDefinition = {
       ],
     },
     turn_4: {
-      text: "Student C shares, 'We thought the air spread and push the balloon wall.' The English is still developing, but the scientific idea is opening up. How do you close this level?",
+      text: "Chong shares, 'We thought the air spread and push the balloon wall.' The English is still developing, but the scientific idea is opening up. How do you close this level?",
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
           text: "[BUILD] 'Who can build on that and help us name the pattern more precisely?'",
@@ -409,10 +409,10 @@ const noHandsUp: ChoiceScenarioDefinition = {
 const thinkPairShare: ChoiceScenarioDefinition = {
   id: 'think-pair-share',
   title: 'Think-Pair-Share',
-  subtitle: 'Priority Level 2',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Practice sequencing silent think time, partner rehearsal, and share-out when most pupils need support to form the English.',
-  recommendedOrder: 5,
+  recommendedOrder: 7,
   focusAreas: ['think-pair-share', 'rehearsal', 'whole-class discussion'],
   reflectionPrompt:
     'Did your sequence help pupils rehearse an idea before public talk, or did it skip too quickly to a whole-class answer from the strongest speaker?',
@@ -434,7 +434,7 @@ const thinkPairShare: ChoiceScenarioDefinition = {
       pressureCue: 'Pressure cue: literary discussion can easily collapse into one polished response from the strongest reader.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[THINK FIRST] 'No hands yet. Take fifteen seconds to think and jot one possibility.'",
@@ -470,7 +470,7 @@ const thinkPairShare: ChoiceScenarioDefinition = {
       text: 'Pupils have individual ideas, but many are still only fragments or short phrases. What is your next move?',
       responseType: 'emergent-language',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[PAIR REHEARSAL] 'Turn to your shoulder partner and explain your idea. Be ready to share what your partner said too.'",
@@ -503,17 +503,17 @@ const thinkPairShare: ChoiceScenarioDefinition = {
       ],
     },
     turn_3: {
-      text: "Pairs have talked. You heard a promising but unfinished idea from Student C's partnership, and they usually avoid whole-class speaking.",
+      text: "Pairs have talked. You heard a promising but unfinished idea from Chong's partnership, and they usually avoid whole-class speaking.",
       alternateTexts: [
-        "Pairs have talked. Student C and their partner have a useful idea, but it is still hesitant and incomplete, and Student C rarely volunteers publicly.",
+        "Pairs have talked. Chong and their partner have a useful idea, but it is still hesitant and incomplete, and Chong rarely volunteers publicly.",
       ],
       pressureCue: 'Pressure cue: you could choose the fluent pupil again and get a smoother answer immediately.',
       responseType: 'partner-report',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
-          text: "[SAFE SHARE-OUT] 'Student C, would you share what you and your partner discussed?'",
+          text: "[SAFE SHARE-OUT] 'Chong, would you share what you and your partner discussed?'",
           nextNode: 'turn_4',
           moveType: 'Partner Report Share-Out',
           tip: 'Great choice. Reporting pair thinking lowers the public risk and lets partial language still count.',
@@ -527,7 +527,7 @@ const thinkPairShare: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -10, reasoning: -6, ownership: -8 },
         },
         {
-          text: "[SAME CONFIDENT STUDENT] 'Student A, tell us the polished version.'",
+          text: "[SAME CONFIDENT STUDENT] 'Aina, tell us the polished version.'",
           nextNode: 'turn_4',
           moveType: 'Confident Share-Out',
           tip: 'You chose fluency, but lost equity and ownership.',
@@ -543,10 +543,10 @@ const thinkPairShare: ChoiceScenarioDefinition = {
       ],
     },
     turn_4: {
-      text: "Student C shares a thoughtful partner idea, but it is still incomplete. How do you keep the sequence dialogic rather than ending on a single report?",
+      text: "Chong shares a thoughtful partner idea, but it is still incomplete. How do you keep the sequence dialogic rather than ending on a single report?",
       responseType: 'partial-idea',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
           text: "[BUILD] 'Who can build on that or offer a slightly different interpretation from their pair?'",
@@ -584,10 +584,10 @@ const thinkPairShare: ChoiceScenarioDefinition = {
 const partnerRoutines: ChoiceScenarioDefinition = {
   id: 'partner-routines',
   title: 'Partner Routines',
-  subtitle: 'Priority Level 2',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Rehearse shoulder-partner expectations so pair talk becomes accountable, not just noisy.',
-  recommendedOrder: 3,
+  recommendedOrder: 6,
   focusAreas: ['partner talk', 'shoulder partners', 'accountability'],
   reflectionPrompt:
     'Did your pair routine create purposeful rehearsal, or did it leave students unsure what quality talk should sound like?',
@@ -605,7 +605,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
       text: "You want every student discussing a poem opening line. Some students already know their shoulder partners, others do not. How do you launch?",
       responseType: 'echo',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[CLEAR ROUTINE] 'Turn knee-to-knee with your shoulder partner. Partner A speaks first for 20 seconds, then Partner B paraphrases before adding on.'",
@@ -622,7 +622,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
           metricsDelta: { participation: 2, reasoning: -2, ownership: 0 },
         },
         {
-          text: "[ONE STUDENT ONLY] 'Just tell me what you think, Student A.'",
+          text: "[ONE STUDENT ONLY] 'Just tell me what you think, Aina.'",
           nextNode: 'turn_2',
           moveType: 'Skip Pair Talk',
           tip: 'You lost the chance to rehearse ideas safely before going public.',
@@ -641,7 +641,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
       text: "As pairs talk, you notice one student dominating while their partner nods quietly.",
       responseType: 'echo',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[RESET NORMS] 'Pause. Make sure both partners share. This time, Person B starts and Person A paraphrases first.'",
@@ -658,7 +658,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -10, reasoning: -2, ownership: -8 },
         },
         {
-          text: "[CALL OUT] 'Student B, stop dominating.'",
+          text: "[CALL OUT] 'Bala, stop dominating.'",
           nextNode: 'turn_3',
           moveType: 'Public Correction',
           tip: 'You addressed the issue, but at the cost of psychological safety.',
@@ -677,7 +677,7 @@ const partnerRoutines: ChoiceScenarioDefinition = {
       text: "You are ready for the share-out. What kind of prompt keeps the partner routine accountable?",
       responseType: 'partner-report',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
           text: "[REPORT PARTNER] 'Tell us one idea your partner shared before you add your own.'",
@@ -715,10 +715,10 @@ const partnerRoutines: ChoiceScenarioDefinition = {
 const waitTimeMastery: ChoiceScenarioDefinition = {
   id: 'wait-time-mastery',
   title: 'Wait Time Mastery',
-  subtitle: 'Priority Level 4',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Feel the difference between rescuing the silence and staying long enough for Primary pupils to build a partial answer.',
-  recommendedOrder: 7,
+  recommendedOrder: 4,
   focusAreas: ['wait time', 'silence', 'processing'],
   reflectionPrompt:
     'What became possible when you held the silence a little longer, and what disappeared when anxiety and time pressure made you fill it yourself?',
@@ -740,7 +740,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
       pressureCue: 'Pressure cue: the silence feels expensive, even though the thinking may only just be starting.',
       responseType: 'echo',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[HOLD THE SILENCE] (Stay quiet, scan the room, and keep the question open for five more seconds.)",
@@ -773,14 +773,14 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
       ],
     },
     turn_2: {
-      text: "Student B finally says, 'I think... top number go up one each time.' The room goes quiet again after the contribution.",
+      text: "Bala finally says, 'I think... top number go up one each time.' The room goes quiet again after the contribution.",
       alternateTexts: [
-        "Student B finally says, 'Maybe the number on top is adding one... every time.' The class goes quiet again after the contribution.",
+        "Bala finally says, 'Maybe the number on top is adding one... every time.' The class goes quiet again after the contribution.",
       ],
       pressureCue: 'Pressure cue: the answer is incomplete, and the temptation to clean it up for the class is high.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[SECOND WAIT] (Pause again before responding so peers can process the idea.)",
@@ -790,7 +790,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
           metricsDelta: { participation: 12, reasoning: 10, ownership: 10 },
         },
         {
-          text: "[IMMEDIATE PRAISE] 'Yes! Exactly right, Student B.'",
+          text: "[IMMEDIATE PRAISE] 'Yes! Exactly right, Bala.'",
           nextNode: 'turn_3',
           moveType: 'Immediate Praise',
           tip: 'Warm, but it tells everyone else the thinking work is already done by one pupil.',
@@ -816,17 +816,17 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
       text: "Several pupils look almost ready now. How do you use the pause productively?",
       responseType: 'partial-idea',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
-          text: "[BUILD ON] 'Who can build on Student B's idea or test it with another example?'",
+          text: "[BUILD ON] 'Who can build on Bala's idea or test it with another example?'",
           nextNode: 'end_game',
           moveType: 'Add On',
           tip: 'Perfect. The uncomfortable silence has now set up stronger student-to-student reasoning.',
           metricsDelta: { participation: 10, reasoning: 12, ownership: 8 },
         },
         {
-          text: "[PICK SAME STUDENT] 'Student B, just finish the whole explanation for us.'",
+          text: "[PICK SAME STUDENT] 'Bala, just finish the whole explanation for us.'",
           nextNode: 'end_game',
           moveType: 'Single Voice',
           tip: 'One student may succeed, but the rest of the room stays passive.',
@@ -840,7 +840,7 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -10, reasoning: -8, ownership: -10 },
         },
         {
-          text: "[CHECK CORRECTNESS] 'Thumbs up if Student B is correct.'",
+          text: "[CHECK CORRECTNESS] 'Thumbs up if Bala is correct.'",
           nextNode: 'end_game',
           moveType: 'Correctness Check',
           tip: 'This checks agreement, but not why the idea makes sense.',
@@ -854,10 +854,10 @@ const waitTimeMastery: ChoiceScenarioDefinition = {
 const targetedQuestioning: ChoiceScenarioDefinition = {
   id: 'targeted-questioning',
   title: 'Targeted Questioning',
-  subtitle: 'Priority Level 5',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Choose who to invite next based on readiness, confidence, language support, and what the discussion needs.',
-  recommendedOrder: 8,
+  recommendedOrder: 9,
   focusAreas: ['targeted questioning', 'equity', 'student uptake'],
   reflectionPrompt:
     'Did your invitations distribute voice strategically, or did they default to the same confident pupils with the quickest English?',
@@ -875,17 +875,17 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
       text: "Pairs have discussed why a character in the novel chose to leave home. You heard three useful ideas: one from a quiet pupil with hesitant English, one misconception, and one strong textual link. Who do you invite first?",
       responseType: 'partner-report',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
-          text: "[QUIET STUDENT AFTER PAIR TALK] 'Student A, would you share what you and your partner noticed in the final paragraph?'",
+          text: "[QUIET STUDENT AFTER PAIR TALK] 'Aina, would you share what you and your partner noticed in the final paragraph?'",
           nextNode: 'turn_2',
           moveType: 'Target Quiet Student',
           tip: 'Great. Pair talk lowers the risk and expands who gets public airtime, even if the English is not polished yet.',
           metricsDelta: { participation: 14, reasoning: 8, ownership: 12 },
         },
         {
-          text: "[SAME CONFIDENT STUDENT] 'Student B, you always explain this well. Go ahead again.'",
+          text: "[SAME CONFIDENT STUDENT] 'Bala, you always explain this well. Go ahead again.'",
           nextNode: 'turn_2',
           moveType: 'Repeat Confident Student',
           tip: 'Comfortable, but it narrows who gets positioned as a thinker.',
@@ -908,13 +908,13 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
       ],
     },
     turn_2: {
-      text: "Student A says, 'We thought she leaves because... at home nobody see her.' Another pupil quietly mutters, 'No, she just rude.' What now?",
+      text: "Aina says, 'We thought she leaves because... at home nobody see her.' Another pupil quietly mutters, 'No, she just rude.' What now?",
       responseType: 'misconception',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
-          text: "[TARGET MISCONCEPTION] 'Student C, say more about why you think it comes across as rude.'",
+          text: "[TARGET MISCONCEPTION] 'Chong, say more about why you think it comes across as rude.'",
           nextNode: 'turn_3',
           moveType: 'Surface Misconception',
           tip: 'Strong. You brought a contrasting reading into the open instead of letting the class wait for you to settle it.',
@@ -928,7 +928,7 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -10, reasoning: -8, ownership: -10 },
         },
         {
-          text: "[IGNORE IT] 'Let us stay with Student A only.'",
+          text: "[IGNORE IT] 'Let us stay with Aina only.'",
           nextNode: 'turn_3',
           moveType: 'Ignore Tension',
           tip: 'You kept the flow smooth, but missed a useful opportunity to deepen reasoning.',
@@ -947,10 +947,10 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
       text: "You have two live interpretations in the room, both only partly formed. Which next invitation best deepens the discussion?",
       responseType: 'partial-idea',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
-          text: "[TARGET TEXTUAL LINK] 'Student B, can you connect one of these ideas to a line from the text?'",
+          text: "[TARGET TEXTUAL LINK] 'Bala, can you connect one of these ideas to a line from the text?'",
           nextNode: 'end_game',
           moveType: 'Target Evidence',
           tip: 'Excellent targeting. You chose the next voice because of what the discussion needed, not because the pupil sounded most fluent.',
@@ -971,7 +971,7 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -8, reasoning: -8, ownership: -10 },
         },
         {
-          text: "[CONFIDENT STUDENT AGAIN] 'Student B, just settle the disagreement for us.'",
+          text: "[CONFIDENT STUDENT AGAIN] 'Bala, just settle the disagreement for us.'",
           nextNode: 'end_game',
           moveType: 'Over-Reliance',
           tip: 'You used evidence, but still concentrated authority in one familiar voice.',
@@ -985,10 +985,10 @@ const targetedQuestioning: ChoiceScenarioDefinition = {
 const plannedCodeSwitching: ChoiceScenarioDefinition = {
   id: 'planned-code-switching',
   title: 'Planned Code-Switching',
-  subtitle: 'Multilingual Support',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Use Malay support deliberately so pupils can return to English with stronger reasoning, not less.',
-  recommendedOrder: 9,
+  recommendedOrder: 10,
   focusAreas: ['multilingual talk', 'code-switching', 'sentence stems'],
   reflectionPrompt:
     'Did you use the first language as a bridge back into academic English, or did it become an unplanned escape from thinking aloud?',
@@ -1013,7 +1013,7 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
       pressureCue: 'Pressure cue: you need English to stay visible, but forcing it too early may shut down the thinking.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[PLANNED BRIDGE] 'Talk with your partner in either language for one minute, then use this English stem: \"We noticed the shadow changed because...\"'",
@@ -1053,7 +1053,7 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
       pressureCue: 'Pressure cue: you can either build the language from the idea or replace the idea with your own words.',
       responseType: 'emergent-language',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[REVOICE WITH STEM] 'You are saying the sun's angle changed, so the shadow became longer. Can you try that with the stem on the board?'",
@@ -1077,7 +1077,7 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
           metricsDelta: { participation: -2, reasoning: -2, ownership: -2 },
         },
         {
-          text: "[TRANSLATE FOR THEM] 'What Student B means is that the angle of sunlight changes the shadow length.'",
+          text: "[TRANSLATE FOR THEM] 'What Bala means is that the angle of sunlight changes the shadow length.'",
           nextNode: 'turn_3',
           moveType: 'Teacher Translation',
           tip: 'Helpful in the moment, but students do not get to rehearse the English themselves.',
@@ -1089,7 +1089,7 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
       text: "More pupils want to join in, but they are still cautious about the English. How do you widen participation?",
       responseType: 'partner-report',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
           text: "[LOW-RISK SHARE] 'Tell us what your partner said first, then add one of your own words using the key vocabulary.'",
@@ -1127,10 +1127,10 @@ const plannedCodeSwitching: ChoiceScenarioDefinition = {
 const curiosityHooks: ChoiceScenarioDefinition = {
   id: 'curiosity-hooks',
   title: 'Curiosity Hooks',
-  subtitle: 'Priority Level 7',
+  subtitle: 'Tier 2 · Core Routine',
   description:
     'Practice launching inquiry with noticing, wondering, and productive uncertainty in a Primary classroom where pupils may only offer fragments at first.',
-  recommendedOrder: 6,
+  recommendedOrder: 8,
   focusAreas: ['curiosity', 'hooks', 'prediction'],
   reflectionPrompt:
     'Which opening invited real wondering, and which one merely disguised recall as inquiry while steering pupils back to teacher-answer mode?',
@@ -1148,7 +1148,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
       text: "You hold up a sealed jar with a candle inside that has gone out. You want to launch a discussion about combustion, but you know most pupils will begin with short, partial observations. How do you open?",
       responseType: 'prediction',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[NOTICE & WONDER] 'What do you notice? What do you wonder? Write one of each before we talk.'",
@@ -1184,7 +1184,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
       text: "Students offer mixed observations: smoke on the glass, melted wax, and the candle dimming before it died. What comes next?",
       responseType: 'prediction',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[PREDICTION] 'What do you predict would change if the jar were larger? Why?'",
@@ -1220,7 +1220,7 @@ const curiosityHooks: ChoiceScenarioDefinition = {
       text: "The class is now genuinely curious. How do you preserve that sense of co-inquiry?",
       responseType: 'prediction',
       speakerId: 'studentC',
-      speakerName: 'Student C',
+      speakerName: 'Chong',
       choices: [
         {
           text: "[CO-INQUIRER] 'I am wondering about that too. Which clue from the jar might help us test our prediction?'",
@@ -1259,13 +1259,13 @@ const countingBlocks: ChoiceScenarioDefinition = {
   id: 'counting-blocks',
   title: 'Counting Blocks',
   titleMs: 'Mengira Blok',
-  subtitle: 'Priority Level 0',
-  subtitleMs: 'Tahap Keutamaan 0',
+  subtitle: 'Tier 1 · Starter',
+  subtitleMs: 'Tahap 1 · Permulaan',
   description:
     'Practice moving from one-word answers to short math explanations.',
   descriptionMs:
     'Latih cara bawa jawapan satu perkataan kepada penerangan matematik yang ringkas.',
-  recommendedOrder: 0,
+  recommendedOrder: 1,
   focusAreas: ['counting', 'mathematical reasoning', 'language development'],
   reflectionPrompt:
     'How did you help pupils explain how they counted, not only give the number?',
@@ -1308,16 +1308,16 @@ const countingBlocks: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show 3 blocks. You ask, 'How many blocks?' Student A says, 'Three.' What do you do next?",
+      text: "You show 3 blocks. You ask, 'How many blocks?' Aina says, 'Three.' What do you do next?",
       textMs:
-        "Anda tunjuk 3 blok. Anda tanya, 'Berapa blok?' Pelajar A jawab, 'Tiga.' Apa anda buat seterusnya?",
+        "Anda tunjuk 3 blok. Anda tanya, 'Berapa blok?' Aina jawab, 'Tiga.' Apa anda buat seterusnya?",
       alternateTexts: [
-        "You place 3 blocks on the table. Student A says, 'Three.'",
-        "You ask, 'How many?' Student A says, 'Three.'",
+        "You place 3 blocks on the table. Aina says, 'Three.'",
+        "You ask, 'How many?' Aina says, 'Three.'",
       ],
       alternateTextsMs: [
-        "Anda letak 3 blok di meja. Pelajar A jawab, 'Tiga.'",
-        "Anda tanya, 'Berapa?' Pelajar A jawab, 'Tiga.'",
+        "Anda letak 3 blok di meja. Aina jawab, 'Tiga.'",
+        "Anda tanya, 'Berapa?' Aina jawab, 'Tiga.'",
       ],
       pressureCue:
         'Pressure cue: one-word answer. Keep the idea open and ask for method.',
@@ -1325,11 +1325,11 @@ const countingBlocks: ChoiceScenarioDefinition = {
         'Isyarat tekanan: jawapan satu perkataan. Kekalkan idea dan minta cara mengira.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
-          text: '[WAIT TIME] (Wait 5 seconds. Let Student A think.)',
-          textMs: '[WAIT TIME] (Tunggu 5 saat. Biar Pelajar A berfikir.)',
+          text: '[WAIT TIME] (Wait 5 seconds. Let Aina think.)',
+          textMs: '[WAIT TIME] (Tunggu 5 saat. Biar Aina berfikir.)',
           nextNode: 'turn_2',
           moveType: 'Wait Time',
           tip: 'Good move. Wait time helps the pupil build a full sentence.',
@@ -1366,16 +1366,16 @@ const countingBlocks: ChoiceScenarioDefinition = {
       ]
     },
     turn_2: {
-      text: "Student A says, 'I touched each block: one, two, three.' What do you do now?",
+      text: "Aina says, 'I touched each block: one, two, three.' What do you do now?",
       textMs:
-        "Pelajar A cakap, 'Saya sentuh setiap blok: satu, dua, tiga.' Apa anda buat sekarang?",
+        "Aina cakap, 'Saya sentuh setiap blok: satu, dua, tiga.' Apa anda buat sekarang?",
       alternateTexts: [
-        "Student A says, 'I pointed and counted.'",
-        "Student A says, 'I counted each one once.'",
+        "Aina says, 'I pointed and counted.'",
+        "Aina says, 'I counted each one once.'",
       ],
       alternateTextsMs: [
-        "Pelajar A cakap, 'Saya tunjuk dan kira.'",
-        "Pelajar A cakap, 'Saya kira setiap satu sekali.'",
+        "Aina cakap, 'Saya tunjuk dan kira.'",
+        "Aina cakap, 'Saya kira setiap satu sekali.'",
       ],
       pressureCue:
         'Pressure cue: strategy is visible, but language is still short.',
@@ -1383,7 +1383,7 @@ const countingBlocks: ChoiceScenarioDefinition = {
         'Isyarat tekanan: strategi sudah jelas, tapi bahasa masih pendek.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[ADD ON] 'Who did it a different way?'",
@@ -1424,16 +1424,16 @@ const countingBlocks: ChoiceScenarioDefinition = {
       ]
     },
     turn_3: {
-      text: "Student B says, 'Two and one make three.' How do you connect this idea?",
+      text: "Bala says, 'Two and one make three.' How do you connect this idea?",
       textMs:
-        "Pelajar B cakap, 'Dua dan satu jadi tiga.' Bagaimana anda sambung idea ini?",
+        "Bala cakap, 'Dua dan satu jadi tiga.' Bagaimana anda sambung idea ini?",
       alternateTexts: [
-        "Student B says, 'Three is 2 + 1.'",
-        "Student B says, 'I can split three into two and one.'",
+        "Bala says, 'Three is 2 + 1.'",
+        "Bala says, 'I can split three into two and one.'",
       ],
       alternateTextsMs: [
-        "Pelajar B cakap, 'Tiga ialah 2 + 1.'",
-        "Pelajar B cakap, 'Saya boleh pecah tiga jadi dua dan satu.'",
+        "Bala cakap, 'Tiga ialah 2 + 1.'",
+        "Bala cakap, 'Saya boleh pecah tiga jadi dua dan satu.'",
       ],
       pressureCue:
         'Pressure cue: pupil is connecting counting and number composition.',
@@ -1441,7 +1441,7 @@ const countingBlocks: ChoiceScenarioDefinition = {
         'Isyarat tekanan: pelajar sedang sambung kiraan dengan gabungan nombor.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[ADD ON] 'Who can prove 2 + 1 with blocks?'",
@@ -1488,13 +1488,13 @@ const shapesSorting: ChoiceScenarioDefinition = {
   id: 'shapes-sorting',
   title: 'Sorting Shapes',
   titleMs: 'Mengelas Bentuk',
-  subtitle: 'Priority Level 1',
-  subtitleMs: 'Tahap Keutamaan 1',
+  subtitle: 'Tier 1 · Starter',
+  subtitleMs: 'Tahap 1 · Permulaan',
   description:
     'Practice simple compare language while pupils classify shapes.',
   descriptionMs:
     'Latih bahasa perbandingan mudah semasa pelajar mengelas bentuk.',
-  recommendedOrder: 1,
+  recommendedOrder: 2,
   focusAreas: ['shape recognition', 'mathematical language', 'classification'],
   reflectionPrompt:
     'How did you move pupils from naming to explaining properties?',
@@ -1537,16 +1537,16 @@ const shapesSorting: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show a triangle. You ask, 'What shape is this?' Student A says, 'Triangle.'",
+      text: "You show a triangle. You ask, 'What shape is this?' Aina says, 'Triangle.'",
       textMs:
-        "Anda tunjuk segi tiga. Anda tanya, 'Ini bentuk apa?' Pelajar A jawab, 'Segi tiga.'",
+        "Anda tunjuk segi tiga. Anda tanya, 'Ini bentuk apa?' Aina jawab, 'Segi tiga.'",
       alternateTexts: [
-        "You point to a shape on the board. Student A names it.",
-        "You hold a shape card. Student A gives the name only.",
+        "You point to a shape on the board. Aina names it.",
+        "You hold a shape card. Aina gives the name only.",
       ],
       alternateTextsMs: [
-        'Anda tunjuk bentuk pada papan. Pelajar A sebut nama bentuk sahaja.',
-        'Anda pegang kad bentuk. Pelajar A beri nama sahaja.',
+        'Anda tunjuk bentuk pada papan. Aina sebut nama bentuk sahaja.',
+        'Anda pegang kad bentuk. Aina beri nama sahaja.',
       ],
       pressureCue:
         'Pressure cue: correct label, but no properties yet.',
@@ -1554,11 +1554,11 @@ const shapesSorting: ChoiceScenarioDefinition = {
         'Isyarat tekanan: label betul, tetapi sifat belum dijelaskan.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
-          text: '[WAIT TIME] (Wait. Let Student A look carefully.)',
-          textMs: '[WAIT TIME] (Tunggu. Biar Pelajar A lihat betul-betul.)',
+          text: '[WAIT TIME] (Wait. Let Aina look carefully.)',
+          textMs: '[WAIT TIME] (Tunggu. Biar Aina lihat betul-betul.)',
           nextNode: 'turn_2',
           moveType: 'Wait Time',
           tip: 'Good. Observation time improves answer quality.',
@@ -1595,16 +1595,16 @@ const shapesSorting: ChoiceScenarioDefinition = {
       ]
     },
     turn_2: {
-      text: "Student A says, 'It has three lines and three points.' What next?",
+      text: "Aina says, 'It has three lines and three points.' What next?",
       textMs:
-        "Pelajar A cakap, 'Ia ada tiga garis dan tiga bucu.' Langkah seterusnya?",
+        "Aina cakap, 'Ia ada tiga garis dan tiga bucu.' Langkah seterusnya?",
       alternateTexts: [
-        "Student A says, 'Three sides, three corners.'",
-        "Student A says, 'Pointy shape with straight lines.'",
+        "Aina says, 'Three sides, three corners.'",
+        "Aina says, 'Pointy shape with straight lines.'",
       ],
       alternateTextsMs: [
-        "Pelajar A cakap, 'Tiga sisi, tiga sudut.'",
-        "Pelajar A cakap, 'Bentuk tajam dengan garis lurus.'",
+        "Aina cakap, 'Tiga sisi, tiga sudut.'",
+        "Aina cakap, 'Bentuk tajam dengan garis lurus.'",
       ],
       pressureCue:
         'Pressure cue: useful idea, informal wording.',
@@ -1612,7 +1612,7 @@ const shapesSorting: ChoiceScenarioDefinition = {
         'Isyarat tekanan: idea baik, tetapi bahasa masih tidak formal.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[ADD ON] 'Who can restate this using math words?'",
@@ -1653,16 +1653,16 @@ const shapesSorting: ChoiceScenarioDefinition = {
       ]
     },
     turn_3: {
-      text: "Student B says, 'A square has four equal sides.' How do you connect shapes?",
+      text: "Bala says, 'A square has four equal sides.' How do you connect shapes?",
       textMs:
-        "Pelajar B cakap, 'Segi empat sama ada empat sisi sama panjang.' Bagaimana anda sambungkan bentuk?",
+        "Bala cakap, 'Segi empat sama ada empat sisi sama panjang.' Bagaimana anda sambungkan bentuk?",
       alternateTexts: [
-        "Student B says, 'Square has four corners, triangle has three.'",
-        "Student B says, 'Different shapes have different sides.'",
+        "Bala says, 'Square has four corners, triangle has three.'",
+        "Bala says, 'Different shapes have different sides.'",
       ],
       alternateTextsMs: [
-        "Pelajar B cakap, 'Segi empat sama ada empat sudut, segi tiga ada tiga.'",
-        "Pelajar B cakap, 'Bentuk berbeza ada sisi berbeza.'",
+        "Bala cakap, 'Segi empat sama ada empat sudut, segi tiga ada tiga.'",
+        "Bala cakap, 'Bentuk berbeza ada sisi berbeza.'",
       ],
       pressureCue:
         'Pressure cue: student is classifying by properties.',
@@ -1670,7 +1670,7 @@ const shapesSorting: ChoiceScenarioDefinition = {
         'Isyarat tekanan: pelajar sedang mengelas berdasarkan sifat.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[ADD ON] 'Who can compare square and triangle in one sentence?'",
@@ -1717,13 +1717,13 @@ const simpleAddition: ChoiceScenarioDefinition = {
   id: 'simple-addition',
   title: 'Adding Objects',
   titleMs: 'Tambah Objek',
-  subtitle: 'Priority Level 2',
-  subtitleMs: 'Tahap Keutamaan 2',
+  subtitle: 'Tier 1 · Starter',
+  subtitleMs: 'Tahap 1 · Permulaan',
   description:
     'Practice simple addition talk: combine two groups and explain why.',
   descriptionMs:
     'Latih perbincangan tambah mudah: gabung dua kumpulan dan terangkan sebab.',
-  recommendedOrder: 2,
+  recommendedOrder: 3,
   focusAreas: ['addition', 'mathematical reasoning', 'language development'],
   reflectionPrompt:
     'How did you prompt pupils to explain the method, not only the total?',
@@ -1766,16 +1766,16 @@ const simpleAddition: ChoiceScenarioDefinition = {
   hotspots: baseHotspots,
   dialogueTree: {
     start_node: {
-      text: "You show 2 blocks and 3 blocks. You ask, 'How many altogether?' Student A says, 'Five.'",
+      text: "You show 2 blocks and 3 blocks. You ask, 'How many altogether?' Aina says, 'Five.'",
       textMs:
-        "Anda tunjuk 2 blok dan 3 blok. Anda tanya, 'Berapa semua sekali?' Pelajar A jawab, 'Lima.'",
+        "Anda tunjuk 2 blok dan 3 blok. Anda tanya, 'Berapa semua sekali?' Aina jawab, 'Lima.'",
       alternateTexts: [
-        "You show 1 and 4 blocks. Student A says, 'Five.'",
-        "You show 3 and 2 blocks. Student A says, 'Five.'",
+        "You show 1 and 4 blocks. Aina says, 'Five.'",
+        "You show 3 and 2 blocks. Aina says, 'Five.'",
       ],
       alternateTextsMs: [
-        "Anda tunjuk 1 dan 4 blok. Pelajar A jawab, 'Lima.'",
-        "Anda tunjuk 3 dan 2 blok. Pelajar A jawab, 'Lima.'",
+        "Anda tunjuk 1 dan 4 blok. Aina jawab, 'Lima.'",
+        "Anda tunjuk 3 dan 2 blok. Aina jawab, 'Lima.'",
       ],
       pressureCue:
         'Pressure cue: total is correct, strategy is hidden.',
@@ -1783,7 +1783,7 @@ const simpleAddition: ChoiceScenarioDefinition = {
         'Isyarat tekanan: jumlah betul, tetapi strategi masih tersembunyi.',
       responseType: 'emergent-language',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: '[WAIT TIME] (Wait. Give thinking time.)',
@@ -1824,16 +1824,16 @@ const simpleAddition: ChoiceScenarioDefinition = {
       ]
     },
     turn_2: {
-      text: "Student A says, 'I started at two, then counted three more: three, four, five.'",
+      text: "Aina says, 'I started at two, then counted three more: three, four, five.'",
       textMs:
-        "Pelajar A cakap, 'Saya mula dari dua, kemudian kira tiga lagi: tiga, empat, lima.'",
+        "Aina cakap, 'Saya mula dari dua, kemudian kira tiga lagi: tiga, empat, lima.'",
       alternateTexts: [
-        "Student A says, 'Two plus three is five.'",
-        "Student A says, 'I counted on from two.'",
+        "Aina says, 'Two plus three is five.'",
+        "Aina says, 'I counted on from two.'",
       ],
       alternateTextsMs: [
-        "Pelajar A cakap, 'Dua tambah tiga jadi lima.'",
-        "Pelajar A cakap, 'Saya sambung kira dari dua.'",
+        "Aina cakap, 'Dua tambah tiga jadi lima.'",
+        "Aina cakap, 'Saya sambung kira dari dua.'",
       ],
       pressureCue:
         'Pressure cue: strategy appears; make it visible to the class.',
@@ -1841,7 +1841,7 @@ const simpleAddition: ChoiceScenarioDefinition = {
         'Isyarat tekanan: strategi sudah muncul; jadikan ia jelas untuk kelas.',
       responseType: 'partial-idea',
       speakerId: 'studentA',
-      speakerName: 'Student A',
+      speakerName: 'Aina',
       choices: [
         {
           text: "[ADD ON] 'Who can solve it a different way?'",
@@ -1882,16 +1882,16 @@ const simpleAddition: ChoiceScenarioDefinition = {
       ]
     },
     turn_3: {
-      text: "Student B says, '3 + 2 is also 5. Order does not change the total.'",
+      text: "Bala says, '3 + 2 is also 5. Order does not change the total.'",
       textMs:
-        "Pelajar B cakap, '3 + 2 juga 5. Susunan tidak ubah jumlah.'",
+        "Bala cakap, '3 + 2 juga 5. Susunan tidak ubah jumlah.'",
       alternateTexts: [
-        "Student B says, 'If I switch the groups, I still get five.'",
-        "Student B says, 'Two plus three and three plus two are the same.'",
+        "Bala says, 'If I switch the groups, I still get five.'",
+        "Bala says, 'Two plus three and three plus two are the same.'",
       ],
       alternateTextsMs: [
-        "Pelajar B cakap, 'Kalau saya tukar kumpulan, jawapan tetap lima.'",
-        "Pelajar B cakap, 'Dua tambah tiga dan tiga tambah dua adalah sama.'",
+        "Bala cakap, 'Kalau saya tukar kumpulan, jawapan tetap lima.'",
+        "Bala cakap, 'Dua tambah tiga dan tiga tambah dua adalah sama.'",
       ],
       pressureCue:
         'Pressure cue: important property noticed. Build explanation from pupil.',
@@ -1899,7 +1899,7 @@ const simpleAddition: ChoiceScenarioDefinition = {
         'Isyarat tekanan: sifat penting telah dikesan. Bina penerangan daripada pelajar.',
       responseType: 'partial-idea',
       speakerId: 'studentB',
-      speakerName: 'Student B',
+      speakerName: 'Bala',
       choices: [
         {
           text: "[ADD ON] 'Who can prove this with blocks?'",
@@ -1942,18 +1942,97 @@ const simpleAddition: ChoiceScenarioDefinition = {
   }
 };
 
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
+// Calibrate each choice scenario so optimal play cleanly reaches 100% across all
+// three metrics while softening harsh penalties on single-turn slips.
+function calibrateChoiceScenario(scenario: ChoiceScenarioDefinition): ChoiceScenarioDefinition {
+  const nodes = Object.values(scenario.dialogueTree);
+  const keys = ['participation', 'reasoning', 'ownership'] as const;
+
+  // Measure the sum of best-choice positive gains along the scenario's turns
+  const bestPositiveGain: Record<(typeof keys)[number], number> = {
+    participation: 0,
+    reasoning: 0,
+    ownership: 0,
+  };
+
+  for (const node of nodes) {
+    let bestChoice = node.choices[0];
+    let bestSum = -Infinity;
+    for (const choice of node.choices) {
+      const sum =
+        (choice.metricsDelta.participation ?? 0) +
+        (choice.metricsDelta.reasoning ?? 0) +
+        (choice.metricsDelta.ownership ?? 0);
+      if (sum > bestSum) {
+        bestSum = sum;
+        bestChoice = choice;
+      }
+    }
+    if (bestChoice) {
+      for (const key of keys) {
+        bestPositiveGain[key] += Math.max(0, bestChoice.metricsDelta[key] ?? 0);
+      }
+    }
+  }
+
+  const scale: Record<(typeof keys)[number], number> = {
+    participation: 1,
+    reasoning: 1,
+    ownership: 1,
+  };
+
+  for (const key of keys) {
+    const needed = Math.max(0, 100 - scenario.startingMetrics[key]);
+    const gain = bestPositiveGain[key];
+    if (gain > 0 && gain < needed) {
+      scale[key] = needed / gain;
+    }
+  }
+
+  const calibratedTree: Record<string, ChoiceNode> = {};
+  for (const [nodeId, node] of Object.entries(scenario.dialogueTree)) {
+    calibratedTree[nodeId] = {
+      ...node,
+      choices: node.choices.map((choice) => {
+        const nextDelta: MetricDelta = {};
+        for (const key of keys) {
+          const raw = choice.metricsDelta[key] ?? 0;
+          if (raw > 0) {
+            nextDelta[key] = Math.ceil(raw * scale[key]);
+          } else if (raw < 0) {
+            // Keep learning signal clear without making a single slip overly punishing
+            nextDelta[key] = Math.round(raw * 0.75);
+          } else {
+            nextDelta[key] = 0;
+          }
+        }
+        return {
+          ...choice,
+          metricsDelta: nextDelta,
+        };
+      }),
+    };
+  }
+
+  return {
+    ...scenario,
+    dialogueTree: calibratedTree,
+  };
+}
+
 export const choiceScenarios = {
-  crushedCanInquiry,
-  noHandsUp,
-  thinkPairShare,
-  partnerRoutines,
-  waitTimeMastery,
-  targetedQuestioning,
-  plannedCodeSwitching,
-  curiosityHooks,
-  countingBlocks,
-  shapesSorting,
-  simpleAddition,
+  crushedCanInquiry: calibrateChoiceScenario(crushedCanInquiry),
+  noHandsUp: calibrateChoiceScenario(noHandsUp),
+  thinkPairShare: calibrateChoiceScenario(thinkPairShare),
+  partnerRoutines: calibrateChoiceScenario(partnerRoutines),
+  waitTimeMastery: calibrateChoiceScenario(waitTimeMastery),
+  targetedQuestioning: calibrateChoiceScenario(targetedQuestioning),
+  plannedCodeSwitching: calibrateChoiceScenario(plannedCodeSwitching),
+  curiosityHooks: calibrateChoiceScenario(curiosityHooks),
+  countingBlocks: calibrateChoiceScenario(countingBlocks),
+  shapesSorting: calibrateChoiceScenario(shapesSorting),
+  simpleAddition: calibrateChoiceScenario(simpleAddition),
 } as const;
 
 export type ChoiceScenarioId = keyof typeof choiceScenarios;

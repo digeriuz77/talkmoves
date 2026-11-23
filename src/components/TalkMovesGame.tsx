@@ -59,6 +59,8 @@ type TalkMovesGameProps = {
   onComplete: (result: { levelId: string; score: number; completed: boolean }) => void;
 };
 
+const MAX_CHAIN_LENGTH = 3;
+
 export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMovesGameProps) {
   const { t, lang } = useLang();
   const [currentNodeId, setCurrentNodeId] = useState<string>(scenario.startNodeId);
@@ -68,6 +70,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
   const [feedback, setFeedback] = useState<string | null>(null);
   const [gameState, setGameState] = useState<GameState>('building');
   const [showHint, setShowHint] = useState<boolean>(false);
+  const [showChainTip, setShowChainTip] = useState<boolean>(true);
   const [playthroughSeed, setPlaythroughSeed] = useState<number>(0);
   const [responseTypesSeen, setResponseTypesSeen] = useState<StudentResponseType[]>([]);
   const [previousTerminalMoveId, setPreviousTerminalMoveId] = useState<string | undefined>(undefined);
@@ -104,14 +107,18 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
   const addToChain = (moveId: string) => {
     if (gameState !== 'building') return;
+    if (responseChain.length >= MAX_CHAIN_LENGTH) return;
     const move = talkMovesMap[moveId];
     if (!move) return;
+    // Reserve the 3rd slot for a closing move so chains stay realistic (max 2 setup + 1 closer)
+    if (responseChain.length === MAX_CHAIN_LENGTH - 1 && move.category !== 'terminal') return;
     if (responseChain.length > 0) {
       const lastInChain = talkMovesMap[responseChain[responseChain.length - 1].moveId];
       if (lastInChain?.category === 'terminal') return;
     }
     setResponseChain([...responseChain, { moveId, label: move.chainLabel }]);
     setFeedback(move.researchTip);
+    setShowChainTip(false);
   };
 
   const removeFromChain = (index: number) => {
@@ -135,8 +142,11 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
       }
     }
 
+    const setupAvailable = availableMoves.some((m) => m.category === 'non-terminal');
     const chainMetrics = calculateChainMetrics(chainMoveIds);
-    const chainAssessment = assessTalkMoveChain(chainMoveIds, previousTerminalMoveId);
+    const chainAssessment = assessTalkMoveChain(chainMoveIds, previousTerminalMoveId, {
+      setupAvailable,
+    });
     const nextMetrics = applyMetricDelta(applyMetricDelta(metrics, chainMetrics), chainAssessment.adjustment);
     const newScore = calculateCompositeScore(nextMetrics);
     setMetrics(nextMetrics);
@@ -366,23 +376,50 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
 
               {/* 3. Move Palette */}
               <section>
-                <h3 className="mb-2 px-0.5 font-display text-xs font-bold uppercase tracking-wider text-white/60">
-                  {t('talk.tapToAdd')}
-                </h3>
+                {showChainTip && turnIndex === 1 ? (
+                  <div className="mb-2.5 flex items-center justify-between gap-2 rounded-2xl border border-amber-400/35 bg-amber-500/12 px-3.5 py-2 text-xs font-semibold text-amber-100">
+                    <span>{t('talk.chainHint')}</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowChainTip(false)}
+                      aria-label={t('coaching.dismiss')}
+                      className="rounded-full p-1 text-amber-200/80 hover:text-white"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                ) : null}
+                <div className="mb-2 flex items-center justify-between px-0.5">
+                  <h3 className="font-display text-xs font-bold uppercase tracking-wider text-white/60">
+                    {t('talk.tapToAdd')}
+                  </h3>
+                  <span className="font-display text-xs font-bold tabular-nums text-white/50">
+                    {responseChain.length}/{MAX_CHAIN_LENGTH}
+                  </span>
+                </div>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
                   {availableMoves.map((move) => {
                     const isInChain = responseChain.some((c) => c.moveId === move.id);
                     const isTerminal = move.category === 'terminal';
+                    const slotReservedForTerminal =
+                      responseChain.length === MAX_CHAIN_LENGTH - 1 && !isTerminal;
+                    const chainClosed =
+                      canExecute || responseChain.length >= MAX_CHAIN_LENGTH;
+                    const isDisabled =
+                      isInChain ||
+                      chainClosed ||
+                      slotReservedForTerminal ||
+                      gameState !== 'building';
                     return (
                       <motion.button
                         key={move.id}
                         type="button"
                         whileTap={{ scale: 0.97 }}
                         onClick={() => addToChain(move.id)}
-                        disabled={isInChain || gameState !== 'building'}
+                        disabled={isDisabled}
                         title={`${move.name}: ${move.purpose}`}
                         className={`rounded-2xl border-2 px-3 py-3 text-left transition touch-target ${
-                          isInChain
+                          isDisabled
                             ? 'cursor-not-allowed border-white/8 bg-white/[0.03] text-white/30'
                             : isTerminal
                               ? 'border-amber-400/55 bg-amber-500/15 text-amber-100 shadow-[0_3px_0_rgba(0,0,0,0.25)] hover:bg-amber-500/25'
@@ -394,7 +431,7 @@ export default function TalkMovesGame({ scenario, onExit, onComplete }: TalkMove
                         </span>
                         <span
                           className={`mt-0.5 block truncate text-[11px] font-bold ${
-                            isInChain
+                            isDisabled
                               ? 'text-white/25'
                               : isTerminal
                                 ? 'text-amber-300'

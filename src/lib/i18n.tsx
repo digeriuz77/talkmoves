@@ -498,6 +498,11 @@ const en: Record<string, string> = {
   'filter.talkMoves': 'Talk Chains',
   'header.tools': 'Tools',
   'end.fullDebrief': 'Full debrief & evidence',
+  'choice.moveUsed': 'Move used',
+  'choice.nextTurn': 'Next turn',
+  'choice.seeResults': 'See results',
+  'talk.chainHint': 'Tip: Tap 1–2 setup moves, then finish with an amber closer (max 3).',
+  'status.mastered': '100% Mastered',
 };
 
 const ms: Record<string, string> = {
@@ -994,6 +999,11 @@ const ms: Record<string, string> = {
   'filter.talkMoves': 'Rantaian',
   'header.tools': 'Alat',
   'end.fullDebrief': 'Debrief penuh & bukti',
+  'choice.moveUsed': 'Langkah digunakan',
+  'choice.nextTurn': 'Giliran seterusnya',
+  'choice.seeResults': 'Lihat keputusan',
+  'talk.chainHint': 'Petua: Ketik 1–2 langkah persediaan, kemudian akhiri dengan penutup amber (maks 3).',
+  'status.mastered': '100% Dikuasai',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };

@@ -393,8 +393,10 @@ function GameCard({
       ? game.scenario.descriptionMs ?? game.description
       : game.description;
 
-  const statusPillClass =
-    progress.statusKey === 'completed'
+  const isMastered = progress.bestScore >= 100;
+  const statusPillClass = isMastered
+    ? 'pill-amber'
+    : progress.statusKey === 'completed'
       ? 'pill-sage'
       : progress.statusKey === 'inProgress'
         ? 'pill-amber'
@@ -412,7 +414,9 @@ function GameCard({
             <Icon className={`h-3.5 w-3.5 ${isTalkMoves ? 'text-amber' : 'text-sky'}`} aria-hidden />
             <span className="truncate">{subtitle}</span>
           </span>
-          <span className={statusPillClass}>{t(`status.${progress.statusKey}`)}</span>
+          <span className={statusPillClass}>
+            {isMastered ? `★ ${t('status.mastered')}` : t(`status.${progress.statusKey}`)}
+          </span>
         </div>
 
         <h2 className="card-title mb-1.5">{title}</h2>

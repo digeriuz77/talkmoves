@@ -27,7 +27,7 @@ const numberLineNodes: Record<string, TalkMoveNode> = {
     studentName: "Student",
     hint: "The student has identified a numerical relationship. Press them to explain how they know.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T04', 'TM-T08', 'TM-T05', 'TM-T06', 'TM-T09'],
+    availableMoves: ['TM-T01', 'TM-T03', 'TM-T04', 'TM-T08', 'TM-T05', 'TM-T06', 'TM-T09'],
   },
   turn3_faith_counting: {
     studentText: "Faith figured it out. She counted the spaces between.",
@@ -41,7 +41,7 @@ const numberLineNodes: Record<string, TalkMoveNode> = {
     studentName: "Faith",
     hint: "Faith has shared her method. Now the class can build on it, challenge it, or connect it to the number line placement.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T05', 'TM-T06', 'TM-T08', 'TM-T13', 'TM-T14'],
+    availableMoves: ['TM-T03', 'TM-T07', 'TM-T05', 'TM-T06', 'TM-T08', 'TM-T13', 'TM-T14'],
   },
   turn5_wrap_up: {
     studentText: "So the 63 should be closer to 70 than to 60 because it's only seven away from 70 but three away from... wait, that's not right.",
@@ -56,10 +56,10 @@ const numberLineNodes: Record<string, TalkMoveNode> = {
 const numberLineScenario: TalkMoveScenarioDefinition = {
   id: 'number-line-debate',
   title: 'The Number Line Debate',
-  subtitle: 'Practice — Reasoning with Evidence',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'Students are placing numbers on a 0–100 number line. Build talk-move chains that help them clarify, justify, and revise their reasoning about where 63 belongs.',
-  recommendedOrder: 16,
+  recommendedOrder: 14,
   focusAreas: ['press for reasoning', 'revoicing', 'revising thinking'],
   reflectionPrompt:
     'Which moves helped students explain their counting strategy and catch their own errors?',
@@ -99,7 +99,7 @@ const mathStrategyNodes: Record<string, TalkMoveNode> = {
     studentName: "Student",
     hint: "A second strategy has emerged. Now the class can compare approaches and see that multiple paths lead to 14.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T05', 'TM-T06', 'TM-T08', 'TM-T09', 'TM-T14'],
+    availableMoves: ['TM-T03', 'TM-T07', 'TM-T05', 'TM-T06', 'TM-T08', 'TM-T09', 'TM-T14'],
   },
   turn4_callie_agrees: {
     studentText: "I agree because I noticed that you knew this was a 10, so you put a 10, not a 1, and got 14 instead of 4.",
@@ -113,10 +113,10 @@ const mathStrategyNodes: Record<string, TalkMoveNode> = {
 const mathStrategyScenario: TalkMoveScenarioDefinition = {
   id: 'math-strategy-mixup',
   title: 'The Math Strategy Mix-Up',
-  subtitle: 'Practice — Comparing Strategies',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'Students are finding different ways to make 14 using 3, 4, and 7. One student gets tangled. Build chains that let peers correct, compare strategies, and agree with reasoning.',
-  recommendedOrder: 17,
+  recommendedOrder: 12,
   focusAreas: ['peer correction', 'adding on', 'agreeing with reasoning'],
   reflectionPrompt:
     'How did peer-to-peer correction compare to teacher-led correction? Which moves kept the student\'s dignity intact?',
@@ -170,10 +170,10 @@ const heavyLightNodes: Record<string, TalkMoveNode> = {
 const heavyLightScenario: TalkMoveScenarioDefinition = {
   id: 'heavy-light-scale',
   title: 'The Heavy/Light Scale',
-  subtitle: 'Practice — Peer-to-Peer Talk',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'Students are sorting objects as heavy or light based on a story. Build chains that redirect talk from teacher to peer, and press for text-based evidence.',
-  recommendedOrder: 12,
+  recommendedOrder: 11,
   focusAreas: ['peer-to-peer talk', 'evidence from text', 'redirecting to students'],
   reflectionPrompt:
     'How did you shift the talk from student-to-teacher to student-to-student? Which moves made that possible?',
@@ -205,7 +205,7 @@ const visualizingPoemNodes: Record<string, TalkMoveNode> = {
     studentName: "Lex",
     hint: "Lex is naming the strategy (using details) but could go deeper. Which specific words or phrases triggered the image?",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T04', 'TM-T08', 'TM-T05', 'TM-T09', 'TM-T06'],
+    availableMoves: ['TM-T01', 'TM-T03', 'TM-T04', 'TM-T08', 'TM-T05', 'TM-T09', 'TM-T06'],
   },
   turn3_chocolate_drop: {
     studentText: "I heard you say his shoes were like a chocolate drop! I like how you used the words in the poem to help you with your visualization.",
@@ -219,17 +219,17 @@ const visualizingPoemNodes: Record<string, TalkMoveNode> = {
     studentName: "Student",
     hint: "A student is gently challenging the visualization by checking against the text. This is critical literacy — distinguishing what the text says from what the reader adds.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T06', 'TM-T08', 'TM-T05', 'TM-T13', 'TM-T14'],
+    availableMoves: ['TM-T01', 'TM-T11', 'TM-T06', 'TM-T08', 'TM-T05', 'TM-T13', 'TM-T14'],
   },
 };
 
 const visualizingPoemScenario: TalkMoveScenarioDefinition = {
   id: 'visualizing-poem',
   title: 'Visualizing the Poem',
-  subtitle: 'Practice — Text-Based Imagery',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'After listening to a poem with eyes closed, students share mental images. Build chains that connect visualization to textual evidence and invite gentle challenge.',
-  recommendedOrder: 13,
+  recommendedOrder: 15,
   focusAreas: ['visualization', 'text evidence', 'challenging thinking'],
   reflectionPrompt:
     'How did you help students distinguish between what the text says and what they imagined? Which moves supported critical reading?',
@@ -276,17 +276,17 @@ const forgottenShadowNodes: Record<string, TalkMoveNode> = {
     studentName: "Student",
     hint: "The class is now searching for precise scientific vocabulary. This is a natural moment for an open question or learning-focused response.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T09', 'TM-T05', 'TM-T08', 'TM-T14', 'TM-T10'],
+    availableMoves: ['TM-T01', 'TM-T12', 'TM-T09', 'TM-T05', 'TM-T08', 'TM-T14', 'TM-T10'],
   },
 };
 
 const forgottenShadowScenario: TalkMoveScenarioDefinition = {
   id: 'forgotten-shadow',
   title: 'The Forgotten Shadow',
-  subtitle: 'Practice — Partner Norms',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'During turn-and-talks about shadows, a student forgets their partner\'s idea. Build chains that model problem-solving norms, partner re-explanation, and scientific vocabulary building.',
-  recommendedOrder: 15,
+  recommendedOrder: 13,
   focusAreas: ['partner norms', 'problem-solving', 'scientific vocabulary'],
   reflectionPrompt:
     'How did you handle a student who forgot? Did you model the norm or rescue? Which moves kept the student\'s dignity?',
@@ -339,17 +339,17 @@ const spiderScienceNodes: Record<string, TalkMoveNode> = {
     studentName: "Student",
     hint: "The class has arrived at a full synthesis. This is the moment to reflect, review, and invite revision of earlier thinking.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T14', 'TM-T13', 'TM-T05', 'TM-T09', 'TM-T10'],
+    availableMoves: ['TM-T03', 'TM-T07', 'TM-T14', 'TM-T13', 'TM-T05', 'TM-T09', 'TM-T10'],
   },
 };
 
 const spiderScienceScenario: TalkMoveScenarioDefinition = {
   id: 'spider-science-synthesis',
   title: 'The Spider Science Synthesis',
-  subtitle: 'Practice — Fishbowl Discussion',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'In a fishbowl circle with a microphone, students answer: How does a spider\'s body help it survive? Build chains that use sentence starters, synthesize ideas, and reach the big conclusion.',
-  recommendedOrder: 19,
+  recommendedOrder: 17,
   focusAreas: ['fishbowl discussion', 'sentence starters', 'synthesis'],
   reflectionPrompt:
     'How did the sentence starter "I agree with ___ because..." change the quality of student responses? Which moves led to synthesis?',
@@ -378,18 +378,18 @@ const numberHoopsNodes: Record<string, TalkMoveNode> = {
     availableMoves: ['TM-T04', 'TM-T01', 'TM-T12', 'TM-T09', 'TM-T10'],
   },
   turn2_model_counting: {
-    studentText: "I want to make sure I get my thinking right because these numbers are getting a bit bigger. Can you see how when I get a bit stuck I just go back and start counting again? One, two, three...",
-    studentName: "Teacher (modeling)",
-    hint: "You've modeled the strategy of restarting the count. Now invite the student to continue from where they left off.",
+    studentText: "Oh! So when I get stuck after 14, I can go back and count again from the hoop before... 13, 14, 15?",
+    studentName: "Maya",
+    hint: "After you modelled restarting the count, the pupil is trying the strategy aloud. Invite them to keep going without jumping in.",
     responseType: 'partial-idea',
-    availableMoves: ['TM-T04', 'TM-T09', 'TM-T05', 'TM-T11', 'TM-T12'],
+    availableMoves: ['TM-T01', 'TM-T04', 'TM-T09', 'TM-T05', 'TM-T11', 'TM-T12'],
   },
   turn3_other_direction: {
     studentText: "Should we do it the other way? So you move the 20 here and then it goes that way?",
     studentName: "Student",
     hint: "A student is proposing a different approach. This is mathematical reasoning in action. Press them to explain why or why not.",
     responseType: 'prediction',
-    availableMoves: ['TM-T08', 'TM-T06', 'TM-T05', 'TM-T09', 'TM-T04'],
+    availableMoves: ['TM-T01', 'TM-T03', 'TM-T08', 'TM-T06', 'TM-T05', 'TM-T09', 'TM-T04'],
   },
   turn4_checking_progress: {
     studentText: "I heard you say 14. Let me check and see how I'm going... One, two, three, four, five, six, seven. The next number I think is eight. Yep. Let's keep going.",
@@ -403,7 +403,7 @@ const numberHoopsNodes: Record<string, TalkMoveNode> = {
 const numberHoopsScenario: TalkMoveScenarioDefinition = {
   id: 'number-hoops-scaffolding',
   title: 'Scaffolding the Number Hoops',
-  subtitle: 'Practice — Physical Math',
+  subtitle: 'Tier 3 · Talk Chain',
   description:
     'Outside with hoops and numbers, a student gets stuck counting past 14. Build chains that model thinking strategies, invite direction changes, and celebrate self-monitoring.',
   recommendedOrder: 18,

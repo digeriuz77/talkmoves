@@ -68,6 +68,7 @@ function getTerminalMoveId(chainMoveIds: string[]): string | undefined {
 export function assessTalkMoveChain(
   chainMoveIds: string[],
   previousTerminalMoveId?: string,
+  options?: { setupAvailable?: boolean },
 ): TalkMoveChainAssessment {
   if (chainMoveIds.length === 0) {
     return {
@@ -80,16 +81,21 @@ export function assessTalkMoveChain(
   const terminalMoveId = getTerminalMoveId(chainMoveIds);
   const comboApplied = hasCombo(chainMoveIds);
   const hasSetupMove = chainMoveIds.length > 1;
+  const setupAvailable = options?.setupAvailable ?? true;
   const isRepeatedTerminal = Boolean(previousTerminalMoveId && previousTerminalMoveId === terminalMoveId);
 
   let quality: TalkMoveChainQuality = 'developing';
   let adjustment: MetricDelta = {};
   let feedback = 'Good start. Try building the setup a little more before you close the turn.';
 
-  if (!hasSetupMove) {
+  if (!hasSetupMove && setupAvailable) {
     quality = 'weak';
     adjustment = addDeltas(adjustment, TERMINAL_ONLY_PENALTY);
     feedback = 'Too quick. Add a setup move before you close the turn.';
+  } else if (!hasSetupMove && !setupAvailable) {
+    quality = 'developing';
+    adjustment = addDeltas(adjustment, SETUP_CHAIN_BONUS);
+    feedback = 'Clean closing move for this turn.';
   } else {
     adjustment = addDeltas(adjustment, SETUP_CHAIN_BONUS);
     feedback = 'Nice setup. You gave the class a better path into the talk.';

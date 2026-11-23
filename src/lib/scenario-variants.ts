@@ -47,3 +47,17 @@ export function resolveScenarioNode(
       : undefined,
   };
 }
+
+// Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
+export function shuffleChoices<T>(
+  items: T[],
+  nodeId: string,
+  playthroughSeed: number,
+): T[] {
+  const result = [...items];
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const j = hashString(`${nodeId}:choice:${playthroughSeed}:${i}`) % (i + 1);
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+  return result;
+}
