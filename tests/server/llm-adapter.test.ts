@@ -138,16 +138,28 @@ describe('LLM provider adapter — request shape per provider', () => {
     );
   });
 
-  it('fireworks: bearer token, model field, and top_k kept', async () => {
+  it('fireworks: bearer token, model field, and top_k kept (ignores Azure key when both set)', async () => {
     const request = await boot({
       LLM_PROVIDER: 'fireworks',
       FIREWORKS_BASE_URL: `${mock.url}/inference/v1/chat/completions`,
+      AZURE_OPENAI_API_KEY: 'azure-secret-should-not-leak',
       FIREWORKS_API_KEY: 'fireworks-secret',
       FIREWORKS_REASONING_MODEL: 'accounts/fireworks/models/test',
     });
     expect(request.url).toBe('/inference/v1/chat/completions');
     expect(request.headers.authorization).toBe('Bearer fireworks-secret');
     expect(request.headers['api-key']).toBeUndefined();
+    expect(request.body).toMatchObject({ model: 'accounts/fireworks/models/test', top_k: 40 });
+  });
+
+  it('keeps existing Fireworks deployments running when LLM_PROVIDER is unset and only FIREWORKS_API_KEY is set', async () => {
+    const request = await boot({
+      FIREWORKS_BASE_URL: `${mock.url}/inference/v1/chat/completions`,
+      FIREWORKS_API_KEY: 'fireworks-only-secret',
+      FIREWORKS_REASONING_MODEL: 'accounts/fireworks/models/test',
+    });
+    expect(request.url).toBe('/inference/v1/chat/completions');
+    expect(request.headers.authorization).toBe('Bearer fireworks-only-secret');
     expect(request.body).toMatchObject({ model: 'accounts/fireworks/models/test', top_k: 40 });
   });
 

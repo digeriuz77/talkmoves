@@ -17,11 +17,23 @@ const PORT = process.env.PORT || 3000;
 // --- Provider-agnostic approved LLM adapter (Azure OpenAI | OpenAI-compatible ZDR | Fireworks) ---
 // Deployment switches provider through environment variables only; no code changes.
 // LLM_PROVIDER: 'azure-openai' | 'openai-compatible' | 'fireworks'
-const LLM_PROVIDER = String(process.env.LLM_PROVIDER || 'azure-openai').toLowerCase();
-const LLM_API_KEY =
-  process.env.AZURE_OPENAI_API_KEY ||
-  process.env.LLM_API_KEY ||
-  process.env.FIREWORKS_API_KEY;
+const RAW_LLM_PROVIDER = String(process.env.LLM_PROVIDER || '').trim().toLowerCase();
+const HAS_AZURE_CONFIG = Boolean(process.env.AZURE_OPENAI_ENDPOINT || process.env.AZURE_OPENAI_API_KEY);
+const AUTO_DETECTED_FIREWORKS =
+  !RAW_LLM_PROVIDER && Boolean(process.env.FIREWORKS_API_KEY) && !HAS_AZURE_CONFIG;
+const LLM_PROVIDER = RAW_LLM_PROVIDER || (AUTO_DETECTED_FIREWORKS ? 'fireworks' : 'azure-openai');
+
+function resolveLlmApiKey(provider) {
+  if (provider === 'azure-openai') {
+    return process.env.AZURE_OPENAI_API_KEY || process.env.LLM_API_KEY || '';
+  }
+  if (provider === 'fireworks') {
+    return process.env.FIREWORKS_API_KEY || process.env.LLM_API_KEY || '';
+  }
+  return process.env.LLM_API_KEY || '';
+}
+
+const LLM_API_KEY = resolveLlmApiKey(LLM_PROVIDER);
 const AZURE_OPENAI_ENDPOINT = String(process.env.AZURE_OPENAI_ENDPOINT || '').replace(/\/+$/, '');
 const AZURE_OPENAI_API_VERSION = process.env.AZURE_OPENAI_API_VERSION || '2024-10-21';
 const LLM_BASE_URL =
@@ -74,12 +86,15 @@ const FALLBACK_MODEL_NAME = MODEL_NAMES.fallback;
 
 // Surface likely misconfiguration at boot instead of as a confusing 4xx during a lesson.
 function warnOnLlmMisconfiguration() {
+  if (AUTO_DETECTED_FIREWORKS) {
+    console.warn(
+      '[llm] LLM_PROVIDER is unset and only FIREWORKS_API_KEY is configured; using "fireworks". Set LLM_PROVIDER explicitly in deployment env vars.',
+    );
+  }
   if (LLM_PROVIDER === 'azure-openai') {
-    if (!process.env.AZURE_OPENAI_API_KEY) {
+    if (!process.env.AZURE_OPENAI_API_KEY && process.env.LLM_API_KEY) {
       console.warn(
-        `[llm] LLM_PROVIDER=azure-openai but AZURE_OPENAI_API_KEY is unset; falling back to ${
-          process.env.LLM_API_KEY ? 'LLM_API_KEY.' : 'FIREWORKS_API_KEY (a key issued by another provider).'
-        }`,
+        '[llm] LLM_PROVIDER=azure-openai but AZURE_OPENAI_API_KEY is unset; using LLM_API_KEY.',
       );
     }
     if (

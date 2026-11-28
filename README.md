@@ -1,5 +1,5 @@
 <div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-89b2-6e31a0763ed6" />
+<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
 </div>
 
 # Dialogic Classroom
@@ -33,7 +33,7 @@ Teacher PD game for practising dialogic talk moves with Primary-aged, Malay L1 l
 
 The server fails fast at startup for an unapproved `LLM_PROVIDER`, and for `azure-openai` without an endpoint.
 
-> **Required before the next Railway deploy:** the default provider is now `azure-openai`. The current deployment uses Fireworks, so add `LLM_PROVIDER=fireworks` to the Railway service variables (or migrate by setting the `AZURE_*` variables). Without one of these the server exits at startup with a message naming the missing variable.
+> **Railway deploy note:** when `LLM_PROVIDER` is unset and only `FIREWORKS_API_KEY` is present, the server keeps the existing Fireworks deployment running (logging a startup reminder to set `LLM_PROVIDER=fireworks` explicitly). Otherwise it defaults to `azure-openai` and exits fast if `AZURE_OPENAI_ENDPOINT` is missing.
 
 ## Core 6 Strategy Spine (S1–S6)
 

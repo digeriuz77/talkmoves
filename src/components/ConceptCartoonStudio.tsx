@@ -232,7 +232,7 @@ function ClaimColumn({
         </div>
         {teacherKey ? (
           <span
-            className={`absolute -right-3 -top-2 whitespace-nowrap rounded-full border-2 px-2 py-0.5 font-display text-[11px] font-bold shadow-sm ${CLAIM_TYPE_TONE[claim.type]}`}
+            className={`absolute -right-3 -top-2 whitespace-nowrap rounded-full border-2 px-2 py-0.5 font-display text-[11px] font-bold shadow-sm print:hidden ${CLAIM_TYPE_TONE[claim.type]}`}
           >
             {t(`studio.claimType.${claim.type}`)}
           </span>
@@ -257,7 +257,7 @@ function ClaimColumn({
                 ariaLabel={`${claim.character} — English`}
                 placeholder="…"
               />
-              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 border-t border-ink/10 pt-1.5 text-[11px] font-bold">
+              <div className="mt-1.5 flex flex-wrap items-center justify-between gap-1.5 border-t border-ink/10 pt-1.5 text-[11px] font-bold print:hidden">
                 <span className={overLimit ? 'text-[#b2401f]' : 'text-ink-muted'}>
                   {t('studio.wordCount', { count: String(wordCount) })}
                 </span>
@@ -291,7 +291,7 @@ function ClaimColumn({
                 placeholder="Iban…"
                 tone="bridge"
               />
-              <div className="flex flex-wrap items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5 print:hidden">
                 <IbanStatusChip
                   claim={claim}
                   onMarkChecked={() => onChange({ ...claim, ibanChecked: true })}
@@ -419,7 +419,7 @@ function CartoonSheet({
           <ul className="space-y-1.5">
             {cartoon.sentenceStems.map((stem, index) => (
               <li
-                key={`${index}-${stem}`}
+                key={index}
                 className="flex items-start justify-between gap-2 rounded-xl border-2 border-ink/10 bg-white px-1 py-0.5 text-sm font-semibold text-ink"
               >
                 {editable ? (
@@ -432,7 +432,7 @@ function CartoonSheet({
                 ) : (
                   <span className="flex-1 px-3 py-1.5">{stem}</span>
                 )}
-                <span className="py-1 pr-1.5">
+                <span className="py-1 pr-1.5 print:hidden">
                   <CopyButton value={stem} />
                 </span>
               </li>
@@ -765,7 +765,7 @@ export default function ConceptCartoonStudio({
                   ? {
                       ...current,
                       sentenceStems: current.sentenceStems.map((stem, stemIndex) =>
-                        stemIndex === index ? flattenEditableText(value) : stem,
+                        stemIndex === index ? value : stem,
                       ),
                     }
                   : current,
@@ -777,8 +777,8 @@ export default function ConceptCartoonStudio({
                   ? {
                       ...current,
                       whatIfQuestion: {
-                        english: patch.english !== undefined ? flattenEditableText(patch.english) : current.whatIfQuestion.english,
-                        bridge: patch.bridge !== undefined ? flattenEditableText(patch.bridge) : current.whatIfQuestion.bridge,
+                        english: patch.english !== undefined ? patch.english : current.whatIfQuestion.english,
+                        bridge: patch.bridge !== undefined ? patch.bridge : current.whatIfQuestion.bridge,
                       },
                     }
                   : current,
