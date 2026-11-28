@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 import { useLang, type TranslateFn } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
-import { ClassContextBar, useClassContext } from '../lib/class-context';
+import { useClassContext } from '../lib/class-context';
 import { useActiveStrategy } from '../lib/strategy-context';
 import type { LiveCoachHandoff } from '../lib/coach-handoff';
 import {
@@ -513,8 +513,6 @@ export default function LiveCoach({ handoff = null, onHandoffConsumed }: LiveCoa
 
       <StrategyBar />
 
-      <ClassContextBar />
-
       {/* Pinned offline cards rail */}
       {savedCards.length > 0 ? (
         <section className="card-warm p-3 print:hidden">
@@ -554,33 +552,32 @@ export default function LiveCoach({ handoff = null, onHandoffConsumed }: LiveCoa
         </section>
       ) : null}
 
-      {/* Compact empty-state starter (hidden once conversation starts) */}
-      {!hasConversation ? (
-        <section className="card-warm p-4 sm:p-5 print:hidden">
-          <p className="card-title mb-1">{t('live.screenshotTitle')}</p>
-          <p className="mb-3 text-sm text-ink-soft">{t('live.screenshotHint')}</p>
-          {/* Privacy notice sits above the camera / upload inputs. */}
-          <div className="mb-3">
-            <PrivacyNotice compact />
-          </div>
-          <div className="grid grid-cols-2 gap-2.5">
+      {/* Single dominant hero action (hidden once conversation starts) */}
+      {!hasConversation && !currentImage && !processingImage ? (
+        <section className="card-warm border-2 border-terracotta/30 bg-gradient-to-b from-white to-parchment-light p-6 text-center sm:p-8 print:hidden">
+          <span className="mx-auto mb-3 inline-flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_3px_0_#a33a1b]">
+            <Camera className="h-7 w-7" aria-hidden />
+          </span>
+          <h2 className="font-display text-xl font-bold text-ink sm:text-2xl">{t('live.screenshotTitle')}</h2>
+          <p className="mx-auto mt-1.5 max-w-md text-sm text-ink-soft">{t('live.screenshotHint')}</p>
+          <div className="mt-5 flex flex-col items-center gap-2.5 sm:flex-row sm:justify-center">
             <button
               type="button"
               disabled={busy}
               onClick={() => cameraInputRef.current?.click()}
-              className="btn-primary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm touch-target"
+              className="btn-primary inline-flex w-full items-center justify-center gap-2 px-6 py-3.5 text-base touch-target sm:w-auto"
             >
-              <Camera className="h-4 w-4 shrink-0" />
-              <span className="truncate">{t('live.takePhoto')}</span>
+              <Camera className="h-5 w-5 shrink-0" />
+              <span>{t('live.takePhoto')}</span>
             </button>
             <button
               type="button"
               disabled={busy}
               onClick={() => fileInputRef.current?.click()}
-              className="btn-secondary inline-flex items-center justify-center gap-2 px-3 py-3 text-sm touch-target"
+              className="inline-flex items-center justify-center gap-1.5 rounded-xl px-4 py-2.5 font-display text-sm font-semibold text-ink-soft transition hover:bg-parchment-dark/60 hover:text-ink touch-target"
             >
               <Upload className="h-4 w-4 shrink-0 text-terracotta" />
-              <span className="truncate">{t('live.uploadImage')}</span>
+              <span>{t('live.uploadImage')}</span>
             </button>
           </div>
         </section>
@@ -686,34 +683,34 @@ export default function LiveCoach({ handoff = null, onHandoffConsumed }: LiveCoa
 
       {error ? <p className="text-sm font-bold text-red-700 print:hidden">{error}</p> : null}
 
-      {/* Unified bottom composer (works both before and during conversation) */}
+      {/* Quiet bottom composer (shows inline photo icons only once conversation is underway) */}
       <form
         onSubmit={handleSubmit}
         className="card-warm sticky bottom-[4.5rem] z-20 p-3 shadow-md sm:bottom-3 print:hidden"
       >
-        {/* Privacy notice stays above the open-text, camera, and upload inputs. */}
-        <div className="mb-2">
-          <PrivacyNotice compact />
-        </div>
         <div className="flex items-end gap-2">
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => cameraInputRef.current?.click()}
-            aria-label={t('live.takePhoto')}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta"
-          >
-            <Camera className="h-5 w-5" />
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => fileInputRef.current?.click()}
-            aria-label={t('live.uploadImage')}
-            className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border-2 border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta sm:inline-flex"
-          >
-            <Upload className="h-5 w-5" />
-          </button>
+          {hasConversation ? (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => cameraInputRef.current?.click()}
+                aria-label={t('live.takePhoto')}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta"
+              >
+                <Camera className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => fileInputRef.current?.click()}
+                aria-label={t('live.uploadImage')}
+                className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-ink/15 bg-white text-ink-soft transition hover:border-terracotta/40 hover:text-terracotta sm:inline-flex"
+              >
+                <Upload className="h-5 w-5" />
+              </button>
+            </>
+          ) : null}
           <textarea
             ref={draftRef}
             value={draft}
@@ -737,6 +734,9 @@ export default function LiveCoach({ handoff = null, onHandoffConsumed }: LiveCoa
             {loading ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
             <span className="hidden sm:inline">{hasConversation ? t('live.send') : t('live.coachMe')}</span>
           </button>
+        </div>
+        <div className="mt-1.5">
+          <PrivacyNotice compact />
         </div>
       </form>
     </div>

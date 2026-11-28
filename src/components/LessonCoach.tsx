@@ -264,33 +264,19 @@ export default function LessonCoach() {
         summary={result ? summaryLabel : ''}
         actions={<StartNewButton onClear={clearTab} />}
       >
-        <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5">
-          <PrivacyNotice />
+        <form onSubmit={handleSubmit} className="card-warm p-5 sm:p-6">
+          <p className="mb-3 text-sm text-ink-soft">{t('plan.lessonIntro')}</p>
 
-          <label className="block">
-            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
-              {t('lesson.pasteLabel')}
-            </span>
-            <textarea
-              value={lessonText}
-              onChange={(event) => {
-                setLessonText(event.target.value);
-                if (event.target.value.trim()) clearFile();
-              }}
-              rows={4}
-              className="w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2.5 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
-              placeholder={t('lesson.pastePlaceholder')}
-            />
-          </label>
-
-          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+          {/* Dominant Lesson Plan Upload Dropzone */}
+          <div className="mb-4">
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-2 rounded-xl border-2 border-ink/15 bg-white px-3.5 py-2 font-display text-xs font-semibold text-ink transition hover:border-terracotta/40 touch-target"
+              className="flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl border-2 border-dashed border-terracotta/45 bg-parchment-light/80 px-4 py-5 text-center transition hover:border-terracotta hover:bg-terracotta-bg/40 touch-target"
             >
-              <Upload className="h-4 w-4 text-terracotta" />
-              {t('lesson.uploadLabel')}
+              <Upload className="h-6 w-6 text-terracotta" />
+              <span className="font-display text-base font-bold text-ink">{t('lesson.uploadLabel')}</span>
+              <span className="text-xs text-ink-muted">{t('lesson.uploadHint')}</span>
             </button>
             <input
               ref={fileInputRef}
@@ -303,29 +289,54 @@ export default function LessonCoach() {
               }}
             />
             {fileName ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-sage/30 bg-sage-bg px-3 py-1 text-xs font-bold text-[#1f6b4a]">
-                <FileText className="h-3.5 w-3.5" />
-                {fileName}
-                <button type="button" onClick={clearFile} aria-label={t('lesson.removeFile')}>
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </span>
-            ) : (
-              <span className="text-xs font-semibold text-ink-muted">{t('lesson.uploadHint')}</span>
-            )}
+              <div className="mt-2">
+                <span className="inline-flex items-center gap-1.5 rounded-full border-2 border-sage/30 bg-sage-bg px-3 py-1 text-xs font-bold text-[#1f6b4a]">
+                  <FileText className="h-3.5 w-3.5" />
+                  {fileName}
+                  <button type="button" onClick={clearFile} aria-label={t('lesson.removeFile')}>
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              </div>
+            ) : null}
           </div>
 
-          <label className="mt-3 block">
-            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
-              {t('lesson.concernLabel')}
+          <label className="block">
+            <span className="mb-1 block text-xs font-bold uppercase tracking-wide text-ink-muted">
+              {t('lesson.pasteLabel')}
             </span>
-            <input
-              value={focusConcern}
-              onChange={(event) => setFocusConcern(event.target.value)}
-              className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
-              placeholder={t('lesson.concernPlaceholder')}
+            <textarea
+              value={lessonText}
+              onChange={(event) => {
+                setLessonText(event.target.value);
+                if (event.target.value.trim()) clearFile();
+              }}
+              rows={4}
+              className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2.5 text-sm text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20"
+              placeholder={t('lesson.pastePlaceholder')}
             />
           </label>
+
+          <details className="mt-3 rounded-xl border border-ink/10 bg-parchment-light/70 px-3 py-2">
+            <summary className="cursor-pointer font-display text-xs font-semibold text-ink-muted">
+              {t('plan.optionalConcern')}
+            </summary>
+            <label className="mt-2 block">
+              <span className="mb-1 block text-xs font-bold text-ink-muted">
+                {t('lesson.concernLabel')}
+              </span>
+              <input
+                value={focusConcern}
+                onChange={(event) => setFocusConcern(event.target.value)}
+                className="min-h-[44px] w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-terracotta/60"
+                placeholder={t('lesson.concernPlaceholder')}
+              />
+            </label>
+          </details>
+
+          <div className="mt-3">
+            <PrivacyNotice compact />
+          </div>
 
           {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
 

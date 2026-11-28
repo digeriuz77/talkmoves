@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
-import { ClassContextBar, useClassContext } from '../lib/class-context';
+import { useClassContext } from '../lib/class-context';
 import { useActiveStrategy } from '../lib/strategy-context';
 import {
   curriculumUnits,
@@ -608,8 +608,6 @@ export default function Primer({ onOpenStudio }: PrimerProps = {}) {
            ============================================ */
         <div className="space-y-4">
           <StrategyBar />
-
-          <ClassContextBar />
 
           <CollapsibleFormShell
             collapsed={Boolean(customResult) && customFormCollapsed}

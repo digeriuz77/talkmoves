@@ -226,34 +226,34 @@ function HomeHub({
         <p className="text-body mt-1">{t('home.subtitle')}</p>
       </div>
 
-      {/* Featured Primary Tool: Live Coach */}
+      {/* Featured Primary Tool: Live Coach (2x dominant hero action) */}
       <button
         type="button"
         onClick={() => onNavigate({ name: 'live' })}
-        className="group card-warm card-warm-interactive w-full border-amber/50 bg-gradient-to-br from-amber-bg via-parchment-light to-terracotta-bg/50 p-5 text-left touch-target sm:p-6"
+        className="group card-warm card-warm-interactive w-full border-2 border-terracotta/45 bg-gradient-to-br from-amber-bg via-parchment-light to-terracotta-bg/60 p-6 text-left touch-target sm:p-8"
       >
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_3px_0_#a33a1b]">
-            <Zap className="h-6 w-6" aria-hidden />
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+          <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border-2 border-[#b84422] bg-terracotta text-white shadow-[0_4px_0_#a33a1b]">
+            <Zap className="h-7 w-7" aria-hidden />
           </span>
           <span className="pill-amber">{t('home.featuredBadge')}</span>
         </div>
 
-        <h2 className="font-display text-xl font-bold text-ink sm:text-2xl">
+        <h2 className="font-display text-2xl font-bold tracking-tight text-ink sm:text-4xl">
           {t('coach.tab.live')}
         </h2>
-        <p className="mt-1.5 max-w-2xl text-sm font-semibold leading-relaxed text-ink-soft sm:text-base">
+        <p className="mt-2 max-w-2xl text-base font-semibold leading-relaxed text-ink-soft sm:text-lg">
           {t('home.liveBody')}
         </p>
 
-        <div className="mt-4 inline-flex items-center gap-1.5 rounded-xl border-2 border-[#b84422] bg-terracotta px-4 py-2 font-display text-sm font-bold text-white shadow-[0_3px_0_#a33a1b] transition group-hover:bg-[#c9502d]">
+        <div className="mt-5 inline-flex items-center gap-2 rounded-2xl border-2 border-[#b84422] bg-terracotta px-5 py-3 font-display text-base font-bold text-white shadow-[0_3px_0_#a33a1b] transition group-hover:bg-[#c9502d]">
           {t('home.liveCta')}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+          <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5" />
         </div>
       </button>
 
-      {/* Secondary Tools Grid */}
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
+      {/* Secondary Tools: quiet, compact, scannable */}
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {secondaryTools.map((tool) => {
           const Icon = tool.icon;
           return (
@@ -261,47 +261,42 @@ function HomeHub({
               key={tool.id}
               type="button"
               onClick={() => onNavigate(tool.target)}
-              className="group card-warm card-warm-interactive flex flex-col justify-between p-4 text-left touch-target sm:p-5"
+              className="group flex items-center gap-3 rounded-2xl border border-ink/12 bg-white/85 px-3.5 py-3 text-left transition hover:border-terracotta/40 hover:bg-white touch-target"
             >
-              <div>
-                <div className="mb-3 flex items-center justify-between gap-2">
-                  <span
-                    className={`inline-flex h-11 w-11 items-center justify-center rounded-2xl border-2 ${tool.iconWrap}`}
-                  >
-                    <Icon className="h-5 w-5" aria-hidden />
-                  </span>
+              <span
+                className={`inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border ${tool.iconWrap}`}
+              >
+                <Icon className="h-4 w-4" aria-hidden />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2">
+                  <h3 className="truncate font-display text-sm font-bold text-ink">{tool.title}</h3>
                   {tool.badge ? (
-                    <span className="pill-sage tabular-nums">{tool.badge}</span>
+                    <span className="rounded-full bg-sage-bg px-2 py-0.5 font-display text-[11px] font-bold text-[#1f6b4a] tabular-nums">
+                      {tool.badge}
+                    </span>
                   ) : null}
                 </div>
-
-                <h2 className="card-title mb-1">{tool.title}</h2>
-                <p className="text-sm leading-snug text-ink-soft">{tool.body}</p>
+                <p className="line-clamp-1 text-xs text-ink-muted">{tool.body}</p>
               </div>
-
-              <div className="mt-4 flex items-center gap-1 font-display text-sm font-bold text-terracotta">
-                {t('home.openCta')}
-                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-              </div>
+              <ArrowRight className="h-4 w-4 shrink-0 text-ink-muted transition group-hover:translate-x-0.5 group-hover:text-terracotta" />
             </button>
           );
         })}
       </div>
 
-      {/* Collapsible Research Note */}
-      <details className="card-warm group p-4">
+      {/* Quiet Research Note */}
+      <details className="group rounded-2xl border border-ink/10 bg-parchment-light/70 px-3.5 py-2.5">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 [&::-webkit-details-marker]:hidden touch-target">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-navy-bg text-navy">
-              <BookOpen className="h-4 w-4" aria-hidden />
-            </span>
-            <span className="font-display text-base font-semibold text-ink">
+          <div className="flex items-center gap-2">
+            <BookOpen className="h-4 w-4 text-ink-muted" aria-hidden />
+            <span className="font-display text-xs font-semibold text-ink-soft">
               {t('mode.aboutTitle')}
             </span>
           </div>
           <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
         </summary>
-        <p className="mt-3 border-t border-ink/10 pt-3 text-sm leading-relaxed text-ink-soft">
+        <p className="mt-2.5 border-t border-ink/10 pt-2.5 text-xs leading-relaxed text-ink-soft">
           {t('mode.aboutBody')}
         </p>
       </details>

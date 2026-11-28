@@ -8,38 +8,26 @@ export const subjects = ['science', 'maths', 'english', 'malay', 'social studies
 export const yearLevels = Array.from({ length: 10 }, (_, i) => (i + 1).toString());
 export const languages = ['iban', 'sarawak malay', 'malay', 'english'];
 
-/**
- * Privacy reminder shown above every open-text or upload input (LessonCoach, LiveCoach,
- * QuestionPlanner, Primer custom words, ConceptCartoonStudio).
- */
+/** Quiet one-line privacy hint shown once near open-text inputs. */
 export function PrivacyNotice({ compact = false }: { compact?: boolean }) {
   const { t } = useLang();
-  const text = t('coach.privacyNotice');
-  if (compact) {
-    return (
-      <p className="flex items-start gap-1.5 text-xs font-bold leading-snug text-[#9e5f06]">
-        <TriangleAlert className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-        <span>{text}</span>
-      </p>
-    );
-  }
   return (
-    <div
+    <p
       role="note"
-      className="mb-3 flex items-center gap-2 rounded-xl border-2 border-amber/35 bg-amber-bg px-3 py-2"
+      className={`flex items-center gap-1.5 text-xs font-medium text-ink-muted ${compact ? '' : 'mb-2.5'}`}
     >
-      <TriangleAlert className="h-4 w-4 shrink-0 text-[#9e5f06]" aria-hidden />
-      <p className="text-xs font-bold leading-snug text-[#7c4902]">{text}</p>
-    </div>
+      <TriangleAlert className="h-3.5 w-3.5 shrink-0 text-amber" aria-hidden />
+      <span>{t('coach.privacyNotice')}</span>
+    </p>
   );
 }
 
-/** AI transparency footer shown on every generated output card. Kept in print output. */
+/** Quiet AI transparency note shown on generated output cards. Kept in print output. */
 export function AiNotice() {
   const { t } = useLang();
   return (
-    <p className="flex items-start gap-1.5 text-xs font-semibold leading-snug text-ink-muted">
-      <Bot className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+    <p className="flex items-center gap-1.5 text-xs font-medium text-ink-muted">
+      <Bot className="h-3.5 w-3.5 shrink-0" aria-hidden />
       <span>{t('coach.aiNotice')}</span>
     </p>
   );
@@ -47,12 +35,13 @@ export function AiNotice() {
 
 /** Pill naming the Core 6 strategy that shaped a generated output. Renders nothing when none. */
 export function StrategySpotlightBadge({ strategyId }: { strategyId?: string | null }) {
-  const { t } = useLang();
+  const { t, lang } = useLang();
   const strategy = getStrategy(strategyId);
   if (!strategy) return null;
+  const label = strategyBadgeLabel(strategy, lang);
   return (
-    <span className="pill-terracotta" title={strategy.name}>
-      {t('strategy.spotlight')}: {strategyBadgeLabel(strategy)}
+    <span className="pill-terracotta" title={label}>
+      {t('strategy.spotlight')}: {label}
     </span>
   );
 }
