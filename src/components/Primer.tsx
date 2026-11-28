@@ -164,7 +164,7 @@ function openBingoPrintWindow(grids: string[][], title: string, cardLookup: Reco
 }
 
 type PrimerProps = {
-  /** Opens the AI Concept Cartoon Studio (another route). */
+  /** Opens the ready-made Concept Cartoon Studio (another route). */
   onOpenStudio?: () => void;
 };
 
@@ -590,7 +590,7 @@ export default function Primer({ onOpenStudio }: PrimerProps = {}) {
                   className="card-warm card-warm-interactive flex w-full items-center gap-3 p-4 text-left touch-target print:hidden"
                 >
                   <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-amber/45 bg-amber-bg text-[#9e5f06]">
-                    <Sparkles className="h-5 w-5" aria-hidden />
+                    <BookOpen className="h-5 w-5" aria-hidden />
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="card-title block">{t('studio.openStudio')}</span>

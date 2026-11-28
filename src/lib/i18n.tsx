@@ -565,11 +565,14 @@ const en: Record<string, string> = {
   'vocab.tagMisconception': 'Misconception',
   'vocab.possibleReasons': 'Possible science reasons & talk move',
 
-  // Concept Cartoon Studio (Sprint 1 Week 8–9 · Sprint 2 pair inquiry)
+  // Ready-made Concept Cartoon Studio
   'studio.title': 'Concept Cartoon Studio',
-  'studio.tagline': 'Sprint 1 · Week 8–9 and Sprint 2 pair inquiry',
+  'studio.tagline': 'Ready-made KPM cartoons · No AI generation',
   'studio.intro':
-    'Type a Science topic. Ali, Bisi and Cempaka each make a claim — one sound, one misconception, one language trap — and your class argues the evidence.',
+    'Select your unit to see its ready-made cartoons. Choose a cartoon, read the teacher notes, and invite pupils to compare the ideas using evidence. These resources work offline once the app has loaded.',
+  'studio.unitLabel': 'KPM unit',
+  'studio.cartoonLabel': 'Cartoon',
+  'studio.noCartoons': 'No ready-made cartoons are available for this unit yet. Choose another unit.',
   'studio.topicLabel': 'Science topic or question',
   'studio.topicPlaceholder':
     'e.g. Year 4 Science: Evaporation — why do wet clothes dry faster in the sun?',
@@ -610,10 +613,10 @@ const en: Record<string, string> = {
   'studio.newTopic': 'New topic',
   'studio.summary': 'Concept cartoon: {topic}',
   'studio.warningsTitle': 'Check before display',
-  'studio.openStudio': 'Make your own for any topic',
-  'studio.openStudioBody': 'AI Concept Cartoon Studio: three pupils, three claims, Iban bridges.',
+  'studio.openStudio': 'Browse the cartoon library',
+  'studio.openStudioBody': 'Choose a KPM unit and open a ready-made cartoon. No AI generation.',
   'home.studioBody':
-    'Type a topic and get three pupils arguing about it — editable, printable, with Iban bridges.',
+    'Choose a KPM unit and a ready-made cartoon for pupils to compare ideas and discuss evidence.',
 };
 
 const ms: Record<string, string> = {
@@ -1177,11 +1180,14 @@ const ms: Record<string, string> = {
   'vocab.tagMisconception': 'Salah faham',
   'vocab.possibleReasons': 'Alasan sains yang mungkin & langkah bincang',
 
-  // Studio Kartun Konsep (Sprint 1 Minggu 8–9 · inkuiri berpasangan Sprint 2)
+  // Studio Kartun Konsep tersedia
   'studio.title': 'Studio Kartun Konsep',
-  'studio.tagline': 'Sprint 1 · Minggu 8–9 dan inkuiri berpasangan Sprint 2',
+  'studio.tagline': 'Kartun KPM tersedia · Tanpa penjanaan AI',
   'studio.intro':
-    'Taip satu topik Sains. Ali, Bisi dan Cempaka masing-masing membuat satu tuntutan — satu mantap, satu salah faham, satu perangkap bahasa — dan kelas anda berhujah dengan bukti.',
+    'Pilih unit anda untuk melihat kartun yang tersedia. Pilih kartun, baca nota guru, dan ajak murid membandingkan idea menggunakan bukti. Sumber ini boleh digunakan tanpa internet selepas aplikasi dimuatkan.',
+  'studio.unitLabel': 'Unit KPM',
+  'studio.cartoonLabel': 'Kartun',
+  'studio.noCartoons': 'Belum ada kartun tersedia untuk unit ini. Pilih unit lain.',
   'studio.topicLabel': 'Topik atau soalan Sains',
   'studio.topicPlaceholder':
     'cth. Sains Tahun 4: Penyejatan — kenapa baju basah kering lebih cepat di bawah matahari?',
@@ -1222,10 +1228,10 @@ const ms: Record<string, string> = {
   'studio.newTopic': 'Topik baharu',
   'studio.summary': 'Kartun konsep: {topic}',
   'studio.warningsTitle': 'Semak sebelum papar',
-  'studio.openStudio': 'Bina sendiri untuk mana-mana topik',
-  'studio.openStudioBody': 'Studio Kartun Konsep AI: tiga murid, tiga tuntutan, jambatan Iban.',
+  'studio.openStudio': 'Semak koleksi kartun',
+  'studio.openStudioBody': 'Pilih unit KPM dan buka kartun tersedia. Tanpa penjanaan AI.',
   'home.studioBody':
-    'Taip satu topik dan dapatkan tiga murid berhujah tentangnya — boleh sunting, boleh cetak, dengan jambatan Iban.',
+    'Pilih unit KPM dan kartun tersedia untuk murid membandingkan idea serta membincangkan bukti.',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };

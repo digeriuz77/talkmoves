@@ -141,7 +141,7 @@ export function ConceptCartoonCard({
       </div>
 
       {/* Teacher-only Diagnostic Key & Talk Move Prompt (collapsible, hidden during projection) */}
-      <details className="group rounded-2xl border-2 border-ink/10 bg-white px-4 py-3 print:open">
+      <details className="group rounded-2xl border-2 border-ink/10 bg-white px-4 py-3 print:hidden">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-2 font-display text-sm font-bold text-ink [&::-webkit-details-marker]:hidden touch-target">
           <span>{t('vocab.teacherNotes')}</span>
           <ChevronDown className="h-4 w-4 text-ink-muted transition-transform group-open:rotate-180" />
