@@ -1,0 +1,23 @@
+# Keep the production image lean: no VCS, local env files, dev tooling, or test artefacts.
+# scripts/generate-images.ts (standalone image-generation utility) is deliberately excluded
+# from production builds; the Vite bundle never imports it.
+.git
+.kilo
+.env
+.env.*
+node_modules
+dist
+build
+coverage
+playwright
+playwright-report
+test-results
+tests
+scripts
+docs
+test-gen.ts
+test-check.ts
+test-check.js
+playwright.config.ts
+*.log
+*.tsbuildinfo
