@@ -35,16 +35,22 @@ import {
 import { useLang, type TranslateFn } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import { ClassContextBar, useClassContext } from '../lib/class-context';
+import { useActiveStrategy } from '../lib/strategy-context';
+import type { LiveCoachHandoff } from '../lib/coach-handoff';
 import {
+  AiNotice,
   CopyButton,
   LanguageLensToggle,
   NeedBadge,
+  PrivacyNotice,
   SayLine,
   StartNewButton,
+  StrategySpotlightBadge,
   subjectLabel,
   type LangLens,
   type NeedCategory,
 } from './coach-ui';
+import StrategyBar from './StrategyBar';
 
 type ActionMode = 'prep_card' | 'diagnose' | 'reset' | 'firm_up';
 type DiagnosticTag = 'correct_reasoning' | 'concept_misconception' | 'language_or_surface_trap';
@@ -140,6 +146,8 @@ type ChatMessage = {
   text: string;
   result?: LiveCoachResult;
   imageThumbnail?: string;
+  /** Core 6 strategy ('S1'–'S6') this coach reply was generated with, or '' for none. */
+  strategy?: string;
 };
 
 type PreparedImage = {
@@ -222,10 +230,17 @@ const MODE_ICON: Record<ActionMode, typeof Lightbulb> = {
   firm_up: Sparkles,
 };
 
-export default function LiveCoach() {
+type LiveCoachProps = {
+  /** One-shot hand-off from another tool (Concept Cartoon follow-up chip). */
+  handoff?: LiveCoachHandoff | null;
+  onHandoffConsumed?: () => void;
+};
+
+export default function LiveCoach({ handoff = null, onHandoffConsumed }: LiveCoachProps = {}) {
   const { t } = useLang();
   const { yearLevel, subject, dominantLanguage, setYearLevel, setSubject, setDominantLanguage } =
     useClassContext();
+  const { activeStrategy, setActiveStrategy } = useActiveStrategy();
   const [messages, setMessages, resetMessages] = usePersistentState<ChatMessage[]>(
     'tmb.live.messages.v3',
     [],
@@ -244,6 +259,8 @@ export default function LiveCoach() {
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  // Action trigger waiting for the teacher's next send (set by a hand-off chip).
+  const pendingTriggerRef = useRef<string | null>(null);
 
   const hasConversation = messages.length > 0;
   const canBuildFromVisual = Boolean(currentImage?.base64Data || visionSummary);
@@ -254,6 +271,20 @@ export default function LiveCoach() {
       endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
   }, [messages.length, loading, hasConversation]);
+
+  // A follow-up chip from the Concept Cartoon Studio: switch the spotlight, arm the action mode,
+  // and pre-fill the draft. The teacher reviews it and sends (never auto-sent).
+  useEffect(() => {
+    if (!handoff) return;
+    if (handoff.targetStrategy) setActiveStrategy(handoff.targetStrategy);
+    pendingTriggerRef.current = handoff.actionTrigger || null;
+    setDraft(handoff.promptContext);
+    setError(null);
+    onHandoffConsumed?.();
+    const timer = window.setTimeout(() => draftRef.current?.focus(), 60);
+    return () => window.clearTimeout(timer);
+    // Depends on the hand-off object only: it is consumed once, then cleared by the parent.
+  }, [handoff]);
 
   const attachImage = async (file: Blob, name: string) => {
     setError(null);
@@ -317,6 +348,9 @@ export default function LiveCoach() {
     setMessages(nextMessages);
     setDraft('');
     setLoading(true);
+    // A quick intent wins; otherwise an armed hand-off trigger (if any) is spent on this send.
+    const trigger = actionTrigger || pendingTriggerRef.current || undefined;
+    pendingTriggerRef.current = null;
 
     try {
       const response = await fetch('/api/live-coach', {
@@ -327,7 +361,8 @@ export default function LiveCoach() {
           yearLevel,
           subject,
           dominantLanguage,
-          actionTrigger,
+          activeStrategy,
+          actionTrigger: trigger,
           image: hasNewImage
             ? { mimeType: 'image/jpeg', base64Data: currentImage?.base64Data }
             : undefined,
@@ -347,6 +382,7 @@ export default function LiveCoach() {
         text: coachText,
         result,
         imageThumbnail: teacherMsg.imageThumbnail,
+        strategy: payload?.meta?.strategy?.id || '',
       };
       setMessages((prev) => [...prev, coachMsg]);
       if (typeof payload?.visionSummary === 'string' && payload.visionSummary.trim()) {
@@ -357,6 +393,8 @@ export default function LiveCoach() {
       }
     } catch (requestError) {
       setMessages((prev) => prev.filter((msg) => msg.id !== teacherMsg.id));
+      // Put the unsent text back so the teacher does not have to retype it.
+      setDraft((current) => current || clean);
       setError(requestError instanceof Error ? requestError.message : t('live.errors.failed'));
     } finally {
       setLoading(false);
@@ -473,6 +511,8 @@ export default function LiveCoach() {
         {hasConversation || currentImage ? <StartNewButton onClear={clearTab} /> : null}
       </div>
 
+      <StrategyBar />
+
       <ClassContextBar />
 
       {/* Pinned offline cards rail */}
@@ -519,6 +559,10 @@ export default function LiveCoach() {
         <section className="card-warm p-4 sm:p-5 print:hidden">
           <p className="card-title mb-1">{t('live.screenshotTitle')}</p>
           <p className="mb-3 text-sm text-ink-soft">{t('live.screenshotHint')}</p>
+          {/* Privacy notice sits above the camera / upload inputs. */}
+          <div className="mb-3">
+            <PrivacyNotice compact />
+          </div>
           <div className="grid grid-cols-2 gap-2.5">
             <button
               type="button"
@@ -539,10 +583,6 @@ export default function LiveCoach() {
               <span className="truncate">{t('live.uploadImage')}</span>
             </button>
           </div>
-          <p className="mt-2.5 flex items-center gap-1.5 text-xs font-bold text-[#9e5f06]">
-            <TriangleAlert className="h-3.5 w-3.5 shrink-0" />
-            {t('coach.piiWarning')}
-          </p>
         </section>
       ) : null}
 
@@ -651,6 +691,10 @@ export default function LiveCoach() {
         onSubmit={handleSubmit}
         className="card-warm sticky bottom-[4.5rem] z-20 p-3 shadow-md sm:bottom-3 print:hidden"
       >
+        {/* Privacy notice stays above the open-text, camera, and upload inputs. */}
+        <div className="mb-2">
+          <PrivacyNotice compact />
+        </div>
         <div className="flex items-end gap-2">
           <button
             type="button"
@@ -737,9 +781,10 @@ function CoachReply({
     <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex justify-start">
       <div className="card-warm w-full space-y-3 p-3.5 sm:p-5">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <ModeBadge mode={mode} icon={ModeIcon} t={t} />
             <NeedBadge category={result.readBack.needCategory} />
+            <StrategySpotlightBadge strategyId={message.strategy} />
           </div>
           {isPrepCard ? (
             <button
@@ -842,6 +887,11 @@ function CoachReply({
             </details>
           </>
         )}
+
+        {/* AI transparency footer on every generated coach card */}
+        <div className="border-t border-ink/10 pt-2.5">
+          <AiNotice />
+        </div>
       </div>
     </motion.div>
   );

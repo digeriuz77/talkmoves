@@ -8,13 +8,14 @@ export type AppRoute =
   | { name: 'game'; gameId: string }
   | { name: 'live' }
   | { name: 'primer' }
+  | { name: 'cartoon' }
   | { name: 'plan' }
   | { name: 'lesson' };
 
 const VISITED_KEY = 'dialogic-has-visited-v1';
 const LAST_TAB_KEY = 'dialogic-last-tab-v1';
 
-type TopLevelTab = 'home' | 'play' | 'live' | 'primer' | 'plan' | 'lesson';
+type TopLevelTab = 'home' | 'play' | 'live' | 'primer' | 'cartoon' | 'plan' | 'lesson';
 
 function isTopLevelTab(value: string | null): value is TopLevelTab {
   return (
@@ -22,6 +23,7 @@ function isTopLevelTab(value: string | null): value is TopLevelTab {
     value === 'play' ||
     value === 'live' ||
     value === 'primer' ||
+    value === 'cartoon' ||
     value === 'plan' ||
     value === 'lesson'
   );
@@ -59,6 +61,8 @@ export function routeToHash(route: AppRoute): string {
       return '#/live';
     case 'primer':
       return '#/primer';
+    case 'cartoon':
+      return '#/cartoon';
     case 'plan':
       return '#/plan';
     case 'lesson':
@@ -76,6 +80,7 @@ export function parseHash(hash: string, hasVisited: boolean): AppRoute {
   if (segment === 'home') return { name: 'home' };
   if (segment === 'live') return { name: 'live' };
   if (segment === 'primer') return { name: 'primer' };
+  if (segment === 'cartoon') return { name: 'cartoon' };
   if (segment === 'plan') return { name: 'plan' };
   if (segment === 'lesson') return { name: 'lesson' };
   if (segment === 'play') {

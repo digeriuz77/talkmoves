@@ -20,7 +20,8 @@ type PrimaryTab = 'home' | 'live' | 'primer' | 'plan' | 'play';
 
 function getActiveTab(route: AppRoute): PrimaryTab {
   if (route.name === 'live') return 'live';
-  if (route.name === 'primer') return 'primer';
+  // The Cartoon Studio belongs to the "Vocab & Cartoons" family.
+  if (route.name === 'primer' || route.name === 'cartoon') return 'primer';
   if (route.name === 'plan' || route.name === 'lesson') return 'plan';
   if (route.name === 'play' || route.name === 'game') return 'play';
   return 'home';

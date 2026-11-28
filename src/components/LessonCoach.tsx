@@ -1,18 +1,23 @@
 // Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { FormEvent, useRef, useState } from 'react';
 import { motion } from 'motion/react';
-import { Download, FileText, LoaderCircle, TriangleAlert, Upload, X } from 'lucide-react';
+import { Download, FileText, LoaderCircle, Upload, X } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import { useClassContext } from '../lib/class-context';
+import { useActiveStrategy } from '../lib/strategy-context';
+import { getStrategy, type Core6Strategy } from '../lib/core6-strategies';
 import {
+  AiNotice,
   CollapsibleFormShell,
   CopyButton,
   LanguageLensToggle,
   NeedBadge,
+  PrivacyNotice,
   SayLine,
   SegmentedTabs,
   StartNewButton,
+  StrategySpotlightBadge,
   type LangLens,
   type NeedCategory,
 } from './coach-ui';
@@ -74,10 +79,18 @@ function toBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
-function buildDownloadText(result: LessonCoachResult): string {
+function buildDownloadText(
+  result: LessonCoachResult,
+  notes: { strategy?: Core6Strategy | null; strategyLabel?: string; aiNotice?: string } = {},
+): string {
   const lines: string[] = [];
   lines.push('LESSON PLAN COACH — EAL RISK GAME PLAN');
   lines.push('======================================');
+  if (notes.strategy && notes.strategyLabel) {
+    lines.push(
+      `${notes.strategyLabel}: ${notes.strategy.id} — ${notes.strategy.name} (${notes.strategy.window})`,
+    );
+  }
   lines.push(`Summary: ${result.planSummary}`);
   lines.push(`Detected concern: ${result.detectedConcern.category} — ${result.detectedConcern.rationale}`);
   lines.push('');
@@ -119,17 +132,27 @@ function buildDownloadText(result: LessonCoachResult): string {
   lines.push('');
   lines.push('AGENCY SHIFT — CUT TEACHER TALK');
   result.agencyShift.forEach((tip) => lines.push(`- ${tip}`));
+  if (notes.aiNotice) {
+    lines.push('');
+    lines.push(notes.aiNotice);
+  }
   return lines.join('\n');
 }
 
 export default function LessonCoach() {
   const { t } = useLang();
   const { yearLevel, subject, dominantLanguage } = useClassContext();
+  const { activeStrategy } = useActiveStrategy();
   const [lessonText, setLessonText, resetLessonText] = usePersistentState('tmb.lesson.lessonText', '');
   const [pdfBase64, setPdfBase64] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [focusConcern, setFocusConcern, resetFocusConcern] = usePersistentState('tmb.lesson.focusConcern', '');
   const [result, setResult, resetResult] = usePersistentState<LessonCoachResult | null>('tmb.lesson.result', null);
+  // Core 6 strategy the stored result was generated with (echoed by the server), for the badge.
+  const [resultStrategy, setResultStrategy, resetResultStrategy] = usePersistentState<string>(
+    'tmb.lesson.strategy',
+    '',
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formCollapsed, setFormCollapsed] = useState<boolean>(() => Boolean(result));
@@ -168,6 +191,7 @@ export default function LessonCoach() {
     resetLessonText();
     resetFocusConcern();
     resetResult();
+    resetResultStrategy();
     clearFile();
     setFormCollapsed(false);
     setError(null);
@@ -192,6 +216,7 @@ export default function LessonCoach() {
           subject,
           dominantLanguage,
           focusConcern,
+          activeStrategy,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -199,6 +224,7 @@ export default function LessonCoach() {
         throw new Error(payload?.error || t('lesson.errors.failed'));
       }
       setResult(payload.plan as LessonCoachResult);
+      setResultStrategy(payload?.meta?.strategy?.id || '');
       setFormCollapsed(true);
       setActiveTab('quick');
     } catch (requestError) {
@@ -210,7 +236,16 @@ export default function LessonCoach() {
 
   const handleDownload = () => {
     if (!result) return;
-    const blob = new Blob([buildDownloadText(result)], { type: 'text/plain;charset=utf-8' });
+    const blob = new Blob(
+      [
+        buildDownloadText(result, {
+          strategy: getStrategy(resultStrategy),
+          strategyLabel: t('strategy.spotlight'),
+          aiNotice: t('coach.aiNotice'),
+        }),
+      ],
+      { type: 'text/plain;charset=utf-8' },
+    );
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement('a');
     anchor.href = url;
@@ -230,10 +265,7 @@ export default function LessonCoach() {
         actions={<StartNewButton onClear={clearTab} />}
       >
         <form onSubmit={handleSubmit} className="card-warm p-4 sm:p-5">
-          <div className="mb-3 flex items-center gap-2 rounded-xl border-2 border-amber/35 bg-amber-bg px-3 py-2">
-            <TriangleAlert className="h-4 w-4 shrink-0 text-[#9e5f06]" />
-            <p className="text-xs font-bold text-[#7c4902]">{t('coach.piiWarning')}</p>
-          </div>
+          <PrivacyNotice />
 
           <label className="block">
             <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
@@ -330,6 +362,11 @@ export default function LessonCoach() {
                 <Download className="h-3.5 w-3.5" />
                 {t('builder.downloadTxt')}
               </button>
+            </div>
+            {/* Generated output header: strategy spotlight + AI transparency (kept in print) */}
+            <div className="flex w-full flex-wrap items-center gap-2">
+              <StrategySpotlightBadge strategyId={resultStrategy} />
+              <AiNotice />
             </div>
             {result.planSummary ? (
               <p className="mt-2 text-sm font-semibold text-ink">{result.planSummary}</p>
