@@ -405,6 +405,37 @@
 }
 
 /* ============================================
+   CONCEPT CARTOON STUDIO — editable, printable sheet
+   ============================================ */
+
+/* Placeholder for an emptied inline-editable speech bubble */
+.editable-text:empty::before {
+  content: attr(data-placeholder);
+  color: var(--color-ink-faint);
+  font-style: italic;
+}
+
+@media print {
+  .studio-sheet,
+  .studio-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .studio-sheet {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+
+  /* Bubbles print as clean text, without the on-screen editing chrome */
+  .editable-text {
+    border-color: transparent !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+}
+
+/* ============================================
    GAME-SPECIFIC OVERRIDES (warm palette)
    ============================================ */
 

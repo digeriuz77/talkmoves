@@ -3,7 +3,7 @@ import { Check } from 'lucide-react';
 
 export type StudentMood = 'engaged' | 'neutral' | 'disengaged';
 
-type CharacterStyle = {
+export type CharacterStyle = {
   skin: string;
   cheek: string;
   shirt: string;
@@ -12,6 +12,45 @@ type CharacterStyle = {
   accessory: 'tudung' | 'curls' | 'glasses' | 'tuft';
   accent: string;
 };
+
+/** Fixed cast of the AI Concept Cartoon Studio (always Ali, Bisi, Cempaka). */
+export type CartoonCastMember = 'Ali' | 'Bisi' | 'Cempaka';
+
+export const CARTOON_CAST: readonly CartoonCastMember[] = ['Ali', 'Bisi', 'Cempaka'];
+
+export const CARTOON_CAST_STYLES: Record<CartoonCastMember, CharacterStyle> = {
+  Ali: {
+    skin: '#c9885e',
+    cheek: '#df7668',
+    shirt: '#2d7db3',
+    shirtShade: '#1f5e89',
+    hair: '#241c19',
+    accessory: 'tuft',
+    accent: '#cbe8fa',
+  },
+  Bisi: {
+    skin: '#8d5738',
+    cheek: '#b96754',
+    shirt: '#2f8a63',
+    shirtShade: '#226b4c',
+    hair: '#1f1815',
+    accessory: 'curls',
+    accent: '#c5edd8',
+  },
+  Cempaka: {
+    skin: '#d99c72',
+    cheek: '#e67e6e',
+    shirt: '#7652b8',
+    shirtShade: '#593b91',
+    hair: '#8e3b5e',
+    accessory: 'tudung',
+    accent: '#f6d6e3',
+  },
+};
+
+export function getCartoonCastStyle(name: string): CharacterStyle {
+  return (CARTOON_CAST_STYLES as Record<string, CharacterStyle>)[name] ?? FALLBACK_STYLE;
+}
 
 const CHARACTER_STYLES: Record<string, CharacterStyle> = {
   studentA: {
@@ -69,7 +108,8 @@ function getStyle(studentId?: string): CharacterStyle {
   return FALLBACK_STYLE;
 }
 
-function FaceSvg({
+/** Code-drawn pupil portrait (SVG). Exported for the Concept Cartoon Studio's printable cast. */
+export function FaceSvg({
   style,
   mood,
   isSpeaking,

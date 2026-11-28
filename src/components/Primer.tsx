@@ -2,6 +2,7 @@
 import { Fragment, FormEvent, useMemo, useState } from 'react';
 import { motion } from 'motion/react';
 import {
+  ArrowRight,
   BookOpen,
   Check,
   Dices,
@@ -17,6 +18,7 @@ import {
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import { ClassContextBar, useClassContext } from '../lib/class-context';
+import { useActiveStrategy } from '../lib/strategy-context';
 import {
   curriculumUnits,
   type CurriculumWord,
@@ -31,14 +33,18 @@ import {
   type VocabReviewMap,
 } from '../lib/vocab-retrieval';
 import {
+  AiNotice,
   CollapsibleFormShell,
   CopyButton,
   LanguageLensToggle,
+  PrivacyNotice,
   SayLine,
   SegmentedTabs,
   StartNewButton,
+  StrategySpotlightBadge,
   type LangLens,
 } from './coach-ui';
+import StrategyBar from './StrategyBar';
 import { BingoPresent, WordDeckPresent, type WordCard } from './PrimerPresent';
 import { ConceptCartoonCard } from './ConceptCartoonView';
 import { OddOneOutCard } from './OddOneOutView';
@@ -157,9 +163,15 @@ function openBingoPrintWindow(grids: string[][], title: string, cardLookup: Reco
   printWindow.document.close();
 }
 
-export default function Primer() {
+type PrimerProps = {
+  /** Opens the AI Concept Cartoon Studio (another route). */
+  onOpenStudio?: () => void;
+};
+
+export default function Primer({ onOpenStudio }: PrimerProps = {}) {
   const { t, lang } = useLang();
   const { yearLevel, subject, dominantLanguage } = useClassContext();
+  const { activeStrategy } = useActiveStrategy();
 
   // Source mode: default to non-generative KPM textbook resource
   const [sourceMode, setSourceMode] = usePersistentState<SourceMode>('tmb.primer.sourceMode', 'textbook');
@@ -189,6 +201,11 @@ export default function Primer() {
   const [customResult, setCustomResult, resetCustomResult] = usePersistentState<PrimerResult | null>(
     'tmb.primer.result',
     null,
+  );
+  // Core 6 strategy the stored custom primer was generated with (echoed by the server).
+  const [customStrategy, setCustomStrategy, resetCustomStrategy] = usePersistentState<string>(
+    'tmb.primer.strategy',
+    '',
   );
   const [customLoading, setCustomLoading] = useState(false);
   const [customError, setCustomError] = useState<string | null>(null);
@@ -304,13 +321,14 @@ export default function Primer() {
       const response = await fetch('/api/primer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ words: customWords, yearLevel, subject, dominantLanguage }),
+        body: JSON.stringify({ words: customWords, yearLevel, subject, dominantLanguage, activeStrategy }),
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
         throw new Error(payload?.error || t('primer.errors.failed'));
       }
       setCustomResult(payload.plan as PrimerResult);
+      setCustomStrategy(payload?.meta?.strategy?.id || '');
       setCustomFormCollapsed(true);
     } catch (requestError) {
       setCustomError(requestError instanceof Error ? requestError.message : t('primer.errors.failed'));
@@ -565,6 +583,22 @@ export default function Primer() {
               {activeCartoons.map((cartoon) => (
                 <ConceptCartoonCard key={cartoon.id} cartoon={cartoon} langLens={langLens} />
               ))}
+              {onOpenStudio ? (
+                <button
+                  type="button"
+                  onClick={onOpenStudio}
+                  className="card-warm card-warm-interactive flex w-full items-center gap-3 p-4 text-left touch-target print:hidden"
+                >
+                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border-2 border-amber/45 bg-amber-bg text-[#9e5f06]">
+                    <Sparkles className="h-5 w-5" aria-hidden />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="card-title block">{t('studio.openStudio')}</span>
+                    <span className="text-sm leading-snug text-ink-soft">{t('studio.openStudioBody')}</span>
+                  </span>
+                  <ArrowRight className="h-4 w-4 shrink-0 text-terracotta" aria-hidden />
+                </button>
+              ) : null}
             </div>
           ) : null}
         </div>
@@ -573,6 +607,8 @@ export default function Primer() {
            OPTIONAL CUSTOM WORDS (AI) FALLBACK MODE
            ============================================ */
         <div className="space-y-4">
+          <StrategyBar />
+
           <ClassContextBar />
 
           <CollapsibleFormShell
@@ -584,6 +620,7 @@ export default function Primer() {
                 onClear={() => {
                   resetWordsText();
                   resetCustomResult();
+                  resetCustomStrategy();
                   setCustomFormCollapsed(false);
                   setCustomError(null);
                 }}
@@ -591,6 +628,7 @@ export default function Primer() {
             }
           >
             <form onSubmit={handleCustomSubmit} className="card-warm p-4 sm:p-5">
+              <PrivacyNotice />
               <label className="block">
                 <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
                   {t('primer.wordsLabel')}
@@ -617,6 +655,11 @@ export default function Primer() {
 
           {customResult ? (
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="space-y-3.5">
+              {/* Generated output header: strategy spotlight + AI transparency */}
+              <div className="flex flex-wrap items-center gap-2">
+                <StrategySpotlightBadge strategyId={customStrategy} />
+                <AiNotice />
+              </div>
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <LanguageLensToggle value={langLens} onChange={setLangLens} />
                 <button

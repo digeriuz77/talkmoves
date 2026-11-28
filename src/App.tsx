@@ -15,6 +15,7 @@ import {
   Gamepad2,
   Layers,
   MessageSquareText,
+  MessagesSquare,
   Sparkles,
   Trophy,
   Zap,
@@ -25,6 +26,7 @@ import TalkMovesGame from './components/TalkMovesGame';
 import TalkMoveBuilder from './components/TalkMoveBuilder';
 import LiveCoach from './components/LiveCoach';
 import Primer from './components/Primer';
+import ConceptCartoonStudio from './components/ConceptCartoonStudio';
 import Landing from './components/Landing';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
@@ -36,12 +38,17 @@ import {
 import { useLang } from './lib/i18n';
 import { useAppRoute, type AppRoute } from './lib/router';
 import { ClassContextProvider } from './lib/class-context';
+import { StrategyProvider } from './lib/strategy-context';
+import type { LiveCoachHandoff } from './lib/coach-handoff';
 
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
   const { route, navigate } = useAppRoute();
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
+  // One-shot hand-off into the Live Coach (e.g. a Concept Cartoon follow-up chip). Held in
+  // memory only so nothing from the classroom is persisted.
+  const [liveHandoff, setLiveHandoff] = useState<LiveCoachHandoff | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
@@ -106,25 +113,37 @@ export default function App() {
 
   return (
     <ClassContextProvider>
-      <AppShell route={route} onNavigate={navigate}>
-        {route.name === 'home' ? (
-          <HomeHub levelProgress={levelProgress} onNavigate={navigate} />
-        ) : route.name === 'live' ? (
-          <LiveCoach />
-        ) : route.name === 'primer' ? (
-          <Primer />
-        ) : route.name === 'plan' || route.name === 'lesson' ? (
-          <TalkMoveBuilder
-            subMode={route.name}
-            onSubModeChange={(next) => navigate({ name: next })}
-          />
-        ) : (
-          <ScenarioLibrary
-            levelProgress={levelProgress}
-            onSelect={(gameId) => navigate({ name: 'game', gameId })}
-          />
-        )}
-      </AppShell>
+      <StrategyProvider>
+        <AppShell route={route} onNavigate={navigate}>
+          {route.name === 'home' ? (
+            <HomeHub levelProgress={levelProgress} onNavigate={navigate} />
+          ) : route.name === 'live' ? (
+            <LiveCoach
+              handoff={liveHandoff}
+              onHandoffConsumed={() => setLiveHandoff(null)}
+            />
+          ) : route.name === 'primer' ? (
+            <Primer onOpenStudio={() => navigate({ name: 'cartoon' })} />
+          ) : route.name === 'cartoon' ? (
+            <ConceptCartoonStudio
+              onOpenLiveCoach={(handoff) => {
+                setLiveHandoff(handoff);
+                navigate({ name: 'live' });
+              }}
+            />
+          ) : route.name === 'plan' || route.name === 'lesson' ? (
+            <TalkMoveBuilder
+              subMode={route.name}
+              onSubModeChange={(next) => navigate({ name: next })}
+            />
+          ) : (
+            <ScenarioLibrary
+              levelProgress={levelProgress}
+              onSelect={(gameId) => navigate({ name: 'game', gameId })}
+            />
+          )}
+        </AppShell>
+      </StrategyProvider>
     </ClassContextProvider>
   );
 }
@@ -158,6 +177,14 @@ function HomeHub({
       icon: Dices,
       iconWrap: 'bg-sage-bg text-[#1f6b4a] border-sage/35',
       target: { name: 'primer' },
+    },
+    {
+      id: 'cartoon',
+      title: t('studio.title'),
+      body: t('home.studioBody'),
+      icon: MessagesSquare,
+      iconWrap: 'bg-amber-bg text-[#9e5f06] border-amber/45',
+      target: { name: 'cartoon' },
     },
     {
       id: 'plan',

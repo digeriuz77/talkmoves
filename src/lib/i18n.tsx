@@ -131,7 +131,29 @@ const en: Record<string, string> = {
   'coach.need.mixed': 'Mixed',
   'coach.startNew': 'Start new',
   'coach.clearConfirm': 'Clear this tab? The prepped content saved here will be removed.',
-  'coach.piiWarning': 'Do not include pupil, teacher, or school names.',
+
+  // Core 6 Strategy Spine (2027 programme)
+  'strategy.aria': 'Core 6 Strategy selector',
+  'strategy.label': 'Core 6 Strategy',
+  'strategy.spine': 'Sprint 1 · 4 on / 1 break / 4 on',
+  'strategy.general': 'General',
+  'strategy.generalHint':
+    'No strategy spotlight. Pick your Sprint week to align every coaching tool with the Core 6 spine.',
+  'strategy.spotlight': 'Spotlight',
+  'strategy.activeHint':
+    'Every coaching tool now spotlights this strategy. Earlier habits still support it — nothing is switched off.',
+  'strategy.window': 'Sprint window',
+  'strategy.mechanism': 'What it looks like in class',
+  'strategy.teacherMove': 'Primary teacher move',
+  'strategy.pupilTarget': 'Target pupil talk',
+  'strategy.cumulative': 'Cumulative spotlight: earlier strategies keep supporting this one.',
+  'strategy.details': 'See the strategy',
+
+  // Privacy & AI transparency (shown on every open-text input and generated output)
+  'coach.privacyNotice':
+    'Keep inputs generic — do not include pupil names, teacher names, school names, or safeguarding details.',
+  'coach.aiNotice':
+    'AI-Generated — Verify scientific accuracy and local language phrasing before classroom use.',
 
   // Live Coach
   'live.observationLabel': 'What is happening in your room right now?',
@@ -533,6 +555,56 @@ const en: Record<string, string> = {
   'vocab.tagTarget': 'Target science',
   'vocab.tagMisconception': 'Misconception',
   'vocab.possibleReasons': 'Possible science reasons & talk move',
+
+  // Concept Cartoon Studio (Sprint 1 Week 8–9 · Sprint 2 pair inquiry)
+  'studio.title': 'Concept Cartoon Studio',
+  'studio.tagline': 'Sprint 1 · Week 8–9 and Sprint 2 pair inquiry',
+  'studio.intro':
+    'Type a Science topic. Ali, Bisi and Cempaka each make a claim — one sound, one misconception, one language trap — and your class argues the evidence.',
+  'studio.topicLabel': 'Science topic or question',
+  'studio.topicPlaceholder':
+    'e.g. Year 4 Science: Evaporation — why do wet clothes dry faster in the sun?',
+  'studio.focusLabel': 'Optional: a wrong idea or a confusing word your pupils have',
+  'studio.focusPlaceholder':
+    'e.g. They think the water “disappears” / they say “melting” for evaporation',
+  'studio.generate': 'Create concept cartoon',
+  'studio.generating': 'Drawing the cartoon…',
+  'studio.errors.topicRequired': 'Type a Science topic or question first.',
+  'studio.errors.failed': 'Could not create the cartoon. Please try again.',
+  'studio.notSaved': 'Nothing typed here is saved on this device or on the server.',
+  'studio.editHint': 'Tap any speech bubble or bridge line to edit it before class.',
+  'studio.teacherKey': 'Teacher key',
+  'studio.teacherKeyHint': 'Hidden when presenting and printing.',
+  'studio.claimType.sound': 'Sound',
+  'studio.claimType.misconception': 'Misconception',
+  'studio.claimType.language_trap': 'Language trap',
+  'studio.teacherNote': 'Teacher note',
+  'studio.ibanCheck': 'Check the Iban before board use',
+  'studio.ibanOk': 'Everyday Iban — still verify',
+  'studio.markChecked': 'Mark checked',
+  'studio.checkedByTeacher': 'Iban checked by teacher',
+  'studio.launchPrompt': 'Who do you agree with — and what is your evidence?',
+  'studio.wordCount': '{count}/18 words',
+  'studio.overLimit': 'Over the 18-word Year 4 limit — shorten it',
+  'studio.castNameWarning': 'A character name is written in this bubble — edit it',
+  'studio.bridges': 'Iban · Sarawak Malay',
+  'studio.stems': 'Sentence stems',
+  'studio.whatIf': 'What-If transfer question',
+  'studio.followUpTitle': 'What happened in class? Choose the next move',
+  'studio.followUpHint': 'Opens Live Coach with the strategy and a ready-to-send prompt.',
+  'studio.accuracyReminder':
+    'Before class: check the science and the local-language phrasing with a partner or the textbook.',
+  'studio.present': 'Present to class',
+  'studio.print': 'Print',
+  'studio.shuffle': 'Shuffle who says what',
+  'studio.regenerate': 'New cartoon',
+  'studio.newTopic': 'New topic',
+  'studio.summary': 'Concept cartoon: {topic}',
+  'studio.warningsTitle': 'Check before display',
+  'studio.openStudio': 'Make your own for any topic',
+  'studio.openStudioBody': 'AI Concept Cartoon Studio: three pupils, three claims, Iban bridges.',
+  'home.studioBody':
+    'Type a topic and get three pupils arguing about it — editable, printable, with Iban bridges.',
 };
 
 const ms: Record<string, string> = {
@@ -658,7 +730,29 @@ const ms: Record<string, string> = {
   'coach.need.mixed': 'Campuran',
   'coach.startNew': 'Mula baharu',
   'coach.clearConfirm': 'Kosongkan tab ini? Kandungan persediaan yang disimpan di sini akan dibuang.',
-  'coach.piiWarning': 'Jangan masukkan nama murid, guru, atau sekolah.',
+
+  // Rangka Strategi Teras 6 (program 2027)
+  'strategy.aria': 'Pemilih Strategi Teras 6',
+  'strategy.label': 'Strategi Teras 6',
+  'strategy.spine': 'Sprint 1 · 4 aktif / 1 rehat / 4 aktif',
+  'strategy.general': 'Umum',
+  'strategy.generalHint':
+    'Tiada sorotan strategi. Pilih minggu Sprint anda untuk melaraskan semua alat bimbingan dengan rangka Teras 6.',
+  'strategy.spotlight': 'Sorotan',
+  'strategy.activeHint':
+    'Semua alat bimbingan kini menyorotkan strategi ini. Tabiat awal tetap menyokong — tiada apa yang dimatikan.',
+  'strategy.window': 'Tempoh Sprint',
+  'strategy.mechanism': 'Bentuknya dalam kelas',
+  'strategy.teacherMove': 'Langkah guru utama',
+  'strategy.pupilTarget': 'Percakapan sasaran murid',
+  'strategy.cumulative': 'Sorotan kumulatif: strategi awal terus menyokong strategi ini.',
+  'strategy.details': 'Lihat strategi',
+
+  // Privasi & ketelusan AI (dipaparkan pada setiap input teks dan output yang dijana)
+  'coach.privacyNotice':
+    'Pastikan input bersifat umum — jangan masukkan nama murid, nama guru, nama sekolah, atau butiran perlindungan.',
+  'coach.aiNotice':
+    'Dijana AI — Semak ketepatan saintifik dan frasa bahasa tempatan sebelum digunakan dalam kelas.',
 
   // Live Coach
   'live.observationLabel': 'Apa yang sedang berlaku dalam kelas anda sekarang?',
@@ -1064,6 +1158,56 @@ const ms: Record<string, string> = {
   'vocab.tagTarget': 'Sains sasaran',
   'vocab.tagMisconception': 'Salah faham',
   'vocab.possibleReasons': 'Alasan sains yang mungkin & langkah bincang',
+
+  // Studio Kartun Konsep (Sprint 1 Minggu 8–9 · inkuiri berpasangan Sprint 2)
+  'studio.title': 'Studio Kartun Konsep',
+  'studio.tagline': 'Sprint 1 · Minggu 8–9 dan inkuiri berpasangan Sprint 2',
+  'studio.intro':
+    'Taip satu topik Sains. Ali, Bisi dan Cempaka masing-masing membuat satu tuntutan — satu mantap, satu salah faham, satu perangkap bahasa — dan kelas anda berhujah dengan bukti.',
+  'studio.topicLabel': 'Topik atau soalan Sains',
+  'studio.topicPlaceholder':
+    'cth. Sains Tahun 4: Penyejatan — kenapa baju basah kering lebih cepat di bawah matahari?',
+  'studio.focusLabel': 'Pilihan: idea salah atau perkataan yang mengelirukan murid anda',
+  'studio.focusPlaceholder':
+    'cth. Mereka fikir air “hilang” / mereka kata “meleleh” untuk penyejatan',
+  'studio.generate': 'Cipta kartun konsep',
+  'studio.generating': 'Melukis kartun…',
+  'studio.errors.topicRequired': 'Taip topik atau soalan Sains dahulu.',
+  'studio.errors.failed': 'Kartun tidak dapat dicipta. Sila cuba lagi.',
+  'studio.notSaved': 'Apa yang ditaip di sini tidak disimpan pada peranti ini atau pada pelayan.',
+  'studio.editHint': 'Ketik sebarang belon ucapan atau baris jambatan untuk menyunting sebelum kelas.',
+  'studio.teacherKey': 'Kunci guru',
+  'studio.teacherKeyHint': 'Disembunyikan semasa pembentangan dan percetakan.',
+  'studio.claimType.sound': 'Mantap',
+  'studio.claimType.misconception': 'Salah faham',
+  'studio.claimType.language_trap': 'Perangkap bahasa',
+  'studio.teacherNote': 'Nota guru',
+  'studio.ibanCheck': 'Semak Iban sebelum tulis di papan',
+  'studio.ibanOk': 'Iban harian — tetap semak',
+  'studio.markChecked': 'Tanda disemak',
+  'studio.checkedByTeacher': 'Iban disemak guru',
+  'studio.launchPrompt': 'Anda setuju dengan siapa — dan apa bukti anda?',
+  'studio.wordCount': '{count}/18 perkataan',
+  'studio.overLimit': 'Melebihi had 18 perkataan Tahun 4 — pendekkan',
+  'studio.castNameWarning': 'Nama watak ditulis dalam belon ini — sunting',
+  'studio.bridges': 'Iban · Bahasa Melayu Sarawak',
+  'studio.stems': 'Bingkai ayat',
+  'studio.whatIf': 'Soalan pemindahan “Bagaimana jika”',
+  'studio.followUpTitle': 'Apa yang berlaku dalam kelas? Pilih langkah seterusnya',
+  'studio.followUpHint': 'Membuka Jurulatih Langsung dengan strategi dan ayat sedia dihantar.',
+  'studio.accuracyReminder':
+    'Sebelum kelas: semak sains dan frasa bahasa tempatan bersama rakan atau buku teks.',
+  'studio.present': 'Bentangkan ke kelas',
+  'studio.print': 'Cetak',
+  'studio.shuffle': 'Kocok siapa cakap apa',
+  'studio.regenerate': 'Kartun baharu',
+  'studio.newTopic': 'Topik baharu',
+  'studio.summary': 'Kartun konsep: {topic}',
+  'studio.warningsTitle': 'Semak sebelum papar',
+  'studio.openStudio': 'Bina sendiri untuk mana-mana topik',
+  'studio.openStudioBody': 'Studio Kartun Konsep AI: tiga murid, tiga tuntutan, jambatan Iban.',
+  'home.studioBody':
+    'Taip satu topik dan dapatkan tiga murid berhujah tentangnya — boleh sunting, boleh cetak, dengan jambatan Iban.',
 };
 
 export const translations: Record<Lang, Record<string, string>> = { en, ms };

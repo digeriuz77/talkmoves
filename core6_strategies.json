@@ -1,0 +1,123 @@
+{
+  "spine": "Core 6 Strategy Spine",
+  "programme": "2027 programme",
+  "sprint1": {
+    "label": "Sprint 1",
+    "weeks": 9,
+    "pattern": "4 on / 1 break / 4 on",
+    "breakWeek": 5
+  },
+  "cumulativeSpotlightRule": "The active strategy is the primary spotlight of the generated teacher script, board frames, and follow-up moves. Earlier foundational habits still support it naturally; they are never banned when coaching later weeks.",
+  "strategies": [
+    {
+      "id": "S1",
+      "name": "Open Question + Wait Time (5–7s)",
+      "shortName": "Open Question + Wait Time",
+      "window": "Week 1 (embed W4)",
+      "sprint": "Sprint 1",
+      "mechanism": "Replace closed recall with one open reasoning/prediction question tied to the Science topic, plus 5–7s silent wait time so every pupil prepares an answer before anyone speaks.",
+      "teacherMoveQuote": "Why do you think ___? Take 5 quiet seconds to think before hands.",
+      "teacherMoveRef": "TM-T01",
+      "teacherMove": "\"Why do you think ___? Take 5 quiet seconds to think before hands.\" (TM-T01)",
+      "pupilTarget": "Moves from instant 1-word recall to prepared reasoning: \"I think ___ because ___.\"",
+      "talkMoveIds": ["TM-T01"],
+      "coachHints": [
+        "Ask ONE open reasoning or prediction question tied to the topic ('Why do you think ___?', 'What would happen if ___?'). Replace any closed recall question ('What is ___?', 'Name the ___').",
+        "Write the wait-time cue into every teacher script that asks a question: 5–7 seconds of silent thinking, no hands yet, before anyone speaks (TM-T01 Wait Time).",
+        "Sentence frames target prepared reasoning ('I think ___ because ___.') rather than one-word recall."
+      ]
+    },
+    {
+      "id": "S2",
+      "name": "Safe Rehearsal (Think-Pair-Share + L1 Bridge)",
+      "shortName": "Safe Rehearsal",
+      "window": "Week 2 (embed W4)",
+      "sprint": "Sprint 1",
+      "mechanism": "Lower anxiety before whole-class sharing via 1–2 min partner rehearsal welcoming Iban / Sarawak Malay; normalise unfinished ideas and mistakes as learning steps.",
+      "teacherMoveQuote": "Tell your partner first — Iban or Malay is fine — then try one English line together.",
+      "teacherMoveRef": "TM-T02",
+      "teacherMove": "\"Tell your partner first — Iban or Malay is fine — then try one English line together.\" (TM-T02)",
+      "pupilTarget": "Safe pair rehearsal before public speaking; pupils try ideas without fear of being wrong.",
+      "talkMoveIds": ["TM-T02"],
+      "coachHints": [
+        "Before any whole-class sharing, script a 1–2 minute partner rehearsal (Think-Pair-Share / Turn and Talk, TM-T02).",
+        "Explicitly welcome Iban and Sarawak Malay in the pair talk, then ask partners to try one English line together.",
+        "Normalise unfinished ideas and mistakes as learning steps: no praise or correction during rehearsal; pupils try ideas without fear of being wrong."
+      ]
+    },
+    {
+      "id": "S3",
+      "name": "Deliberate Vocabulary & EAL Sentence Ladder",
+      "shortName": "Vocabulary & Sentence Ladder",
+      "window": "Week 3 (embed W4)",
+      "sprint": "Sprint 1",
+      "mechanism": "Pre-teach 3–5 Tier-3 Science nouns + 2 relational connectors (because, more than, causes) using choral rehearsal (I say, you say), L1/BM cognate bridges, and a 3-rung board frame.",
+      "teacherMoveQuote": "In Iban/Malay we say [L1]. In Science, say it with me: [term]. Point and say...",
+      "teacherMoveRef": "Primer + Strand 2",
+      "teacherMove": "\"In Iban/Malay we say [L1]. In Science, say it with me: [term]. Point and say...\" (Primer + Strand 2)",
+      "pupilTarget": "Uses target Science term accurately across 3 board rungs (word -> 2-choice cloze -> causal frame).",
+      "talkMoveIds": [],
+      "coachHints": [
+        "Pre-teach 3–5 Tier-3 Science nouns plus 2 relational connectors (because, more than, causes) with choral rehearsal ('I say, you say') and L1/BM cognate bridges.",
+        "Teacher script pattern: 'In Iban/Malay we say [L1]. In Science, say it with me: [term]. Point and say ...'",
+        "Board frames must be a 3-rung sentence ladder: word -> 2-choice cloze -> causal frame. Target: pupils use the Science term accurately across all three rungs.",
+        "Never fabricate uncertain technical Iban: use an everyday Iban descriptive phrase with the Malay/English cognate and flag it for the teacher to check."
+      ]
+    },
+    {
+      "id": "S4",
+      "name": "Uptake Moves (Revoice, Probe & Evidence)",
+      "shortName": "Uptake Moves",
+      "window": "Weeks 6–7",
+      "sprint": "Sprint 1",
+      "mechanism": "Break teacher-talk IRF (\"Good, next\"): revoice L1 or partial answers into clear Science English, then press for evidence from the diagram or test.",
+      "teacherMoveQuote": "So you are saying [revoice]. Say more — what in the picture/test makes you say that?",
+      "teacherMoveRef": "TM-T03 + TM-T04",
+      "teacherMove": "\"So you are saying [revoice]. Say more — what in the picture/test makes you say that?\" (TM-T03 + TM-T04)",
+      "pupilTarget": "Links claim to evidence: \"My evidence is ___ which shows that ___.\"",
+      "talkMoveIds": ["TM-T03", "TM-T04"],
+      "coachHints": [
+        "Break teacher-talk IRF ('Good, next'). Script uptake moves: revoice the pupil's L1 or partial answer into clear Science English (TM-T03 Revoicing), then press for evidence from the diagram or test (TM-T04 Say More / TM-T08 Press for Reasoning).",
+        "Teacher script pattern: 'So you are saying [revoice]. Say more — what in the picture/test makes you say that?'",
+        "Sentence frames link claim to evidence: 'My evidence is ___ which shows that ___.'"
+      ]
+    },
+    {
+      "id": "S5",
+      "name": "Whole-Class Check & Adapt (AfL)",
+      "shortName": "Whole-Class Check & Adapt",
+      "window": "Week 7",
+      "sprint": "Sprint 1",
+      "mechanism": "Check every pupil at once (30-sec finger-vote, mini-boards, or 3-Pile Exit Check) to separate language stuck from concept error, then pivot on the spot (reset or firm_up).",
+      "teacherMoveQuote": "Hold 1, 2, or 3 fingers on your chest. Let's see what we think before we move on.",
+      "teacherMoveRef": "Strand 3 + reset/firm_up",
+      "teacherMove": "\"Hold 1, 2, or 3 fingers on your chest. Let's see what we think before we move on.\" (Strand 3 + reset/firm_up)",
+      "pupilTarget": "100% class response gives immediate diagnostic evidence; teacher adapts instead of moving on.",
+      "talkMoveIds": [],
+      "coachHints": [
+        "Include a 30-second whole-class check of EVERY pupil: finger-vote on the chest (1, 2, or 3), mini-boards, or a 3-Pile Exit Check.",
+        "Script the check: 'Hold 1, 2, or 3 fingers on your chest. Let's see what we think before we move on.'",
+        "For each outcome give the on-the-spot adaptation: separate 'language stuck' from 'concept error', then pivot (reset = re-teach with a concrete model; firm_up = press the reasoning forward)."
+      ]
+    },
+    {
+      "id": "S6",
+      "name": "Competing Claims & What-If Transfer (Concept Cartoons)",
+      "shortName": "Competing Claims & What-If",
+      "window": "Week 8–9 & Sprint 2",
+      "sprint": "Sprint 1 · Sprint 2",
+      "mechanism": "Present 3 competing pupil claims (Ali, Bisi, Cempaka), prompt peer-to-peer agree/disagree with evidence, and push one \"What-If\" counter-example for far transfer.",
+      "teacherMoveQuote": "Who fits the evidence best, and what is the trap in the other claim? What if we changed ___?",
+      "teacherMoveRef": "TM-T08",
+      "teacherMove": "\"Who fits the evidence best, and what is the trap in the other claim? What if we changed ___?\" (TM-T08)",
+      "pupilTarget": "Comparative reasoning: \"I agree with [Name] because ___. If we change ___, then ___.\"",
+      "talkMoveIds": ["TM-T08"],
+      "coachHints": [
+        "Present THREE competing pupil claims about the topic (Ali, Bisi, Cempaka or other fictional pupils): one sound, one misconception, one language trap. Vary which pupil is right so pupils cannot guess by name.",
+        "Script peer-to-peer agree/disagree with evidence (TM-T08 Press for Reasoning with TM-T02 Turn and Talk / TM-T06 Challenging Thinking): 'Who fits the evidence best, and what is the trap in the other claim?'",
+        "Push ONE 'What-If' counter-example for far transfer: 'What if we changed ___?'",
+        "Sentence frames target comparative reasoning: 'I agree with [Name] because ___. If we change ___, then ___.'"
+      ]
+    }
+  ]
+}

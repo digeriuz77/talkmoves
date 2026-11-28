@@ -5,13 +5,18 @@ import { Download, LoaderCircle, Printer, Sparkles } from 'lucide-react';
 import { useLang } from '../lib/i18n';
 import { usePersistentState } from '../lib/usePersistentState';
 import { useClassContext } from '../lib/class-context';
+import { useActiveStrategy } from '../lib/strategy-context';
+import { getStrategy, type Core6Strategy } from '../lib/core6-strategies';
 import {
+  AiNotice,
   CollapsibleFormShell,
   CopyButton,
   LanguageLensToggle,
+  PrivacyNotice,
   SayLine,
   SegmentedTabs,
   StartNewButton,
+  StrategySpotlightBadge,
   type LangLens,
 } from './coach-ui';
 
@@ -77,6 +82,9 @@ function buildDownloadText({
   classProfile,
   vocabulary,
   plan,
+  strategy,
+  strategyLabel,
+  aiNotice,
 }: {
   question: string;
   yearLevel: string;
@@ -85,6 +93,9 @@ function buildDownloadText({
   classProfile: string;
   vocabulary: string[];
   plan: BuilderPlan;
+  strategy?: Core6Strategy | null;
+  strategyLabel?: string;
+  aiNotice?: string;
 }): string {
   const lines: string[] = [];
   lines.push('DIALOGIC SCAFFOLDING MAP');
@@ -93,6 +104,9 @@ function buildDownloadText({
   lines.push(`Year Level: ${yearLevel}`);
   lines.push(`Subject: ${subject}`);
   lines.push(`Dominant Language: ${dominantLanguage}`);
+  if (strategy && strategyLabel) {
+    lines.push(`${strategyLabel}: ${strategy.id} — ${strategy.name} (${strategy.window})`);
+  }
   lines.push(`Context: ${classProfile}`);
   lines.push(`Priority Vocabulary: ${vocabulary.join(', ') || 'N/A'}`);
   lines.push('');
@@ -155,6 +169,10 @@ function buildDownloadText({
     lines.push('- Reconvergence Move');
     lines.push(`  ${afl.reconvergenceMove}`);
   }
+  if (aiNotice) {
+    lines.push('');
+    lines.push(aiNotice);
+  }
 
   return lines.join('\n');
 }
@@ -180,6 +198,7 @@ function GapTypeBadge({ type, t }: { type: string; t: (key: string) => string })
 export default function QuestionPlanner() {
   const { t } = useLang();
   const { yearLevel, subject, dominantLanguage } = useClassContext();
+  const { activeStrategy } = useActiveStrategy();
   const [question, setQuestion, resetQuestion] = usePersistentState('tmb.plan.question', '');
   const [classProfile, setClassProfile, resetClassProfile] = usePersistentState('tmb.plan.classProfile', '');
   const [vocabularyText, setVocabularyText, resetVocabularyText] = usePersistentState(
@@ -187,6 +206,8 @@ export default function QuestionPlanner() {
     'texture, material, production',
   );
   const [plan, setPlan, resetPlan] = usePersistentState<BuilderPlan | null>('tmb.plan.result', null);
+  // Core 6 strategy the stored plan was generated with (echoed by the server), for the badge.
+  const [planStrategy, setPlanStrategy, resetPlanStrategy] = usePersistentState<string>('tmb.plan.strategy', '');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [formCollapsed, setFormCollapsed] = useState<boolean>(() => Boolean(plan));
@@ -201,6 +222,7 @@ export default function QuestionPlanner() {
     resetClassProfile();
     resetVocabularyText();
     resetPlan();
+    resetPlanStrategy();
     setFormCollapsed(false);
     setError(null);
   };
@@ -234,6 +256,7 @@ export default function QuestionPlanner() {
           dominantLanguage,
           classProfile,
           vocabulary,
+          activeStrategy,
         }),
       });
       const payload = await response.json().catch(() => null);
@@ -241,6 +264,7 @@ export default function QuestionPlanner() {
         throw new Error(payload?.error || t('builder.errors.generateFailed'));
       }
       setPlan(payload.plan as BuilderPlan);
+      setPlanStrategy(payload?.meta?.strategy?.id || '');
       setFormCollapsed(true);
       setOutputTab('speak');
     } catch (requestError) {
@@ -260,6 +284,9 @@ export default function QuestionPlanner() {
       classProfile,
       vocabulary,
       plan,
+      strategy: getStrategy(planStrategy),
+      strategyLabel: t('strategy.spotlight'),
+      aiNotice: t('coach.aiNotice'),
     });
     const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
     const url = URL.createObjectURL(blob);
@@ -286,6 +313,7 @@ export default function QuestionPlanner() {
         actions={<StartNewButton onClear={clearPlanTab} />}
       >
         <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5">
+          <PrivacyNotice />
           <div className="space-y-3">
             <label className="block">
               <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
@@ -365,6 +393,12 @@ export default function QuestionPlanner() {
                 {t('builder.downloadTxt')}
               </button>
             </div>
+          </div>
+
+          {/* Generated output header: strategy spotlight + AI transparency (kept in print) */}
+          <div className="flex flex-wrap items-center gap-2">
+            <StrategySpotlightBadge strategyId={planStrategy} />
+            <AiNotice />
           </div>
 
           <SegmentedTabs
