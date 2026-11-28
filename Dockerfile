@@ -12,7 +12,10 @@ RUN npm ci
 COPY . .
 
 # Build
-RUN npm run build
+RUN npm run build && mkdir -p /app/.kilo && chown -R node:node /app
+
+# Drop root privileges for runtime
+USER node
 
 # Expose port
 EXPOSE 3000

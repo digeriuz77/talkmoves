@@ -1944,7 +1944,54 @@ let counters = normalizeCounters(readJson(COUNTERS_PATH, { date: getUtcDateKey()
 let planCache = pruneCache(readJson(CACHE_PATH, {}));
 
 // Serve static files from dist
+app.disable('x-powered-by');
+app.set('trust proxy', 1);
+
+// Baseline HTTP security headers (zero dependencies)
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'DENY');
+  res.setHeader('Referrer-Policy', 'no-referrer');
+  res.setHeader('Permissions-Policy', 'geolocation=(), microphone=()');
+  if (req.path.startsWith('/api/')) {
+    res.setHeader('Cache-Control', 'no-store');
+  }
+  next();
+});
+
 app.use(express.static(path.join(__dirname, 'dist')));
+
+// Lightweight in-memory per-IP sliding-window rate limit for unauthenticated AI endpoints
+const API_RATE_LIMIT_MAX = Math.max(1, Number(process.env.API_RATE_LIMIT_MAX || 40));
+const API_RATE_LIMIT_WINDOW_MS = Math.max(1000, Number(process.env.API_RATE_LIMIT_WINDOW_MS || 10 * 60 * 1000));
+const apiRateHits = new Map();
+
+function apiRateLimit(req, res, next) {
+  const now = Date.now();
+  const key = req.ip || req.socket?.remoteAddress || 'unknown';
+  const cutoff = now - API_RATE_LIMIT_WINDOW_MS;
+  const recent = (apiRateHits.get(key) || []).filter((ts) => ts > cutoff);
+  if (recent.length >= API_RATE_LIMIT_MAX) {
+    res.setHeader('Retry-After', String(Math.ceil(API_RATE_LIMIT_WINDOW_MS / 1000)));
+    res.status(429).json({ error: 'Too many requests. Please wait a few minutes and try again.' });
+    return;
+  }
+  recent.push(now);
+  apiRateHits.set(key, recent);
+  // Keep map bounded if many distinct IPs hit the server
+  if (apiRateHits.size > 2000) {
+    for (const [ip, hits] of apiRateHits.entries()) {
+      const active = hits.filter((ts) => ts > cutoff);
+      if (active.length === 0) apiRateHits.delete(ip);
+      else apiRateHits.set(ip, active);
+    }
+  }
+  next();
+}
+
+app.get('/api/health', (_req, res) => {
+  res.json({ ok: true, provider: LLM_PROVIDER });
+});
 
 const MISSING_LLM_KEY_MESSAGE =
   'Missing LLM API key on server (set AZURE_OPENAI_API_KEY, LLM_API_KEY, or FIREWORKS_API_KEY).';
@@ -1955,7 +2002,7 @@ function hasLlmKey(res) {
   return false;
 }
 
-app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res) => {
+app.post('/api/talk-move-plan', apiRateLimit, express.json({ limit: '1mb' }), async (req, res) => {
   try {
     if (!hasLlmKey(res)) return;
 
@@ -1997,7 +2044,7 @@ app.post('/api/talk-move-plan', express.json({ limit: '1mb' }), async (req, res)
   }
 });
 
-app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) => {
+app.post('/api/lesson-coach', apiRateLimit, express.json({ limit: '15mb' }), async (req, res) => {
   try {
     if (!hasLlmKey(res)) return;
 
@@ -2034,7 +2081,7 @@ app.post('/api/lesson-coach', express.json({ limit: '15mb' }), async (req, res) 
   }
 });
 
-app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => {
+app.post('/api/live-coach', apiRateLimit, express.json({ limit: '5mb' }), async (req, res) => {
   try {
     if (!hasLlmKey(res)) return;
 
@@ -2150,7 +2197,7 @@ app.post('/api/live-coach', express.json({ limit: '5mb' }), async (req, res) => 
   }
 });
 
-app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
+app.post('/api/primer', apiRateLimit, express.json({ limit: '1mb' }), async (req, res) => {
   try {
     if (!hasLlmKey(res)) return;
 
@@ -2195,7 +2242,7 @@ app.post('/api/primer', express.json({ limit: '1mb' }), async (req, res) => {
  * Concept Cartoon Studio. STATELESS: no cache key and skipCache, so the teacher's topic and the
  * generated cartoon are never written to disk. No accounts, no pupil or school names stored.
  */
-app.post('/api/concept-cartoon', express.json({ limit: '1mb' }), async (req, res) => {
+app.post('/api/concept-cartoon', apiRateLimit, express.json({ limit: '1mb' }), async (req, res) => {
   try {
     if (!hasLlmKey(res)) return;
 

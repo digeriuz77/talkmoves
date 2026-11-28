@@ -157,3 +157,48 @@ describe('zero server-side retention on open-text and screenshot routes', () => 
     expect(await cacheEntries()).toHaveLength(3);
   });
 });
+
+describe('HTTP security headers, healthcheck, and per-IP rate limiting', () => {
+  let mock: MockLlm;
+  let server: TestServer;
+
+  beforeAll(async () => {
+    mock = await startMockLlm(standardResponder());
+    server = await startTestServer({
+      ...ENV,
+      LLM_BASE_URL: `${mock.url}/v1/chat/completions`,
+      API_RATE_LIMIT_MAX: '2',
+      API_RATE_LIMIT_WINDOW_MS: '60000',
+    });
+  });
+
+  afterAll(async () => {
+    await cleanupServer(server);
+    await mock.close();
+  });
+
+  it('serves /api/health with baseline security headers and no secrets or x-powered-by', async () => {
+    const response = await fetch(`${server.baseUrl}/api/health`);
+    expect(response.status).toBe(200);
+    expect(response.headers.get('x-powered-by')).toBeNull();
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
+    expect(response.headers.get('x-frame-options')).toBe('DENY');
+    expect(response.headers.get('referrer-policy')).toBe('no-referrer');
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    const body = await response.json();
+    expect(body).toEqual({ ok: true, provider: 'openai-compatible' });
+    expect(JSON.stringify(body)).not.toContain('test-key');
+  });
+
+  it('rate-limits repeated AI POST requests per IP with HTTP 429', async () => {
+    const body = { topic: 'Why do shadows change size during the day?' };
+    const first = await postJson(server.baseUrl, '/api/concept-cartoon', body);
+    const second = await postJson(server.baseUrl, '/api/concept-cartoon', body);
+    const third = await postJson(server.baseUrl, '/api/concept-cartoon', body);
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(200);
+    expect(third.status).toBe(429);
+    expect(third.headers.get('retry-after')).toBeTruthy();
+    expect(await third.json()).toMatchObject({ error: expect.stringContaining('Too many requests') });
+  });
+});
