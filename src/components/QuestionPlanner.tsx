@@ -312,45 +312,54 @@ export default function QuestionPlanner() {
         summary={plan ? question || t('builder.outputTitle') : ''}
         actions={<StartNewButton onClear={clearPlanTab} />}
       >
-        <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5">
-          <PrivacyNotice />
+        <form onSubmit={handleGenerate} className="card-warm p-5 sm:p-6">
+          <p className="mb-3 text-sm text-ink-soft">{t('plan.questionIntro')}</p>
           <div className="space-y-3">
             <label className="block">
-              <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+              <span className="mb-1.5 block font-display text-sm font-bold text-ink">
                 {t('builder.questionLabel')}
               </span>
               <textarea
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
                 rows={3}
-                className="w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2.5 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+                className="w-full rounded-2xl border-2 border-ink/20 bg-white px-4 py-3 text-lg font-semibold text-ink outline-none transition focus:border-terracotta/70 focus:ring-2 focus:ring-terracotta/20"
                 placeholder={t('builder.questionPlaceholder')}
               />
             </label>
 
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <label className="block">
-                <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
-                  {t('builder.vocabularyLabel')}
-                </span>
-                <input
-                  value={vocabularyText}
-                  onChange={(event) => setVocabularyText(event.target.value)}
-                  className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
-                />
-              </label>
+            <details className="rounded-xl border border-ink/10 bg-parchment-light/70 px-3 py-2">
+              <summary className="cursor-pointer font-display text-xs font-semibold text-ink-muted">
+                {t('plan.optionalFields')}
+              </summary>
+              <div className="mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold text-ink-muted">
+                    {t('builder.vocabularyLabel')}
+                  </span>
+                  <input
+                    value={vocabularyText}
+                    onChange={(event) => setVocabularyText(event.target.value)}
+                    className="min-h-[44px] w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-terracotta/60"
+                  />
+                </label>
 
-              <label className="block">
-                <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
-                  {t('builder.classProfileLabel')}
-                </span>
-                <input
-                  value={classProfile}
-                  onChange={(event) => setClassProfile(event.target.value)}
-                  className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
-                />
-              </label>
-            </div>
+                <label className="block">
+                  <span className="mb-1 block text-xs font-bold text-ink-muted">
+                    {t('builder.classProfileLabel')}
+                  </span>
+                  <input
+                    value={classProfile}
+                    onChange={(event) => setClassProfile(event.target.value)}
+                    className="min-h-[44px] w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-terracotta/60"
+                  />
+                </label>
+              </div>
+            </details>
+          </div>
+
+          <div className="mt-3">
+            <PrivacyNotice compact />
           </div>
 
           {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}

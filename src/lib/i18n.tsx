@@ -133,27 +133,27 @@ const en: Record<string, string> = {
   'coach.clearConfirm': 'Clear this tab? The prepped content saved here will be removed.',
 
   // Core 6 Strategy Spine (2027 programme)
-  'strategy.aria': 'Core 6 Strategy selector',
-  'strategy.label': 'Core 6 Strategy',
-  'strategy.spine': 'Sprint 1 · 4 on / 1 break / 4 on',
-  'strategy.general': 'General',
-  'strategy.generalHint':
-    'No strategy spotlight. Pick your Sprint week to align every coaching tool with the Core 6 spine.',
-  'strategy.spotlight': 'Spotlight',
-  'strategy.activeHint':
-    'Every coaching tool now spotlights this strategy. Earlier habits still support it — nothing is switched off.',
-  'strategy.window': 'Sprint window',
-  'strategy.mechanism': 'What it looks like in class',
-  'strategy.teacherMove': 'Primary teacher move',
-  'strategy.pupilTarget': 'Target pupil talk',
-  'strategy.cumulative': 'Cumulative spotlight: earlier strategies keep supporting this one.',
-  'strategy.details': 'See the strategy',
+  'strategy.aria': 'Class & strategy settings',
+  'strategy.label': 'Focus strategy',
+  'strategy.spine': 'Core 6',
+  'strategy.general': 'All moves',
+  'strategy.generalHint': 'Optional: choose this week’s focus strategy.',
+  'strategy.spotlight': 'Focus',
+  'strategy.activeHint': '',
+  'strategy.window': 'Week',
+  'strategy.mechanism': 'In class',
+  'strategy.teacherMove': 'Try saying',
+  'strategy.pupilTarget': 'Pupil talk',
+  'strategy.cumulative': '',
+  'strategy.details': 'Strategy guide',
+  'plan.questionIntro': 'Turn one open question into bilingual teacher lines and pupil frames.',
+  'plan.lessonIntro': 'Upload or paste a full lesson plan to spot language traps and talk breaks.',
+  'plan.optionalFields': 'Optional: target words & class notes',
+  'plan.optionalConcern': 'Optional: specific concern',
 
-  // Privacy & AI transparency (shown on every open-text input and generated output)
-  'coach.privacyNotice':
-    'Keep inputs generic — do not include pupil names, teacher names, school names, or safeguarding details.',
-  'coach.aiNotice':
-    'AI-Generated — Verify scientific accuracy and local language phrasing before classroom use.',
+  // Quiet privacy & AI notes
+  'coach.privacyNotice': 'No pupil or school names.',
+  'coach.aiNotice': 'AI draft — check before class.',
 
   // Live Coach
   'live.observationLabel': 'What is happening in your room right now?',
@@ -532,10 +532,10 @@ const en: Record<string, string> = {
   'vocab.tier.tier3': 'Science (Tier 3)',
   'vocab.tier.tier2': 'Thinking (Tier 2)',
   'vocab.tier.connector': 'Connectors',
-  'vocab.markTaught': 'Mark taught',
-  'vocab.markedTaught': 'Saved as taught',
+  'vocab.markTaught': 'Mark taught (this device)',
+  'vocab.markedTaught': 'Saved on this device',
   'vocab.quickFire5': 'Quick-Fire 5',
-  'vocab.quickFireActive': 'Spaced retrieval active: showing 5 words weighted across recent & earlier units.',
+  'vocab.quickFireActive': '5 review words from earlier units.',
   'vocab.tabGames': 'Games',
   'vocab.tabOddOneOut': 'Odd One Out',
   'vocab.tabCartoons': 'Concept Cartoons',
@@ -732,27 +732,27 @@ const ms: Record<string, string> = {
   'coach.clearConfirm': 'Kosongkan tab ini? Kandungan persediaan yang disimpan di sini akan dibuang.',
 
   // Rangka Strategi Teras 6 (program 2027)
-  'strategy.aria': 'Pemilih Strategi Teras 6',
-  'strategy.label': 'Strategi Teras 6',
-  'strategy.spine': 'Sprint 1 · 4 aktif / 1 rehat / 4 aktif',
-  'strategy.general': 'Umum',
-  'strategy.generalHint':
-    'Tiada sorotan strategi. Pilih minggu Sprint anda untuk melaraskan semua alat bimbingan dengan rangka Teras 6.',
-  'strategy.spotlight': 'Sorotan',
-  'strategy.activeHint':
-    'Semua alat bimbingan kini menyorotkan strategi ini. Tabiat awal tetap menyokong — tiada apa yang dimatikan.',
-  'strategy.window': 'Tempoh Sprint',
-  'strategy.mechanism': 'Bentuknya dalam kelas',
-  'strategy.teacherMove': 'Langkah guru utama',
-  'strategy.pupilTarget': 'Percakapan sasaran murid',
-  'strategy.cumulative': 'Sorotan kumulatif: strategi awal terus menyokong strategi ini.',
-  'strategy.details': 'Lihat strategi',
+  'strategy.aria': 'Tetapan kelas & strategi',
+  'strategy.label': 'Strategi fokus',
+  'strategy.spine': 'Teras 6',
+  'strategy.general': 'Semua langkah',
+  'strategy.generalHint': 'Pilihan: pilih strategi fokus minggu ini.',
+  'strategy.spotlight': 'Fokus',
+  'strategy.activeHint': '',
+  'strategy.window': 'Minggu',
+  'strategy.mechanism': 'Dalam kelas',
+  'strategy.teacherMove': 'Cuba sebut',
+  'strategy.pupilTarget': 'Percakapan murid',
+  'strategy.cumulative': '',
+  'strategy.details': 'Panduan strategi',
+  'plan.questionIntro': 'Tukar satu soalan terbuka kepada ayat guru dwibahasa dan bingkai murid.',
+  'plan.lessonIntro': 'Muat naik atau tampal rancangan mengajar penuh untuk kesan perangkap bahasa dan rehat perbualan.',
+  'plan.optionalFields': 'Pilihan: perkataan sasaran & nota kelas',
+  'plan.optionalConcern': 'Pilihan: kebimbangan khusus',
 
-  // Privasi & ketelusan AI (dipaparkan pada setiap input teks dan output yang dijana)
-  'coach.privacyNotice':
-    'Pastikan input bersifat umum — jangan masukkan nama murid, nama guru, nama sekolah, atau butiran perlindungan.',
-  'coach.aiNotice':
-    'Dijana AI — Semak ketepatan saintifik dan frasa bahasa tempatan sebelum digunakan dalam kelas.',
+  // Nota privasi & AI ringkas
+  'coach.privacyNotice': 'Tiada nama murid atau sekolah.',
+  'coach.aiNotice': 'Draf AI — semak sebelum kelas.',
 
   // Live Coach
   'live.observationLabel': 'Apa yang sedang berlaku dalam kelas anda sekarang?',
@@ -1135,10 +1135,10 @@ const ms: Record<string, string> = {
   'vocab.tier.tier3': 'Sains (Tier 3)',
   'vocab.tier.tier2': 'Pemikiran (Tier 2)',
   'vocab.tier.connector': 'Kata Hubung',
-  'vocab.markTaught': 'Tanda diajar',
-  'vocab.markedTaught': 'Disimpan',
+  'vocab.markTaught': 'Tanda diajar (peranti ini)',
+  'vocab.markedTaught': 'Disimpan pada peranti ini',
   'vocab.quickFire5': 'Pantas 5',
-  'vocab.quickFireActive': 'Ulang kaji berjarak aktif: 5 perkataan daripada unit terkini & terdahulu.',
+  'vocab.quickFireActive': '5 perkataan ulang kaji daripada unit lalu.',
   'vocab.tabGames': 'Permainan',
   'vocab.tabOddOneOut': 'Mana Ganjil',
   'vocab.tabCartoons': 'Kartun Konsep',

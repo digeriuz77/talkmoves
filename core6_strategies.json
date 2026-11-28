@@ -20,6 +20,14 @@
       "teacherMoveRef": "TM-T01",
       "teacherMove": "\"Why do you think ___? Take 5 quiet seconds to think before hands.\" (TM-T01)",
       "pupilTarget": "Moves from instant 1-word recall to prepared reasoning: \"I think ___ because ___.\"",
+      "ms": {
+        "name": "Soalan Terbuka + Masa Menunggu (5–7s)",
+        "shortName": "Soalan Terbuka + Tunggu",
+        "window": "Minggu 1 (kukuh M4)",
+        "mechanism": "Gantikan soalan hafalan tertutup dengan satu soalan menaakul atau ramalan mengikut topik Sains, disusuli 5–7 saat masa senyap supaya semua murid bersedia menjawab.",
+        "teacherMoveQuote": "Mengapa kamu fikir ___? Ambil 5 saat senyap untuk berfikir sebelum angkat tangan.",
+        "pupilTarget": "Beralih daripada jawapan satu perkataan kepada penaakulan bersedia: \"Saya fikir ___ kerana ___.\""
+      },
       "talkMoveIds": ["TM-T01"],
       "coachHints": [
         "Ask ONE open reasoning or prediction question tied to the topic ('Why do you think ___?', 'What would happen if ___?'). Replace any closed recall question ('What is ___?', 'Name the ___').",
@@ -38,6 +46,14 @@
       "teacherMoveRef": "TM-T02",
       "teacherMove": "\"Tell your partner first — Iban or Malay is fine — then try one English line together.\" (TM-T02)",
       "pupilTarget": "Safe pair rehearsal before public speaking; pupils try ideas without fear of being wrong.",
+      "ms": {
+        "name": "Latihan Selamat (Fikir-Pasang-Kongsi + Jambatan B1)",
+        "shortName": "Latihan Selamat",
+        "window": "Minggu 2 (kukuh M4)",
+        "mechanism": "Kurangkan rasa gementar sebelum berkongsi di hadapan kelas melalui 1–2 minit latihan berpasangan dalam bahasa Iban atau Melayu Sarawak; anggap kesilapan sebagai langkah belajar.",
+        "teacherMoveQuote": "Beritahu pasangan dahulu — bahasa Iban atau Melayu tidak mengapa — kemudian cuba satu ayat Inggeris bersama.",
+        "pupilTarget": "Murid berlatih secara selamat bersama pasangan sebelum bercakap di hadapan kelas tanpa takut salah."
+      },
       "talkMoveIds": ["TM-T02"],
       "coachHints": [
         "Before any whole-class sharing, script a 1–2 minute partner rehearsal (Think-Pair-Share / Turn and Talk, TM-T02).",
@@ -56,6 +72,14 @@
       "teacherMoveRef": "Primer + Strand 2",
       "teacherMove": "\"In Iban/Malay we say [L1]. In Science, say it with me: [term]. Point and say...\" (Primer + Strand 2)",
       "pupilTarget": "Uses target Science term accurately across 3 board rungs (word -> 2-choice cloze -> causal frame).",
+      "ms": {
+        "name": "Kosa Kata Terancang & Tangga Ayat EAL",
+        "shortName": "Kosa Kata & Tangga Ayat",
+        "window": "Minggu 3 (kukuh M4)",
+        "mechanism": "Ajar awal 3–5 istilah Sains utama dan 2 kata hubung (kerana, lebih daripada, menyebabkan) melalui sebutan beramai-ramai, jambatan bahasa Iban/BM, dan rangka papan 3 tahap.",
+        "teacherMoveQuote": "Dalam bahasa Iban/Melayu kita sebut [B1]. Dalam Sains, sebut bersama saya: [istilah]. Tunjuk dan sebut...",
+        "pupilTarget": "Menggunakan istilah Sains dengan tepat melalui 3 tahap papan (perkataan -> pilihan -> ayat sebab)."
+      },
       "talkMoveIds": [],
       "coachHints": [
         "Pre-teach 3–5 Tier-3 Science nouns plus 2 relational connectors (because, more than, causes) with choral rehearsal ('I say, you say') and L1/BM cognate bridges.",
@@ -75,6 +99,14 @@
       "teacherMoveRef": "TM-T03 + TM-T04",
       "teacherMove": "\"So you are saying [revoice]. Say more — what in the picture/test makes you say that?\" (TM-T03 + TM-T04)",
       "pupilTarget": "Links claim to evidence: \"My evidence is ___ which shows that ___.\"",
+      "ms": {
+        "name": "Langkah Sambutan (Ulang Suara, Gali & Bukti)",
+        "shortName": "Langkah Sambutan",
+        "window": "Minggu 6–7",
+        "mechanism": "Hentikan pola \"Bagus, seterusnya\": ulang suara jawapan murid dalam bahasa Sains yang jelas, kemudian minta bukti daripada gambar rajah atau ujian.",
+        "teacherMoveQuote": "Jadi maksud kamu [ulang suara]. Ceritakan lagi — apa dalam gambar atau ujian yang membuktikannya?",
+        "pupilTarget": "Menghubungkan tuntutan dengan bukti: \"Bukti saya ialah ___ yang menunjukkan ___.\""
+      },
       "talkMoveIds": ["TM-T03", "TM-T04"],
       "coachHints": [
         "Break teacher-talk IRF ('Good, next'). Script uptake moves: revoice the pupil's L1 or partial answer into clear Science English (TM-T03 Revoicing), then press for evidence from the diagram or test (TM-T04 Say More / TM-T08 Press for Reasoning).",
@@ -93,6 +125,14 @@
       "teacherMoveRef": "Strand 3 + reset/firm_up",
       "teacherMove": "\"Hold 1, 2, or 3 fingers on your chest. Let's see what we think before we move on.\" (Strand 3 + reset/firm_up)",
       "pupilTarget": "100% class response gives immediate diagnostic evidence; teacher adapts instead of moving on.",
+      "ms": {
+        "name": "Semakan Seluruh Kelas & Sesuaikan (AfL)",
+        "shortName": "Semak & Sesuaikan",
+        "window": "Minggu 7",
+        "mechanism": "Semak semua murid serentak (undi jari 30 saat, papan mini, atau semakan 3 longgokan) untuk bezakan halangan bahasa dan salah konsep, lalu ubah suai serta-merta.",
+        "teacherMoveQuote": "Tunjukkan 1, 2, atau 3 jari di dada. Mari lihat apa yang kita fikir sebelum teruskan.",
+        "pupilTarget": "Respons seluruh kelas memberi bukti serta-merta supaya guru menyesuaikan pengajaran sebelum beralih."
+      },
       "talkMoveIds": [],
       "coachHints": [
         "Include a 30-second whole-class check of EVERY pupil: finger-vote on the chest (1, 2, or 3), mini-boards, or a 3-Pile Exit Check.",
@@ -111,6 +151,14 @@
       "teacherMoveRef": "TM-T08",
       "teacherMove": "\"Who fits the evidence best, and what is the trap in the other claim? What if we changed ___?\" (TM-T08)",
       "pupilTarget": "Comparative reasoning: \"I agree with [Name] because ___. If we change ___, then ___.\"",
+      "ms": {
+        "name": "Tuntutan Bersaing & Soalan Bagaimana Jika (Kartun Konsep)",
+        "shortName": "Tuntutan Bersaing & Kartun",
+        "window": "Minggu 8–9 & Sprint 2",
+        "mechanism": "Paparkan 3 tuntutan murid yang berbeza (Ali, Bisi, Cempaka), dorong murid bersetuju atau membantah dengan bukti, dan uji satu situasi \"Bagaimana jika\".",
+        "teacherMoveQuote": "Siapa paling menepati bukti, dan apa perangkap dalam tuntutan lain? Bagaimana jika kita ubah ___?",
+        "pupilTarget": "Penaakulan perbandingan: \"Saya setuju dengan [Nama] kerana ___. Jika kita ubah ___, maka ___.\""
+      },
       "talkMoveIds": ["TM-T08"],
       "coachHints": [
         "Present THREE competing pupil claims about the topic (Ali, Bisi, Cempaka or other fictional pupils): one sound, one misconception, one language trap. Vary which pupil is right so pupils cannot guess by name.",

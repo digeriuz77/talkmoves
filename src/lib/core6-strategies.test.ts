@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   CORE6_STRATEGIES,
   getStrategy,
+  localizeStrategy,
   normalizeStrategyId,
   strategyBadgeLabel,
   supportingStrategies,
@@ -58,8 +59,21 @@ describe('Core 6 Strategy Spine (shared matrix)', () => {
     expect(supportingStrategies('S6').map((strategy) => strategy.id)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5']);
   });
 
-  it('builds badge labels from the short names', () => {
+  it('builds badge labels from the short names in EN and BM', () => {
     expect(strategyBadgeLabel(getStrategy('S5'))).toBe('S5 · Whole-Class Check & Adapt');
+    expect(strategyBadgeLabel(getStrategy('S5'), 'ms')).toBe('S5 · Semak & Sesuaikan');
     expect(strategyBadgeLabel(null)).toBe('');
+  });
+
+  it('provides full Bahasa Melayu translations for every Core 6 strategy', () => {
+    for (const strategy of CORE6_STRATEGIES) {
+      const bm = localizeStrategy(strategy, 'ms');
+      expect(bm.name).not.toBe(strategy.name);
+      expect(bm.shortName).not.toBe('');
+      expect(bm.window).not.toBe('');
+      expect(bm.mechanism).not.toBe(strategy.mechanism);
+      expect(bm.teacherMoveQuote).not.toBe(strategy.teacherMoveQuote);
+      expect(bm.pupilTarget).not.toBe(strategy.pupilTarget);
+    }
   });
 });

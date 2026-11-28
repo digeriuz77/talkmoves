@@ -31,7 +31,7 @@ import {
   X,
 } from 'lucide-react';
 import { useLang, type TranslateFn } from '../lib/i18n';
-import { ClassContextBar, useClassContext } from '../lib/class-context';
+import { useClassContext } from '../lib/class-context';
 import { useActiveStrategy } from '../lib/strategy-context';
 import { getStrategy } from '../lib/core6-strategies';
 import type { LiveCoachHandoff } from '../lib/coach-handoff';
@@ -216,7 +216,7 @@ function ClaimColumn({
   const wordCount = countWords(claim.english);
   const overLimit = editable && wordCount > CARTOON_MAX_BUBBLE_WORDS;
   const nameWarning = editable && bubbleMentionsCast(claim.english);
-  const bubbleText = large ? 'text-xl sm:text-2xl' : 'text-base sm:text-lg';
+  const bubbleText = large ? 'text-xl sm:text-2xl' : 'text-lg sm:text-xl';
 
   return (
     <div className="flex flex-col items-center">
@@ -632,45 +632,41 @@ export default function ConceptCartoonStudio({
 
       <StrategyBar />
 
-      <ClassContextBar />
-
       <CollapsibleFormShell
         collapsed={Boolean(cartoon) && formCollapsed}
         onToggle={() => setFormCollapsed((collapsed) => !collapsed)}
         summary={cartoon ? t('studio.summary', { topic: cartoon.topic }) : ''}
       >
-        <form onSubmit={handleGenerate} className="card-warm p-4 sm:p-5">
+        <form onSubmit={handleGenerate} className="card-warm p-5 sm:p-6">
           <p className="mb-3 text-sm leading-snug text-ink-soft">{t('studio.intro')}</p>
-          <PrivacyNotice />
           <label className="block">
-            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+            <span className="mb-1.5 block font-display text-sm font-bold text-ink">
               {t('studio.topicLabel')}
             </span>
             <textarea
               value={topic}
               onChange={(event) => setTopic(event.target.value)}
               rows={3}
-              className="w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2.5 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+              className="w-full rounded-2xl border-2 border-ink/20 bg-white px-4 py-3 text-lg font-semibold text-ink outline-none transition focus:border-terracotta/70 focus:ring-2 focus:ring-terracotta/20"
               placeholder={t('studio.topicPlaceholder')}
             />
           </label>
 
-          <label className="mt-3 block">
-            <span className="mb-1 block text-xs font-extrabold uppercase tracking-wide text-ink-muted">
+          <details className="mt-3 rounded-xl border border-ink/10 bg-parchment-light/70 px-3 py-2">
+            <summary className="cursor-pointer font-display text-xs font-semibold text-ink-muted">
               {t('studio.focusLabel')}
-            </span>
+            </summary>
             <input
               value={teacherFocus}
               onChange={(event) => setTeacherFocus(event.target.value)}
-              className="min-h-[44px] w-full rounded-xl border-2 border-ink/15 bg-white px-3 py-2 text-base text-ink outline-none transition focus:border-terracotta/60 focus:ring-2 focus:ring-terracotta/20 sm:text-sm"
+              className="mt-2 min-h-[44px] w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-sm text-ink outline-none transition focus:border-terracotta/60"
               placeholder={t('studio.focusPlaceholder')}
             />
-          </label>
+          </details>
 
-          <p className="mt-2.5 flex items-start gap-1.5 text-xs font-semibold leading-snug text-ink-muted">
-            <ShieldCheck className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
-            {t('studio.notSaved')}
-          </p>
+          <div className="mt-3">
+            <PrivacyNotice compact />
+          </div>
 
           {error ? <p className="mt-3 text-sm font-bold text-red-700">{error}</p> : null}
 

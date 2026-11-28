@@ -1,7 +1,6 @@
 // Assisted-by: Antigravity:gemini-4-neon (2026-11-23)
 import { FileSearch, MessageSquareText } from 'lucide-react';
 import { useLang } from '../lib/i18n';
-import { ClassContextBar } from '../lib/class-context';
 import StrategyBar from './StrategyBar';
 import QuestionPlanner from './QuestionPlanner';
 import LessonCoach from './LessonCoach';
@@ -59,8 +58,6 @@ export default function TalkMoveBuilder({ subMode, onSubModeChange }: TalkMoveBu
       </div>
 
       <StrategyBar />
-
-      <ClassContextBar />
 
       {subMode === 'plan' ? <QuestionPlanner /> : <LessonCoach />}
     </div>

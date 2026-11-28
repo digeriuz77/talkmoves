@@ -1147,7 +1147,17 @@ function buildLessonCoachUserPrompt(input, lessonText, activeStrategy = '') {
   ]);
 }
 
+const LIVE_COACH_STRATEGY_LEAD = {
+  S1: 'LEAD WITH S1 (Open Question + Wait Time): set strand1_dialogicReasoning.talkMoveId to "TM-T01", write teacherScriptEn/Bridge around ONE open reasoning or prediction question anchored to the visual, and put an explicit 5–7 second silent wait-time cue (no hands yet) in waitTimeCue.',
+  S2: 'LEAD WITH S2 (Safe Rehearsal): set strand1_dialogicReasoning.talkMoveId to "TM-T02", script a 1–2 minute Think-Pair-Share welcoming Iban/Sarawak Malay in teacherScriptEn/Bridge, and explicitly normalise unfinished ideas in waitTimeCue.',
+  S3: 'LEAD WITH S3 (Deliberate Vocabulary & EAL Ladder): script teacherScriptEn/Bridge around choral rehearsal ("I say, you say") of the two key nouns + one relational connector before pointing pupils to the 3-rung EAL board ladder.',
+  S4: 'LEAD WITH S4 (Uptake: Revoice & Evidence Probe): set strand1_dialogicReasoning.talkMoveId to "TM-T03 + TM-T04", script an explicit revoice ("So you are saying...") followed by a picture/test evidence probe ("What in the picture makes you say that?") in teacherScriptEn/Bridge and firm_up.',
+  S5: 'LEAD WITH S5 (Whole-Class Check & Adapt): lead teacherScriptEn/Bridge with the 30-second whole-class chest finger-vote check before moving on, separating language-stuck vs concept-error so the teacher can pivot immediately.',
+  S6: 'LEAD WITH S6 (Competing Claims & What-If Transfer): set strand1_dialogicReasoning.talkMoveId to "TM-T08 + TM-T02", centre teacherScriptEn/Bridge on comparing Ali and Bisi’s claims with evidence, and highlight the What-If transfer twist.',
+};
+
 function buildLiveCoachSystemInstruction(activeStrategy = '') {
+  const normalizedStrategy = normalizeActiveStrategy(activeStrategy);
   return joinPromptLines([
     'You are the Sarawak Primary STEM Reasoning & Talk Moves Coach. You help primary teachers (Year 1 to Year 10, especially Mathematics and Science DLP) in Sarawak prepare high-impact, zero-prep classroom routines from a screenshot of a textbook page, worksheet, or classroom resource, AND you coach them through live classroom friction in a multi-turn conversation.',
     'Most pupils speak Iban or Sarawak Malay as their first language (L1) and have emerging English proficiency (EAL Band A/B). Teachers are strong in content but under severe time pressure.',
@@ -1160,8 +1170,9 @@ function buildLiveCoachSystemInstruction(activeStrategy = '') {
     TALK_MOVE_PALETTE,
     buildStrategySpotlightInstruction(activeStrategy, {
       where:
-        'prepCard teacher scripts (teacherScriptEn/Bridge), board frames (ealProgressionLadder), followUpChips, and reset/firm_up steps and sentence frames',
+        'prepCard teacher scripts (teacherScriptEn/Bridge), waitTimeCue, board frames (ealProgressionLadder), followUpChips, and reset/firm_up steps and sentence frames',
     }),
+    normalizedStrategy ? `LIVE COACH LEAD MOVE OVERRIDE: ${LIVE_COACH_STRATEGY_LEAD[normalizedStrategy]}` : null,
     '',
     'ACTION MODE — choose exactly ONE each turn ("prep_card" | "diagnose" | "reset" | "firm_up"):',
     '- "prep_card": choose "prep_card" for a new image/screenshot (or new EXTRACTED TEXTBOOK/WORKSHEET VISUAL STIMULUS), or when actionTrigger is build_reasoning_prep, competing_claims_debate, spot_mistake, or simplify_bridge. Return the complete 3-Strand Reasoning Prep Card inside "prepCard".',

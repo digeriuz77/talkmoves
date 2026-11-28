@@ -8,6 +8,15 @@ import raw from '../../core6_strategies.json';
  */
 export type StrategyId = 'S1' | 'S2' | 'S3' | 'S4' | 'S5' | 'S6';
 
+export type StrategyLocalizedText = {
+  name: string;
+  shortName: string;
+  window: string;
+  mechanism: string;
+  teacherMoveQuote: string;
+  pupilTarget: string;
+};
+
 export type Core6Strategy = {
   id: StrategyId;
   /** Locked programme name. Change only with a programme change. */
@@ -22,6 +31,7 @@ export type Core6Strategy = {
   teacherMoveQuote: string;
   teacherMoveRef: string;
   pupilTarget: string;
+  ms?: StrategyLocalizedText;
   talkMoveIds: string[];
   coachHints: string[];
 };
@@ -48,6 +58,20 @@ export function supportingStrategies(id: StrategyId): Core6Strategy[] {
   return CORE6_STRATEGIES.filter((strategy) => strategy.id < id);
 }
 
-export function strategyBadgeLabel(strategy: Core6Strategy | null): string {
-  return strategy ? `${strategy.id} · ${strategy.shortName}` : '';
+export function strategyBadgeLabel(strategy: Core6Strategy | null, lang: 'en' | 'ms' = 'en'): string {
+  if (!strategy) return '';
+  const shortName = lang === 'ms' && strategy.ms?.shortName ? strategy.ms.shortName : strategy.shortName;
+  return `${strategy.id} · ${shortName}`;
+}
+
+export function localizeStrategy(strategy: Core6Strategy, lang: 'en' | 'ms'): StrategyLocalizedText {
+  if (lang === 'ms' && strategy.ms) return strategy.ms;
+  return {
+    name: strategy.name,
+    shortName: strategy.shortName,
+    window: strategy.window,
+    mechanism: strategy.mechanism,
+    teacherMoveQuote: strategy.teacherMoveQuote,
+    pupilTarget: strategy.pupilTarget,
+  };
 }
