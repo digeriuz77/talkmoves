@@ -40,16 +40,12 @@ import { useLang } from './lib/i18n';
 import { useAppRoute, type AppRoute } from './lib/router';
 import { ClassContextProvider } from './lib/class-context';
 import { StrategyProvider } from './lib/strategy-context';
-import type { LiveCoachHandoff } from './lib/coach-handoff';
 
 const LEVEL_PROGRESS_STORAGE_KEY = 'dialogic-classroom-progress-v1';
 
 export default function App() {
   const { route, navigate } = useAppRoute();
   const [levelProgress, setLevelProgress] = useState<LevelProgressMap>({});
-  // One-shot hand-off into the Live Coach (e.g. a Concept Cartoon follow-up chip). Held in
-  // memory only so nothing from the classroom is persisted.
-  const [liveHandoff, setLiveHandoff] = useState<LiveCoachHandoff | null>(null);
   // Manual-only guided tour: null = closed (never auto-starts).
   const [tourStep, setTourStep] = useState<number | null>(null);
 
@@ -132,19 +128,11 @@ export default function App() {
           {route.name === 'home' ? (
             <HomeHub levelProgress={levelProgress} onNavigate={navigate} />
           ) : route.name === 'live' ? (
-            <LiveCoach
-              handoff={liveHandoff}
-              onHandoffConsumed={() => setLiveHandoff(null)}
-            />
+            <LiveCoach />
           ) : route.name === 'primer' ? (
             <Primer onOpenStudio={() => navigate({ name: 'cartoon' })} />
           ) : route.name === 'cartoon' ? (
-            <ConceptCartoonStudio
-              onOpenLiveCoach={(handoff) => {
-                setLiveHandoff(handoff);
-                navigate({ name: 'live' });
-              }}
-            />
+            <ConceptCartoonStudio />
           ) : route.name === 'plan' || route.name === 'lesson' ? (
             <TalkMoveBuilder
               subMode={route.name}

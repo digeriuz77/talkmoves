@@ -41,7 +41,7 @@ The Core 6 selector at the top of each coaching tool sends `activeStrategy` to e
 
 ## Concept Cartoon Studio
 
-`#/cartoon` (or "Concept Cartoon Studio" on the Home hub) calls `POST /api/concept-cartoon`: three fixed characters (Ali, Bisi, Cempaka) with one sound, one misconception, and one language-trap claim. The server randomises which character holds each role on every generation. Speech bubbles are editable text in a code-drawn SVG layout (printable, never rasterised), each with Iban and Sarawak Malay bridges; uncertain technical Iban is flagged with `ibanNeedsTeacherCheck` for the teacher to verify. The endpoint is stateless.
+`#/cartoon` (or "Concept Cartoon Studio" on the Home hub) displays ready-made cartoons from `src/data/curriculum`, sharing the vocabulary hub's unit selection and cartoon renderer. Teachers select a KPM unit and cartoon, switch language views, present full-screen, or print without an LLM/API call. Teacher notes are hidden when presenting and printing. The library currently contains three cartoons for Year 4 Science Unit 4: Plants; registering more curriculum units makes their cartoons available here too. The legacy `POST /api/concept-cartoon` endpoint remains available but is not used by the Studio.
 
 ## Privacy
 

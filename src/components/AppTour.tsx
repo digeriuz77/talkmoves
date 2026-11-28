@@ -17,7 +17,7 @@ import {
   X,
   Zap,
 } from 'lucide-react';
-import { CORE6_STRATEGIES, localizeStrategy } from '../lib/core6-strategies';
+import { CORE6_STRATEGIES, type StrategyId } from '../lib/core6-strategies';
 import { useLang, type Lang } from '../lib/i18n';
 import type { AppRoute } from '../lib/router';
 
@@ -25,7 +25,6 @@ type TourStepContent = {
   title: string;
   whenToUse: string;
   body: string;
-  bullets: string[];
 };
 
 type TourStep = {
@@ -47,24 +46,12 @@ const TOUR_STEPS: TourStep[] = [
     en: {
       title: 'One App, Four Teaching Moments',
       whenToUse: 'Use this hub to jump straight to the right tool in under 10 seconds.',
-      body: 'Each tool solves a different classroom job so you never have to force one prompt to do everything. There is no login, and nothing personal about pupils or schools is stored.',
-      bullets: [
-        '2 mins before class or mid-lesson -> Live Coach',
-        'Warming up key words or debates -> Vocab & Concept Cartoons',
-        'Preparing a question or checking a lesson plan -> 1 Question / Lesson Plan',
-        'Practising moves safely on your own -> Play Scenarios',
-      ],
+      body: 'Get quick classroom help with Live Coach, explore ready-made words and cartoons, plan a question or lesson, or practise with Play Scenarios. Choose the tool that fits what you need now.',
     },
     ms: {
       title: 'Satu Aplikasi, Empat Situasi Mengajar',
       whenToUse: 'Gunakan halaman utama ini untuk terus ke alat yang sesuai dalam 10 saat.',
-      body: 'Setiap alat mempunyai tugas bilik darjah yang berbeza supaya anda mudah memilih tanpa keliru. Tiada log masuk, dan tiada data peribadi murid atau sekolah disimpan.',
-      bullets: [
-        '2 minit sebelum kelas atau sedang mengajar -> Jurulatih Langsung',
-        'Pemanasan kosa kata atau perdebatan -> Kosa Kata & Kartun Konsep',
-        'Merancang satu soalan atau menyemak rancangan -> 1 Soalan / Rancangan Mengajar',
-        'Berlatih langkah secara kendiri -> Simulasi Kelas',
-      ],
+      body: 'Dapatkan bantuan segera melalui Jurulatih Langsung, terokai perkataan dan kartun tersedia, rancang soalan atau pengajaran, atau berlatih dengan Simulasi Kelas. Pilih alat mengikut keperluan anda sekarang.',
     },
   },
   {
@@ -75,15 +62,13 @@ const TOUR_STEPS: TourStep[] = [
     showCore6Grid: true,
     en: {
       title: 'What Are S1–S6? (The Core 6 Strategies)',
-      whenToUse: 'Tap "Edit" on the quiet top strip in any tool to pick your week’s strategy.',
-      body: 'S1 to S6 are the six classroom routines of the 2027 programme (Sprint 1: 4 weeks on, 1 week break, 4 weeks on; Sprint 2: pair inquiry). Picking a strategy shapes every tool’s teacher scripts and board frames around that routine, while earlier habits keep supporting you.',
-      bullets: [],
+      whenToUse: 'Tap "Edit" on the strategy bar in a coaching tool to choose your focus.',
+      body: 'S1–S6 are six ways to help pupils think and talk about Science. Choose the one your class needs. The coach will focus its suggestions on that strategy; you can still use the others alongside it.',
     },
     ms: {
       title: 'Apa Itu S1–S6? (6 Strategi Teras)',
-      whenToUse: 'Ketik "Ubah" pada jalur atas di mana-mana alat untuk pilih strategi minggu ini.',
-      body: 'S1 hingga S6 ialah enam rutin bilik darjah program 2027 (Sprint 1: 4 minggu aktif, 1 minggu rehat, 4 minggu aktif; Sprint 2: inkuiri berpasangan). Memilih satu strategi memfokuskan skrip guru dan bingkai papan mengikut rutin itu, sementara tabiat awal terus menyokong.',
-      bullets: [],
+      whenToUse: 'Ketik "Ubah" pada bar strategi dalam alat bimbingan untuk memilih fokus anda.',
+      body: 'S1–S6 ialah enam cara membantu murid berfikir dan berbincang tentang Sains. Pilih strategi yang diperlukan kelas anda. Cadangan jurulatih akan berfokus pada strategi itu; strategi lain masih boleh digunakan bersama.',
     },
   },
   {
@@ -94,22 +79,12 @@ const TOUR_STEPS: TourStep[] = [
     en: {
       title: 'Live Coach — Instant Textbook Prep & Mid-Lesson Rescue',
       whenToUse: 'Use when: you have a textbook photo 2 minutes before class, or pupils just went silent.',
-      body: 'Snap or upload a page to get an instant bilingual routine (hook, 3-rung board ladder, and 30-second finger-vote check). Or type what just happened in class to get a 60-second pivot — no planning template needed.',
-      bullets: [
-        'Textbook photo -> ready-to-teach bilingual reasoning card',
-        'Stuck or silent class -> quick diagnose, reset, or revoice move',
-        'Pin useful cards to reopen offline later',
-      ],
+      body: 'Upload a textbook page for a bilingual teaching card with a starter question, sentence frames, and a quick class check. Or describe what just happened in class to get a practical next step. Pin useful cards to reopen offline.',
     },
     ms: {
       title: 'Jurulatih Langsung — Persediaan Pantas & Bantuan Semasa Kelas',
       whenToUse: 'Guna apabila: anda ada gambar buku teks 2 minit sebelum kelas, atau murid tiba-tiba senyap.',
-      body: 'Ambil gambar halaman buku teks untuk dapatkan rutin dwibahasa segera (cangkuk perbualan, tangga ayat 3 tahap, dan undi jari 30 saat). Atau taip situasi semasa untuk langkah penyesuaian 60 saat.',
-      bullets: [
-        'Gambar buku teks -> kad penaakulan dwibahasa sedia guna',
-        'Kelas senyap atau keliru -> langkah diagnosis, ulang semula, atau ulang suara',
-        'Semat kad berguna untuk dibuka semula tanpa internet',
-      ],
+      body: 'Muat naik halaman buku teks untuk kad pengajaran dwibahasa dengan soalan pembuka, bingkai ayat, dan semakan kelas ringkas. Atau nyatakan situasi kelas untuk cadangan langkah seterusnya. Semat kad berguna untuk dibuka tanpa internet.',
     },
   },
   {
@@ -120,22 +95,12 @@ const TOUR_STEPS: TourStep[] = [
     en: {
       title: 'Vocab Primer — Ready-Made KPM Words & Quick Games',
       whenToUse: 'Use when: starting a new Science unit or running a 5-minute warm-up.',
-      body: 'Browse non-AI KPM Year 4 vocabulary by tier (Science nouns, thinking words, connectors), launch Bingo / Odd One Out on the projector, or pull 5 review words from units you marked taught (saved only on your own device).',
-      bullets: [
-        'Textbook mode works offline with curated EN / BM / Iban bridges',
-        '“Mark taught (this device)” powers Quick-Fire 5 review words',
-        'Switch to Custom Words anytime if your topic is not listed yet',
-      ],
+      body: 'Choose a KPM unit for ready-made Science words, language bridges, Bingo, and Odd One Out. Mark words as taught to use them in Quick-Fire 5 review. Textbook resources work offline; Custom Words is available for other topics.',
     },
     ms: {
       title: 'Primer Kosa Kata — Perkataan KPM & Permainan 5 Minit',
       whenToUse: 'Guna apabila: memulakan unit Sains baharu atau pemanasan 5 minit.',
-      body: 'Semak kosa kata Sains Tahun 4 KPM mengikut tahap (istilah Sains, kata pemikiran, kata hubung), main Bingo / Mana Ganjil di projektor, atau tarik 5 perkataan ulang kaji daripada unit yang anda tanda diajar (disimpan pada peranti anda sahaja).',
-      bullets: [
-        'Mod buku teks berfungsi dengan jambatan EN / BM / Iban tersedia',
-        '“Tanda diajar (peranti ini)” memacu ulang kaji Pantas 5',
-        'Beralih ke Perkataan Sendiri jika topik belum tersenarai',
-      ],
+      body: 'Pilih unit KPM untuk perkataan Sains, jambatan bahasa, Bingo, dan Mana Ganjil yang tersedia. Tanda perkataan sebagai diajar untuk ulang kaji Pantas 5. Sumber buku teks boleh digunakan tanpa internet; Perkataan Sendiri tersedia untuk topik lain.',
     },
   },
   {
@@ -145,23 +110,13 @@ const TOUR_STEPS: TourStep[] = [
     tone: 'bg-amber-bg text-[#9e5f06] border-amber/40',
     en: {
       title: 'Concept Cartoon Studio — Provoke Reasoning & Debate',
-      whenToUse: 'Use when: teaching S6 (Week 8–9) or designing your Sprint 2 classroom inquiry.',
-      body: 'Type any Science topic and Ali, Bisi, and Cempaka make three competing claims: one sound, one misconception, and one language trap (randomised every time so pupils cannot guess by name).',
-      bullets: [
-        'Tap any speech bubble or Iban bridge to edit before class',
-        'Present full-screen or Print — the Teacher Key hides automatically',
-        'Tap a follow-up chip after class to hand straight into Live Coach',
-      ],
+      whenToUse: 'Use when: you want pupils to compare ideas and explain their evidence.',
+      body: 'Select your KPM unit, then choose a ready-made cartoon. Pupils compare the characters’ ideas and explain who they agree with and why. Open the teacher notes to prepare, then present the cartoon full-screen. No AI generation is needed.',
     },
     ms: {
       title: 'Studio Kartun Konsep — Cetusan Penaakulan & Perdebatan',
-      whenToUse: 'Guna apabila: mengajar S6 (Minggu 8–9) atau membina inkuiri kelas Sprint 2.',
-      body: 'Taip mana-mana topik Sains dan Ali, Bisi, serta Cempaka mengemukakan tiga tuntutan berbeza: satu mantap, satu salah faham, dan satu perangkap bahasa (dirawak setiap kali supaya murid tidak meneka mengikut nama).',
-      bullets: [
-        'Ketik mana-mana belon ucapan atau jambatan Iban untuk sunting sebelum kelas',
-        'Bentang skrin penuh atau Cetak — Kunci Guru disembunyikan automatik',
-        'Ketik cip susulan selepas kelas untuk terus ke Jurulatih Langsung',
-      ],
+      whenToUse: 'Guna apabila: anda mahu murid membandingkan idea dan menerangkan bukti.',
+      body: 'Pilih unit KPM anda, kemudian pilih kartun yang tersedia. Murid membandingkan idea watak dan menjelaskan siapa yang dipersetujui serta sebabnya. Buka nota guru untuk persediaan, kemudian bentangkan kartun pada skrin penuh. Tiada penjanaan AI diperlukan.',
     },
   },
   {
@@ -172,20 +127,12 @@ const TOUR_STEPS: TourStep[] = [
     en: {
       title: '1 Question vs. Lesson Plan — Two Different Jobs',
       whenToUse: 'Use when: planning ahead before you teach.',
-      body: 'Use the top toggle to choose the depth you need right now:',
-      bullets: [
-        '1 Question: you have ONE key question and want exact revoicing lines, bilingual board frames, and 5 follow-up branches.',
-        'Lesson Plan: you have a FULL plan (PDF or pasted text) and want to spot where EAL pupils will freeze or where teacher talk runs too long.',
-      ],
+      body: 'Choose 1 Question to turn a key question into teacher prompts, bilingual sentence frames, and follow-up questions. Choose Lesson Plan to upload or paste a full plan and find where pupils may need more language support or time to talk.',
     },
     ms: {
       title: '1 Soalan vs. Rancangan Mengajar — Dua Tugas Berbeza',
       whenToUse: 'Guna apabila: membuat perancangan sebelum masuk kelas.',
-      body: 'Gunakan suis di bahagian atas mengikut tahap perancangan anda:',
-      bullets: [
-        '1 Soalan: anda ada SATU soalan utama dan mahukan ayat ulang suara, bingkai papan dwibahasa, serta 5 laluan susulan.',
-        'Rancangan Mengajar: anda ada RANCANGAN PENUH (PDF atau teks) dan mahu mengesan saat murid EAL akan tersekat atau percakapan guru terlalu panjang.',
-      ],
+      body: 'Pilih 1 Soalan untuk menukar soalan utama kepada panduan guru, bingkai ayat dwibahasa, dan soalan susulan. Pilih Rancangan Mengajar untuk memuat naik atau menampal rancangan penuh dan mengenal pasti bahagian yang memerlukan sokongan bahasa atau masa perbincangan murid.',
     },
   },
   {
@@ -196,23 +143,34 @@ const TOUR_STEPS: TourStep[] = [
     en: {
       title: 'Play Scenarios — Safe Solo Rehearsal',
       whenToUse: 'Use when: you want 5 minutes of low-pressure practice on your own.',
-      body: 'Step into short primary classroom turns, test how wait time, revoicing, and staying neutral change pupil confidence, and see a quick talk-move summary at the end.',
-      bullets: [
-        'Ideal for trying a new Core 6 move before using it with your real class',
-        'Progress is saved locally on your phone only',
-      ],
+      body: 'Try short classroom scenarios before using a strategy with your class. Practise giving thinking time, restating pupils’ ideas, and responding without judging. See a summary at the end; your progress stays on this device.',
     },
     ms: {
       title: 'Simulasi Kelas — Latihan Kendiri Tanpa Tekanan',
       whenToUse: 'Guna apabila: anda mahu 5 minit latihan santai secara bersendirian.',
-      body: 'Masuki situasi bilik darjah sekolah rendah, uji bagaimana masa menunggu, ulang suara, dan sikap neutral mengubah keyakinan murid, dan lihat ringkasan langkah di hujung sesi.',
-      bullets: [
-        'Sesuai untuk mencuba strategi Teras 6 baharu sebelum masuk kelas sebenar',
-        'Kemajuan disimpan secara tempatan pada peranti anda sahaja',
-      ],
+      body: 'Cuba situasi kelas ringkas sebelum menggunakan strategi dengan murid sebenar. Berlatih memberi masa berfikir, menyatakan semula idea murid, dan memberi respons tanpa menghakimi. Lihat ringkasan pada akhir sesi; kemajuan disimpan pada peranti ini sahaja.',
     },
   },
 ];
+
+const TOUR_STRATEGIES: Record<Lang, Record<StrategyId, { title: string; body: string }>> = {
+  en: {
+    S1: { title: 'Ask, then wait', body: 'Ask a question with more than a one-word answer. Give everyone 5–7 seconds to think before anyone speaks.' },
+    S2: { title: 'Practise with a partner', body: 'Let pupils try their ideas with a partner in Iban or Malay first, then practise one English sentence together.' },
+    S3: { title: 'Build words into sentences', body: 'Teach a few key Science words. Help pupils use them in a short sentence, then explain an idea using “because”.' },
+    S4: { title: 'Restate and ask for evidence', body: 'Put a pupil’s idea into clear English without changing its meaning. Ask what in the picture or experiment supports it.' },
+    S5: { title: 'Check everyone, then adapt', body: 'Use finger votes or mini-boards to hear from every pupil. Check whether they need help with the words or the Science idea, then adjust.' },
+    S6: { title: 'Compare ideas and test a change', body: 'Use a cartoon to compare different ideas. Ask pupils who they agree with and why, then ask what would happen if one thing changed.' },
+  },
+  ms: {
+    S1: { title: 'Tanya, kemudian tunggu', body: 'Tanya soalan yang memerlukan lebih daripada satu perkataan. Beri semua murid 5–7 saat untuk berfikir sebelum menjawab.' },
+    S2: { title: 'Berlatih dengan pasangan', body: 'Beri murid peluang mencuba idea dengan pasangan dalam bahasa Iban atau Melayu dahulu, kemudian latih satu ayat Inggeris bersama.' },
+    S3: { title: 'Bina ayat daripada perkataan', body: 'Ajar beberapa perkataan Sains utama. Bantu murid membina ayat ringkas, kemudian terangkan idea menggunakan “kerana”.' },
+    S4: { title: 'Nyatakan semula dan minta bukti', body: 'Nyatakan semula idea murid dalam bahasa Inggeris yang jelas tanpa mengubah maksudnya. Tanya bukti daripada gambar atau eksperimen.' },
+    S5: { title: 'Semak semua, kemudian sesuaikan', body: 'Gunakan undi jari atau papan mini untuk respons setiap murid. Kenal pasti sama ada mereka perlukan bantuan bahasa atau idea Sains, kemudian sesuaikan pengajaran.' },
+    S6: { title: 'Bandingkan idea dan uji perubahan', body: 'Gunakan kartun untuk membandingkan idea. Tanya murid siapa yang dipersetujui dan sebabnya, kemudian tanya apa akan berlaku jika satu perkara diubah.' },
+  },
+};
 
 type AppTourProps = {
   stepIndex: number;
@@ -336,21 +294,10 @@ export default function AppTour({
 
           <p className="text-sm leading-relaxed text-ink-soft">{copy.body}</p>
 
-          {copy.bullets.length > 0 ? (
-            <ul className="space-y-1.5 rounded-2xl border border-ink/10 bg-white p-3.5 text-sm text-ink">
-              {copy.bullets.map((bullet) => (
-                <li key={bullet} className="flex items-start gap-2">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-sage" aria-hidden />
-                  <span className="leading-snug">{bullet}</span>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-
           {step.showCore6Grid ? (
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
               {CORE6_STRATEGIES.map((strategy) => {
-                const loc = localizeStrategy(strategy, lang);
+                const explanation = TOUR_STRATEGIES[lang][strategy.id];
                 return (
                   <div
                     key={strategy.id}
@@ -358,11 +305,10 @@ export default function AppTour({
                   >
                     <div className="flex items-center justify-between gap-2">
                       <span className="font-display text-xs font-extrabold text-terracotta">
-                        {strategy.id} · {loc.shortName}
+                        {strategy.id} · {explanation.title}
                       </span>
-                      <span className="text-[11px] font-semibold text-ink-muted">{loc.window}</span>
                     </div>
-                    <p className="mt-1 text-xs leading-snug text-ink-soft">{loc.mechanism}</p>
+                    <p className="mt-1 text-xs leading-snug text-ink-soft">{explanation.body}</p>
                   </div>
                 );
               })}
