@@ -10,12 +10,21 @@ export const LANG_STORAGE_KEY = 'dialogic-lang';
 
 const en: Record<string, string> = {
   // Landing
-  'landing.tagline': 'Dialogic Teaching Practice',
+  'landing.tagline': 'Sarawak DLP · Bilingual Classroom Talk Companion',
   'landing.title': 'Talk Moves',
   'landing.welcome':
-    'Welcome to Talk Moves. These are short scenarios to help teachers think about dialogic practice in the classroom.',
-  'landing.contact': 'For further levels, contact Gary at:',
-  'landing.enter': 'Enter',
+    'Turn textbook pages, key questions, and lesson plans into confident pupil talk — in English, Malay, and Iban.',
+  'landing.contact': 'Questions or feedback?',
+  'landing.enter': 'Open App',
+  'landing.takeTour': 'Take a Tour',
+  'landing.feat1Title': 'Live Coach',
+  'landing.feat1Body': 'Snap a textbook page or describe a stuck class for instant bilingual moves.',
+  'landing.feat2Title': 'Vocab & Concept Cartoons',
+  'landing.feat2Body': 'KPM word games plus editable 3-pupil debates with Iban & Malay bridges.',
+  'landing.feat3Title': '1 Question & Lesson Plan',
+  'landing.feat3Body': 'Scaffold one open question or scan a full lesson plan for language traps.',
+  'landing.feat4Title': 'Core 6 (S1–S6) & Scenarios',
+  'landing.feat4Body': 'Align every tool to your weekly strategy and rehearse classroom choices safely.',
 
   // ModeSelect
   'mode.tagline': 'Primary Classroom Practice',
@@ -609,12 +618,21 @@ const en: Record<string, string> = {
 
 const ms: Record<string, string> = {
   // Landing
-  'landing.tagline': 'Amalan Pengajaran Dialogik',
+  'landing.tagline': 'DLP Sarawak · Rakan Perbualan Kelas Dwibahasa',
   'landing.title': 'Langkah Perbincangan',
   'landing.welcome':
-    'Selamat datang ke Langkah Perbincangan. Ini ialah senario ringkas untuk membantu guru berfikir tentang amalan dialogik di dalam bilik kelas.',
-  'landing.contact': 'Untuk tahap seterusnya, hubungi Gary di:',
-  'landing.enter': 'Masuk',
+    'Tukar halaman buku teks, soalan utama, dan rancangan mengajar kepada perbualan murid yang yakin — dalam bahasa Inggeris, Melayu, dan Iban.',
+  'landing.contact': 'Soalan atau maklum balas?',
+  'landing.enter': 'Masuk Aplikasi',
+  'landing.takeTour': 'Ikut Lawatan',
+  'landing.feat1Title': 'Jurulatih Langsung',
+  'landing.feat1Body': 'Ambil gambar buku teks atau nyatakan situasi kelas untuk langkah dwibahasa serta-merta.',
+  'landing.feat2Title': 'Kosa Kata & Kartun Konsep',
+  'landing.feat2Body': 'Permainan kata KPM serta perdebatan 3 murid dengan jambatan Iban & Melayu.',
+  'landing.feat3Title': '1 Soalan & Rancangan Mengajar',
+  'landing.feat3Body': 'Bina bimbingan untuk satu soalan atau semak rancangan penuh untuk perangkap bahasa.',
+  'landing.feat4Title': 'Teras 6 (S1–S6) & Simulasi',
+  'landing.feat4Body': 'Selaraskan semua alat mengikut strategi mingguan dan berlatih pilihan kelas dengan selamat.',
 
   // ModeSelect
   'mode.tagline': 'Amalan Bilik Kelas Rendah',

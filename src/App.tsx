@@ -28,6 +28,7 @@ import LiveCoach from './components/LiveCoach';
 import Primer from './components/Primer';
 import ConceptCartoonStudio from './components/ConceptCartoonStudio';
 import Landing from './components/Landing';
+import AppTour from './components/AppTour';
 import { DEFAULT_ASSETS } from './components/AssetLoader';
 import { gameCatalog, type GameCatalogEntry } from './data/game-catalog';
 import {
@@ -49,6 +50,8 @@ export default function App() {
   // One-shot hand-off into the Live Coach (e.g. a Concept Cartoon follow-up chip). Held in
   // memory only so nothing from the classroom is persisted.
   const [liveHandoff, setLiveHandoff] = useState<LiveCoachHandoff | null>(null);
+  // Manual-only guided tour: null = closed (never auto-starts).
+  const [tourStep, setTourStep] = useState<number | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(LEVEL_PROGRESS_STORAGE_KEY);
@@ -82,7 +85,18 @@ export default function App() {
   }, [navigate, route, selectedGame]);
 
   if (route.name === 'welcome') {
-    return <Landing onEnter={() => navigate({ name: 'home' })} />;
+    return (
+      <Landing
+        onEnter={() => {
+          setTourStep(null);
+          navigate({ name: 'home' });
+        }}
+        onTakeTour={() => {
+          setTourStep(0);
+          navigate({ name: 'home' });
+        }}
+      />
+    );
   }
 
   if (route.name === 'game') {
@@ -143,6 +157,14 @@ export default function App() {
             />
           )}
         </AppShell>
+        {tourStep !== null ? (
+          <AppTour
+            stepIndex={tourStep}
+            onStepChange={setTourStep}
+            onClose={() => setTourStep(null)}
+            onNavigate={navigate}
+          />
+        ) : null}
       </StrategyProvider>
     </ClassContextProvider>
   );
